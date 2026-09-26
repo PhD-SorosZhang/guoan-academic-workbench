@@ -108,6 +108,125 @@ const THEORY_LIBRARY={
 {name:"数据安全",aliases:["data security"],desc:"数据全生命周期安全"},
 {name:"供应链安全",aliases:["supply chain security","产业链安全"],desc:"产业链供应链稳定可控"},
 {name:"关键基础设施安全",aliases:["critical infrastructure protection","CIP"],desc:"重要基础设施防护"}
+,
+{name:"海洋命运共同体",aliases:["maritime community with shared future","海洋命运共同体"],desc:"蓝色伙伴关系与海洋治理的中国方案"},
+{name:"海上通道安全",aliases:["sea lane security","SLOC","海上交通线","海上通道","SLOC安全"],desc:"海上战略通道与咽喉点安全保障"},
+{name:"马六甲困境",aliases:["Malacca dilemma","马六甲困局"],desc:"对单一海上通道依赖的安全风险"},
+{name:"岛链战略",aliases:["island chain","第一岛链","第二岛链","岛链封锁"],desc:"以岛链围堵限制海权进入"},
+{name:"灰色地带",aliases:["gray zone","grey zone","灰色区域","灰色地带冲突"],desc:"介于和平与战争之间的渐进胁迫"},
+{name:"混合战争",aliases:["hybrid warfare","混合冲突","混合威胁"],desc:"军事与非军事手段结合的模糊战争"},
+{name:"认知域作战",aliases:["cognitive warfare","认知作战","信息作战","舆论战","法律战","心理战"],desc:"影响认知与决策的非动能作战"},
+{name:"叙事战",aliases:["narrative warfare","叙事竞争","战略传播"],desc:"通过叙事建构争夺话语权"},
+{name:"准联盟",aliases:["quasi-alliance","准同盟","非正式安全伙伴"],desc:"无正式条约的安全合作关系"},
+{name:"小多边主义",aliases:["minilateralism","小多边","小多边机制"],desc:"少数国家间的灵活安全合作"},
+{name:"前沿威慑",aliases:["forward deterrence","前沿部署","延伸威慑"],desc:"前沿军事存在增强威慑可信度"},
+{name:"危机管控",aliases:["crisis management","危机稳定","危机沟通"],desc:"防止危机升级为直接冲突"},
+{name:"战略互疑",aliases:["strategic distrust","战略互疑"],desc:"大国间缺乏战略信任的困境"},
+{name:"大国战略竞争",aliases:["great power competition","大国竞争","战略竞争"],desc:"中美战略竞争框架下的安全互动"},
+{name:"印太战略",aliases:["Indo-Pacific strategy","印太","印太战略","IPEF","四方安全对话","QUAD"],desc:"印太地区安全与经济秩序安排"},
+{name:"经济胁迫",aliases:["economic coercion","经济武器化","贸易武器化","制裁"],desc:"以经济手段实现政治安全目标"},
+{name:"金融制裁",aliases:["financial sanctions","定向制裁","次级制裁","长臂管辖"],desc:"切断金融通道实施制裁"},
+{name:"供应链韧性",aliases:["supply chain resilience","产业链韧性","友岸外包","脱钩断链","小院高墙"],desc:"供应链安全与去风险化"},
+{name:"关键矿产安全",aliases:["critical minerals","关键矿产","关键资源"],desc:"关键矿产供应链安全保障"},
+{name:"数据主权",aliases:["data sovereignty","数据主权","数字主权","数据跨境"],desc:"数据跨境流动与国家主权"},
+{name:"人工智能安全",aliases:["AI security","人工智能安全","算法治理"],desc:"AI技术安全治理与风险防控"},
+{name:"全球公域",aliases:["global commons","全球公地","国际公域"],desc:"公海、外空、网络等共同空间治理"},
+{name:"北极治理",aliases:["Arctic governance","北极","北极航道","冰上丝绸之路"],desc:"北极地区治理与航道安全"},
+{name:"南海秩序",aliases:["South China Sea","南海","南海行为准则","COC","南海各方行为宣言"],desc:"南海航行与法理秩序"},
+{name:"UNCLOS",aliases:["UNCLOS","联合国海洋法公约","国际海洋法"],desc:"国际海洋秩序法律框架"},
+{name:"韧性安全",aliases:["resilience security","安全韧性","系统韧性","战略韧性"],desc:"系统抗冲击与快速恢复能力"},
+{name:"安全化矩阵",aliases:["securitization matrix","安全化过程","言语行为","存在性威胁"],desc:"哥本哈根学派安全化言语行为理论"},
+{name:"非安全化",aliases:["desecuritization","去安全化"],desc:"将议题从安全议程回归正常政治"},
+{name:"指涉对象",aliases:["referent object","指涉对象","存在性威胁"],desc:"安全化过程中被威胁保护的对象"},
+{name:"安全施动者",aliases:["securitizing actor","安全化施动者","行为主体"],desc:"成功将议题安全化的主体"},
+{name:"哥本哈根学派",aliases:["Copenhagen School","哥本哈根学派","巴瑞·布赞","Buzan","奥利·维夫","Wæver"],desc:"以安全化理论为核心的安全研究范式"},
+{name:"巴黎学派",aliases:["Paris School","巴黎学派","批判安全研究"],desc:"以实践理论和日常安全为视角"},
+{name:"阿伯里斯特威斯学派",aliases:["Aberystwyth School","批判安全学","Critical Security Studies"],desc:"以解放为核心的批判安全研究"},
+{name:"地区安全复合体",aliases:["regional security complex theory","RSCT","安全复合体"],desc:"地区安全互动结构理论"},
+{name:"综合安全观",aliases:["comprehensive security","综合安全","综合安全保障"],desc:"日本综合安全保障战略"},
+{name:"人的安全",aliases:["human security","人的安全","以人为中心安全"],desc:"联合国人类安全报告范式"},
+{name:"安全化的五大领域",aliases:["sectoral security","军事安全","环境安全","经济安全","社会安全","政治安全"],desc:"哥本哈根学派五大安全部门"},
+{name:"跨域安全",aliases:["cross-domain security","多域安全","跨域协同"],desc:"安全议题跨领域联动"},
+{name:"安全治理",aliases:["security governance","安全治理","全球安全治理"],desc:"多主体安全规则与制度安排"},
+{name:"安全化与去安全化",aliases:["securitization and desecuritization"],desc:"安全化的双向过程"},
+{name:"存在性威胁",aliases:["existential threat","存在性威胁","生存威胁"],desc:"对指涉对象生存构成根本威胁"},
+{name:"紧急状态",aliases:["state of emergency","紧急状态","例外状态"],desc:"安全化后采取非常规手段"},
+{name:"安全共同体理论",aliases:["security community","多元安全共同体","Amitai Etzioni"],desc:"康德式和平变革的安全共同体"},
+{name:"大西洋共同体",aliases:["Atlantic community"],desc:"北大西洋安全共同体"},
+{name:"欧洲安全秩序",aliases:["European security order","欧洲安全"],desc:"欧洲安全架构与合作"},
+{name:"亚太安全架构",aliases:["Asia-Pacific security architecture","亚太安全","东亚安全"],desc:"亚太地区安全制度安排"},
+{name:"亚太多边安全",aliases:["multilateral security in Asia-Pacific","亚太多边"],desc:"东盟地区论坛、ADMM+等机制"},
+{name:"东盟方式",aliases:["ASEAN way","东盟方式","东盟中心性"],desc:"不干涉内政、协商一致的地区方式"},
+{name:"东盟地区论坛",aliases:["ARF","东盟地区论坛"],desc:"亚太最大官方多边安全对话"},
+{name:"东亚峰会",aliases:["East Asia Summit","EAS","东亚峰会"],desc:"东亚领导人安全对话"},
+{name:"香格里拉对话",aliases:["Shangri-La Dialogue","香格里拉对话","SLD"],desc:"亚太国防部长年度安全论坛"},
+{name:"美国印太战略",aliases:["US Indo-Pacific strategy","美国印太","自由开放印太"],desc:"美国印太地区战略布局"},
+{name:"蓝点网络",aliases:["Blue Dot Network","蓝点网络"],desc:"基础设施投资标准倡议"},
+{name:"印太经济框架",aliases:["IPEF","印太经济框架"],desc:"美国主导的印太经济合作"},
+{name:"四方安全对话",aliases:["Quad","QUAD","美日印澳","四方机制"],desc:"美日印澳四边安全对话"},
+{name:"AUKUS",aliases:["AUKUS","奥库斯","美英澳"],desc:"美英澳安全伙伴关系与核潜艇"},
+{name:"美日同盟",aliases:["US-Japan alliance","美日同盟"],desc:"美国东亚同盟基石"},
+{name:"美韩同盟",aliases:["US-ROK alliance","美韩同盟"],desc:"美韩安全同盟"},
+{name:"美菲同盟",aliases:["US-Philippines alliance","美菲同盟"],desc:"美菲共同防御条约"},
+{name:"美泰同盟",aliases:["US-Thailand alliance","美泰同盟"],desc:"美泰条约关系"},
+{name:"澳新美同盟",aliases:["ANZUS","澳新美同盟"],desc:"澳新美安全条约"},
+{name:"条约网络",aliases:["treaty network","同盟网络","轴辐体系"],desc:"美国双边同盟轴辐体系"},
+{name:"轴辐体系",aliases:["hub-and-spokes","轴辐体系","轮毂辐条"],desc:"美国中心双边同盟网络"},
+{name:"前沿部署",aliases:["forward deployment","前沿军事存在","前沿驻军"],desc:"美国海外军事基地部署"},
+{name:"基地外交",aliases:["base diplomacy","军事基地","基地准入"],desc:"海外军事基地谈判与准入"},
+{name:"抵近侦察",aliases:["reconnaissance close-in","抵近侦察","航空侦察"],desc:"沿边境海空抵近侦察活动"},
+{name:"航行自由行动",aliases:["FONOPs","航行自由","航行自由计划"],desc:"美国挑战过度海洋主张行动"},
+{name:"过度海洋主张",aliases:["excessive maritime claims"],desc:"沿海国超出国际法的主张"},
+{name:"海上自卫队",aliases:["JMSDF","日本海上自卫队"],desc:"日本海上武装力量"},
+{name:"日本安保政策",aliases:["Japan security policy","日本安保","安保法制"],desc:"日本安保政策演变"},
+{name:"日本正常国家化",aliases:["Japan normalization","日本国家正常化","修宪"],desc:"日本修宪与军事正常化"},
+{name:"集体自卫权",aliases:["collective self-defense","集体自卫权"],desc:"日本可行使集体自卫权"},
+{name:"朝鲜半岛安全",aliases:["Korean Peninsula","朝鲜半岛","半岛局势"],desc:"半岛无核化与和平机制"},
+{name:"无核化",aliases:["denuclearization","无核化","弃核"],desc:"朝鲜无核化谈判"},
+{name:"朝核问题",aliases:["North Korea nuclear","朝核","六方会谈"],desc:"朝鲜核问题与六方会谈"},
+{name:"台湾问题",aliases:["Taiwan issue","台湾问题","台海","台海局势"],desc:"海峡两岸安全问题"},
+{name:"一个中国原则",aliases:["one-China principle","一个中国"],desc:"国际社会公认的一个中国原则"},
+{name:"台海和平稳定",aliases:["peace and stability across Taiwan Strait","台海和平稳定"],desc:"台海现状与和平维护"},
+{name:"战略清晰",aliases:["strategic clarity","战略清晰","战略模糊"],desc:"对台战略清晰与模糊辩论"},
+{name:"战略模糊",aliases:["strategic ambiguity","战略模糊"],desc:"对台战略模糊政策"},
+{name:"与台湾关系法",aliases:["Taiwan Relations Act","TRA","与台湾关系法"],desc:"美国对台国内法"},
+{name:"六项保证",aliases:["Six Assurances","六项保证"],desc:"美国对台六项保证"},
+{name:"对台军售",aliases:["arms sales to Taiwan","对台军售","军售"],desc:"美国对台武器出售"},
+{name:"中国海警",aliases:["China Coast Guard","中国海警","海警法"],desc:"中国海警执法力量"},
+{name:"海上执法",aliases:["maritime law enforcement","海上执法"],desc:"海上维权执法"},
+{name:"海上维权",aliases:["maritime rights protection","海上维权","维权执法"],desc:"海洋权益维护"},
+{name:"海洋权益",aliases:["maritime rights and interests","海洋权益"],desc:"国家海洋权利与利益"},
+{name:"蓝色圈地",aliases:["blue enclosure","蓝色圈地"],desc:"21世纪海洋空间争夺"},
+{name:"海洋法治",aliases:["rule of law at sea","海洋法治"],desc:"以国际法规范海洋行为"},
+{name:"海洋秩序",aliases:["maritime order","海洋秩序"],desc:"国际海洋规则与秩序"},
+{name:"蓝色经济",aliases:["blue economy","蓝色经济"],desc:"海洋经济可持续发展"},
+{name:"蓝碳",aliases:["blue carbon","蓝碳","海洋碳汇"],desc:"海洋生态系统碳汇"},
+{name:"海洋碳汇",aliases:["ocean carbon sink","海洋碳汇"],desc:"海洋吸收二氧化碳能力"},
+{name:"双碳",aliases:["carbon peaking and neutrality","双碳","碳达峰","碳中和"],desc:"碳达峰碳中和目标"},
+{name:"气候安全",aliases:["climate security","气候安全","气候与安全"],desc:"气候变化对安全影响"},
+{name:"气候变化",aliases:["climate change","气候变化","全球变暖"],desc:"全球气候变化议题"},
+{name:"气候治理",aliases:["climate governance","气候治理","巴黎协定"],desc:"全球气候治理机制"},
+{name:"能源转型",aliases:["energy transition","能源转型","新能源"],desc:"化石能源向清洁能源转型"},
+{name:"能源通道",aliases:["energy corridor","能源通道","油气管道"],desc:"能源运输通道安全"},
+{name:"马六甲海峡",aliases:["Strait of Malacca","马六甲海峡"],desc:"最重要海上咽喉通道"},
+{name:"霍尔木兹海峡",aliases:["Strait of Hormuz","霍尔木兹海峡"],desc:"石油运输咽喉"},
+{name:"苏伊士运河",aliases:["Suez Canal","苏伊士运河"],desc:"欧亚航运咽喉"},
+{name:"巴拿马运河",aliases:["Panama Canal","巴拿马运河"],desc:"大西洋太平洋通道"},
+{name:"曼德海峡",aliases:["Bab-el-Mandeb","曼德海峡"],desc:"红海亚丁湾通道"},
+{name:"土耳其海峡",aliases:["Turkish Straits","黑海海峡","博斯普鲁斯"],desc:"黑海地中海通道"},
+{name:"直布罗陀海峡",aliases:["Strait of Gibraltar","直布罗陀海峡"],desc:"大西洋地中海通道"},
+{name:"朝鲜海峡",aliases:["Korea Strait","朝鲜海峡","对马海峡"],desc:"中日韩之间通道"},
+{name:"津轻海峡",aliases:["Tsugaru Strait","津轻海峡"],desc:"日本本州北海道之间"},
+{name:"大隅海峡",aliases:["Osumi Strait","大隅海峡"],desc:"日本西南通道"},
+{name:"宫古海峡",aliases:["Miyako Strait","宫古海峡"],desc:"进出西太平洋重要通道"},
+{name:"巴士海峡",aliases:["Bashi Channel","巴士海峡","吕宋海峡"],desc:"南海太平洋通道"},
+{name:"巽他海峡",aliases:["Sunda Strait","巽他海峡"],desc:"爪哇海印度洋通道"},
+{name:"龙目海峡",aliases:["Lombok Strait","龙目海峡"],desc:"深水运 用通道"},
+{name:"望加锡海峡",aliases:["Makassar Strait","望加锡海峡"],desc:"印尼群岛间通道"},
+{name:"国际海峡",aliases:["international strait","国际海峡","用于国际航行海峡"],desc:"UNCLOS第三部分海峡"},
+{name:"过境通行",aliases:["transit passage","过境通行"],desc:"国际海峡过境通行制度"},
+{name:"无害通过",aliases:["innocent passage","无害通过"],desc:"领海无害通过制度"},
+{name:"群岛海道通过",aliases:["archipelagic sea lanes passage","群岛海道"],desc:"群岛国海道通过制度"}
 ],
 "公共管理与治理理论":[
 {name:"整体性治理",aliases:["holistic governance","整体政府","whole of government","整体性政府","holistic government"],desc:"跨部门协同、打破碎片化"},
@@ -271,6 +390,52 @@ function loadData(){
     if(!data.settings.apiModel)data.settings.apiModel='gpt-4o-mini';
     if(!data.settings.apiKey)data.settings.apiKey='';
   }catch(e){console.warn('load failed',e);}
+}
+
+
+// ===== PDF 文字清理 =====
+function cleanPdfText(text){
+  if(!text)return '';
+  var s=text;
+  // 1. 去掉中文字符之间的多余空格（政 策 -> 政策）
+  // 只在两个 CJK 字符之间有单个空格时去除
+  s=s.replace(/([\u4e00-\u9fa5])\s+(?=[\u4e00-\u9fa5])/g,'$1');
+  // 2. 去掉中文字符与中文标点之间的空格
+  s=s.replace(/([\u4e00-\u9fa5])\s+([，。、；：？！""''（）《》—…·])/g,'$1$2');
+  s=s.replace(/([，。、；：？！""''（）《》—…·])\s+([\u4e00-\u9fa5])/g,'$1$2');
+  // 3. 合并多个换行为单个换行
+  s=s.replace(/\n{3,}/g,'\n\n');
+  // 4. 去掉行尾空格
+  s=s.replace(/[ \t]+\n/g,'\n');
+  // 5. 去掉页眉页脚常见模式：纯数字行、"第X卷第X期"、"第X页共X页"
+  s=s.replace(/^\s*\d+\s*[\/\-–]\s*\d+\s*[\/\-–]\s*\d+\s*[\/\-–]\s*\d+.*$/gm,'');
+  s=s.replace(/^\s*第\s*[０-零一二三四五六七八九十百0-9]+\s*卷\s*第\s*[０-零一二三四五六七八九十百0-9]+\s*期.*$/gm,'');
+  s=s.replace(/^\s*第\s*\d+\s*页\s*共\s*\d+\s*页\s*$/gm,'');
+  // 6. 去掉孤立的数字行（页码）
+  s=s.replace(/^\s*\d{1,4}\s*$/gm,'');
+  // 7. 去掉 DOI、URL 行
+  s=s.replace(/^\s*doi:.*$/gim,'');
+  s=s.replace(/^\s*https?:\/\/\S+$/gm,'');
+  return s.trim();
+}
+
+// 判断是否是垃圾标题（页眉页脚、页码串）
+function isGarbageTitle(t){
+  if(!t||t.length<4)return true;
+  // 纯数字和斜杠/连字符
+  if(/^[\d\s\/\-–.]+$/.test(t))return true;
+  // 开头是大量数字
+  if(/^[\d\s\/\-–.]{6,}/.test(t))return true;
+  // 包含"第X卷第X期"
+  if(/第\s*[０-零一二三四五六七八九十百0-9]+\s*卷/.test(t)&&/期/.test(t))return true;
+  // 包含大量空格分隔的单字（PDF 提取的页眉）
+  var cjk=(t.match(/[\u4e00-\u9fa5]/g)||[]).length;
+  var spaces=(t.match(/\s/g)||[]).length;
+  if(cjk>=4&&spaces>=cjk*0.5)return true;
+  // 全角数字为主
+  var fullwidthDigits=(t.match(/[０１２３４５６７８９]/g)||[]).length;
+  if(fullwidthDigits>=3)return true;
+  return false;
 }
 
 async function syncFromAPI(){
@@ -1452,9 +1617,10 @@ function extractPdfFullText(file){
           if(meta.info){title=meta.info.Title||'';author=meta.info.Author||'';if(meta.info.CreationDate){const m=meta.info.CreationDate.match(/D:(\d{4})/);if(m)year=m[1];}}
           let fullText='';
           try{for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const tc=await page.getTextContent();fullText+=tc.items.map(function(item){return item.str;}).join(' ')+'\n';}}catch(pe){console.warn('page text err',pe);}
+          fullText=cleanPdfText(fullText);
           let firstPageText='';
           try{const p1=await pdf.getPage(1);const tc1=await p1.getTextContent();firstPageText=tc1.items.map(function(it){return it.str;}).join(' ');}catch(_){}
-          if(!title){const lines=firstPageText.split(/\n|\.\s+/).filter(function(l){return l.trim().length>5&&l.trim().length<100;});if(lines.length>0)title=lines[0].trim();}
+          if(!title){const lines=firstPageText.split(/\n/).map(function(l){return l.trim();}).filter(function(l){return l.length>5&&l.length<120&&!isGarbageTitle(l);});if(lines.length>0)title=lines[0];}
           const journalMatch=firstPageText.match(/(《[^》]+》|[A-Z][a-z]+ (?:Journal|Review|Studies|Quarterly)[^,\s]*)/);
           if(journalMatch)source=journalMatch[1];
           if(!year){const yearMatch=firstPageText.match(/(19|20)\d{2}/);if(yearMatch)year=yearMatch[0];}
