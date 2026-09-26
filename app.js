@@ -1,4 +1,4 @@
-﻿// ===== 国安学术工作台 v3.0 =====
+// ===== 国安学术工作台 v3.0 =====
 // 原生JS + API/localStorage双模式
 
 // ===== 常量 =====
@@ -740,7 +740,7 @@ function dedupMaterials(){
   const removed=new Set();
   for(let i=0;i<data.materials.length;i++){
     if(removed.has(data.materials[i].id))continue;
-    const cur=data.materials[i];
+    let cur=data.materials[i];
     for(let j=i+1;j<data.materials.length;j++){
       if(removed.has(data.materials[j].id))continue;
       const o=data.materials[j];
