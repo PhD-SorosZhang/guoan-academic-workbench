@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>国安学术工作台 v3.0</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";}</script>
+</head>
+<body>
+<div id="loginOverlay" class="login-overlay" style="display:none;">
+<div class="login-box">
+<h2>🔐 国安学术工作台</h2>
+<p>请输入访问密钥登录</p>
+<input type="password" id="accessKeyInput" placeholder="访问密钥" onkeydown="if(event.key==='Enter')doLogin()">
+<button onclick="doLogin()">登 录</button>
+<p style="margin-top:16px;font-size:.75rem;color:var(--text-mute);">默认密钥：guoan2026（可在设置中修改）</p>
+</div>
+</div>
+<button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+<div class="app">
+<nav class="sidebar" id="sidebar">
+<div class="sidebar-logo">
+<h1>🛡 国安学术工作台</h1>
+<p>National Security Academic Workbench v3.0</p>
+</div>
+<div id="navMenu"></div>
+</nav>
+<main class="main">
+<div id="mainContent"><div style="padding:60px 20px;text-align:center;color:var(--text-mute);"><div style="font-size:2.5rem;margin-bottom:12px;">⏳</div><p>正在加载...</p></div></main>
+</div>
+<div id="modalContainer"></div>
+<div id="toast" class="toast"></div>
+<script src="phd-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
