@@ -746,6 +746,7 @@ function renderArticle(){
       (a.quotes&&a.quotes.length?'<div style="margin:6px 0;"><b>💡 金句：</b><ul style="margin:4px 0 4px 20px;padding:0;">'+a.quotes.map(q=>'<li>'+esc(q)+'</li>').join('')+'</ul></div>':'')+
       (a.theoryFramework&&a.theoryFramework.length?'<div style="margin:6px 0;"><b>📚 理论框架：</b>'+a.theoryFramework.map(t=>'<div>· '+esc(t.name)+(t.inferred?' <span style="color:#c0392b;">[推断]</span>':'')+'</div>').join('')+'</div>':'')+
       (a.policyDocs&&a.policyDocs.length?'<div style="margin:6px 0;"><b>📜 政策依据：</b>'+a.policyDocs.map(p=>'<div>· '+esc(p.name)+(p.inferred?' <span style="color:#c0392b;">[推断]</span>':'')+'</div>').join('')+'</div>':'')+
+      (a.dataSources&&a.dataSources.length?'<div style="margin:6px 0;"><b>📊 数据来源：</b>'+a.dataSources.map(d=>'<div>· '+esc(d.name||d)+(d&&d.inferred?' <span style="color:#c0392b;">[推断]</span>':'')+'</div>').join('')+'</div>':'')+
       '</div>':'';
     return '<div class="list-item"><div class="item-text" style="flex:1;cursor:pointer;" onclick="var d=this.parentElement.querySelector(\'.article-detail\');if(d)d.style.display=d.style.display===\'none\'?\'block\':\'none\';">'+
       '<strong>'+esc(a.title)+'</strong>'+(a.autoAnalyzed?' <span style="font-size:.72rem;background:#e8f4f0;color:#2d8672;padding:1px 6px;border-radius:4px;">自动剖析</span>':'')+
@@ -804,8 +805,8 @@ function handleArticleUpload(files){
     const rec={id:uid(),title:name,author:'',journal:'投递文献',year:new Date().getFullYear().toString(),
       coreArg:longestQuote.substring(0,200),date:fmtDate(new Date()),projectId:currentProjectId,
       autoAnalyzed:true,detailedFlow:analysis.detailedFlow,quotes:analysis.quotes,
-      theoryFramework:analysis.theoryFramework,policyDocs:analysis.policyDocs,
-      quoteCount:analysis.quotes.length,theoryCount:analysis.theoryFramework.length,policyCount:analysis.policyDocs.length};
+      theoryFramework:analysis.theoryFramework,policyDocs:analysis.policyDocs,dataSources:analysis.dataSources,
+      quoteCount:analysis.quotes.length,theoryCount:analysis.theoryFramework.length,policyCount:analysis.policyDocs.length,dataCount:analysis.dataSources.length};
     data.articles.unshift(rec);
     // 同步入素材库
     analysis.quotes.forEach(q=>data.materials.unshift({id:uid(),category:'金句观点',content:q,source:name,date:fmtDate(new Date())}));
@@ -1029,7 +1030,7 @@ function commitAnalysis(refEntry, analysis){
   analysis.theoryFramework.forEach(o=>{if(o.name&&!o.name.startsWith('待补充')){data.materials.unshift({id:uid(),category:'理论框架',content:o.name+'：'+o.content,source:src,date:fmtDate(new Date())});t++;}});
   analysis.policyDocs.forEach(o=>{if(o.name&&!o.name.startsWith('待补充')){data.materials.unshift({id:uid(),category:'政策文件',content:o.name+'：'+o.content,source:src,date:fmtDate(new Date())});p++;}});
   analysis.dataSources.forEach(o=>{if(o.name&&!o.name.startsWith('待补充')){data.materials.unshift({id:uid(),category:'数据来源',content:o.name+'：'+o.content,source:src,date:fmtDate(new Date())});d++;}});
-  data.articles.unshift({id:uid(),title:refEntry.title||'自动剖析文献',author:refEntry.author||'',journal:refEntry.source||'',year:refEntry.year||'',coreArg:'自动剖析提取金句'+q+'条、理论'+t+'个、政策'+p+'个、数据'+d+'个。',date:fmtDate(new Date()),projectId:currentProjectId,autoAnalyzed:true,quoteCount:q,theoryCount:t,policyCount:p,dataCount:d});
+  data.articles.unshift({id:uid(),title:refEntry.title||'自动剖析文献',author:refEntry.author||'',journal:refEntry.source||'',year:refEntry.year||'',coreArg:'自动剖析提取金句'+q+'条、理论'+t+'个、政策'+p+'个、数据'+d+'个。',date:fmtDate(new Date()),projectId:currentProjectId,autoAnalyzed:true,detailedFlow:analysis.detailedFlow||[],quotes:analysis.quotes||[],theoryFramework:analysis.theoryFramework||[],policyDocs:analysis.policyDocs||[],dataSources:analysis.dataSources||[],quoteCount:q,theoryCount:t,policyCount:p,dataCount:d});
   return{q:q,t:t,p:p,d:d};
 }
 
