@@ -18,7 +18,7 @@ const NAV_ITEMS=[
 {id:'note',icon:'🧠',label:'研究笔记'},
 {id:'aitools',icon:'🤖',label:'AI技能库'},
 {id:'aichat',icon:'💬',label:'论文AI对话'},
-{id:'recycle',icon:'🗑',label:'回收站'},{id:'settings',icon:'⚙️',label:'设置'}
+{id:'recycle',icon:'🗑',label:'回收站'},{id:'dash2',icon:'📊',label:'数据看板'},{id:'settings',icon:'⚙️',label:'设置'}
 ];
 
 const DIMENSIONS=['选题创新性','理论深度','现实意义','方法可行性','数据可获得性','文献支撑度','学科契合度','政策相关性','研究缺口','写作可操作性','时间可控性','发表潜力'];
@@ -436,6 +436,7 @@ function render(){
     case 'aitools':renderAITools();break;
     case 'aichat':renderAIChat();break;
     case 'settings':renderSettings();break;
+    case 'dash2':renderDashboard2();break;
     case 'recycle':renderRecycleBin();break;
   }
 }
@@ -1037,11 +1038,162 @@ function exportGB7714Word(){
   const b=new Blob(['\ufeff'+html],{type:'application/msword'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='参考文献_GB7714.doc';a.click();
 }
 
+
+// ===== B. PDF 高亮批注 =====
+let sessionPdfBlobs={};
+let _currentPdfRefId=null;
+let _pdfDoc=null;
+function getHighlights(refId){
+  try{return JSON.parse(localStorage.getItem('highlights_'+refId)||'[]');}catch(e){return [];}
+}
+function saveHighlights(refId,arr){localStorage.setItem('highlights_'+refId,JSON.stringify(arr));}
+function openPdfReader(refId){
+  const blob=sessionPdfBlobs[refId];
+  if(!blob){toast('本会话未加载该PDF，请重新上传文件');return;}
+  _currentPdfRefId=refId;
+  const overlay=document.createElement('div');
+  overlay.id='pdfOverlay';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:flex;';
+  overlay.innerHTML='<div style="flex:1;overflow-y:auto;background:#525659;padding:20px;" id="pdfStage"></div>'+
+    '<div style="width:320px;background:var(--card);border-left:1px solid var(--border);display:flex;flex-direction:column;">'+
+    '<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">'+
+    '<b>📝 批注 ('+getHighlights(refId).length+')</b>'+
+    '<div><button class="add-btn ghost" style="padding:4px 10px;font-size:.75rem;" onclick="exportPdfNotes()">📄 导出笔记</button>'+
+    '<button class="del-btn" style="padding:4px 10px;font-size:.75rem;margin-left:4px;" onclick="closePdfReader()">✕</button></div></div>'+
+    '<div id="hlList" style="flex:1;overflow-y:auto;padding:10px;"></div></div>';
+  document.body.appendChild(overlay);
+  renderPdfPages(blob);
+  renderHlList();
+}
+function closePdfReader(){const o=document.getElementById('pdfOverlay');if(o)o.remove();_currentPdfRefId=null;_pdfDoc=null;}
+async function renderPdfPages(blob){
+  const stage=document.getElementById('pdfStage');
+  stage.innerHTML='<div style="color:#fff;text-align:center;padding:40px;">加载中...</div>';
+  try{
+    const buf=await blob.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+    _pdfDoc=pdf;
+    stage.innerHTML='';
+    for(let i=1;i<=pdf.numPages;i++){
+      const page=await pdf.getPage(i);
+      const viewport=page.getViewport({scale:1.3});
+      const wrap=document.createElement('div');
+      wrap.style.cssText='position:relative;width:'+viewport.width+'px;margin:0 auto 20px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3);';
+      const canvas=document.createElement('canvas');
+      canvas.width=viewport.width;canvas.height=viewport.height;
+      wrap.appendChild(canvas);
+      const textLayerDiv=document.createElement('div');
+      textLayerDiv.className='textLayer';
+      textLayerDiv.style.cssText='position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;';
+      wrap.appendChild(textLayerDiv);
+      stage.appendChild(wrap);
+      await page.render({canvasContext:canvas.getContext('2d'),viewport:viewport}).promise;
+      const tc=await page.getTextContent();
+      pdfjsLib.renderTextLayer({textContent:tc,container:textLayerDiv,viewport:viewport,textDivs:[]});
+      restoreHighlights(i,textLayerDiv);
+    }
+    stage.onmouseup=onPdfMouseUp;
+  }catch(e){stage.innerHTML='<div style="color:#fff;text-align:center;padding:40px;">PDF加载失败：'+e.message+'</div>';}
+}
+function onPdfMouseUp(){
+  const sel=window.getSelection();
+  if(!sel||sel.isCollapsed||!sel.toString().trim())return;
+  const text=sel.toString().trim();
+  if(text.length<2)return;
+  let node=sel.getRangeAt(0).commonAncestorContainer;
+  let pageNum=0;
+  while(node&&node!==document.body){
+    if(node.classList&&node.classList.contains('textLayer')){
+      const stage=document.getElementById('pdfStage');
+      const parents=Array.from(stage.children);
+      pageNum=parents.indexOf(node.parentElement)+1;
+      break;
+    }
+    node=node.parentNode;
+  }
+  const x=event.clientX||window.innerWidth/2;
+  const y=event.clientY||window.innerHeight/2;
+  showHlToolbar(x,y,text,pageNum);
+}
+function showHlToolbar(x,y,text,pageNum){
+  const old=document.getElementById('hlToolbar');if(old)old.remove();
+  const tb=document.createElement('div');
+  tb.id='hlToolbar';
+  tb.style.cssText='position:fixed;left:'+x+'px;top:'+y+'px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px;z-index:100001;box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;gap:4px;';
+  const colors=[['yellow','#fff3a0'],['green','#c8f0c8'],['blue','#c8e0ff'],['pink','#ffd0e8']];
+  colors.forEach(([name,hex])=>{
+    const b=document.createElement('button');
+    b.style.cssText='width:24px;height:24px;border-radius:4px;background:'+hex+';border:1px solid #ccc;cursor:pointer;';
+    b.onclick=()=>{addHighlight(pageNum,text,name,hex);tb.remove();};
+    tb.appendChild(b);
+  });
+  const cm=document.createElement('button');
+  cm.textContent='💬';cm.style.cssText='border:1px solid var(--border);background:var(--bg);border-radius:4px;cursor:pointer;padding:0 6px;';
+  cm.onclick=()=>{
+    const c=prompt('输入批注：');
+    if(c)addHighlight(pageNum,text,'yellow','#fff3a0',c);
+    tb.remove();
+  };
+  tb.appendChild(cm);
+  document.body.appendChild(tb);
+}
+function addHighlight(pageNum,text,colorName,hex,comment){
+  const arr=getHighlights(_currentPdfRefId);
+  arr.push({id:uid(),page:pageNum,text:text.substring(0,500),color:colorName,hex:hex,comment:comment||'',createdAt:new Date().toISOString()});
+  saveHighlights(_currentPdfRefId,arr);
+  const stage=document.getElementById('pdfStage');
+  if(stage){
+    const pages=stage.children;
+    if(pages[pageNum-1]){
+      const tl=pages[pageNum-1].querySelector('.textLayer');
+      if(tl)applyHlToTextLayer(tl,text,hex);
+    }
+  }
+  renderHlList();
+  toast('已高亮');
+}
+function applyHlToTextLayer(tl,text,hex){
+  const words=text.split(/\s+/).filter(w=>w.length>3).slice(0,5);
+  tl.querySelectorAll('span').forEach(sp=>{
+    const t=sp.textContent||'';
+    if(words.some(w=>t.includes(w))){sp.style.backgroundColor=hex;}
+  });
+}
+function restoreHighlights(pageNum,tl){
+  const arr=getHighlights(_currentPdfRefId);
+  arr.filter(h=>h.page===pageNum).forEach(h=>applyHlToTextLayer(tl,h.text,h.hex));
+}
+function renderHlList(){
+  const list=document.getElementById('hlList');
+  if(!list)return;
+  const arr=getHighlights(_currentPdfRefId);
+  if(!arr.length){list.innerHTML='<div style="padding:20px;text-align:center;color:var(--text-mute);font-size:.85rem;">暂无高亮批注<br>在PDF中选中文本即可高亮</div>';return;}
+  list.innerHTML=arr.map(h=>'<div style="padding:10px;border-bottom:1px solid var(--border);"><div style="display:flex;gap:6px;align-items:flex-start;"><span style="width:12px;height:12px;background:'+h.hex+';border-radius:2px;flex-shrink:0;margin-top:3px;"></span><div style="flex:1;font-size:.82rem;"><div style="color:var(--text-mute);font-size:.72rem;margin-bottom:4px;">第'+h.page+'页</div><div style="line-height:1.5;">'+esc(h.text.substring(0,150))+'</div>'+(h.comment?'<div style="margin-top:6px;padding:6px;background:var(--bg);border-radius:4px;font-size:.8rem;">💬 '+esc(h.comment)+'</div>':'')+'</div></div><div style="margin-top:6px;display:flex;gap:6px;"><button class="add-btn ghost" style="padding:2px 8px;font-size:.7rem;" onclick="jumpToPage('+h.page+')">跳转</button><button class="del-btn" style="padding:2px 8px;font-size:.7rem;" onclick="deleteHl(\''+h.id+'\')">删除</button></div></div>').join('');
+}
+function jumpToPage(n){
+  const stage=document.getElementById('pdfStage');
+  if(!stage)return;
+  const pages=stage.children;
+  if(pages[n-1])pages[n-1].scrollIntoView({behavior:'smooth',block:'start'});
+}
+function deleteHl(id){
+  const arr=getHighlights(_currentPdfRefId).filter(h=>h.id!==id);
+  saveHighlights(_currentPdfRefId,arr);
+  renderHlList();
+  toast('已删除');
+}
+function exportPdfNotes(){
+  const arr=getHighlights(_currentPdfRefId);
+  const text='PDF高亮笔记\n\n'+arr.map(h=>'【第'+h.page+'页】'+h.text+(h.comment?'\n批注：'+h.comment:'')).join('\n\n');
+  const b=new Blob([text],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='PDF高亮笔记.txt';a.click();
+}
+
 function renderRef(){
-  const actives=data.refs.filter(r=>!r.deleted);const list=actives.length?actives.map(r=>'<div class="list-item"><div style="display:flex;align-items:flex-start;gap:8px;"><input type="checkbox" style="margin-top:6px;" '+(refSelection.has(r.id)?'checked':'')+' onchange="toggleRefSelect(\''+r.id+'\',this)"><div class="item-text" style="flex:1;"><strong>'+esc(r.title)+'</strong><div class="item-meta">'+esc(r.author||'未知作者')+' · '+esc(r.source||'未知来源')+' · '+(r.year||'')+(r.extracted?' <span class="chip">已自动提取</span>':'')+'</div>'+(r.note?'<div style="margin-top:4px;font-size:.82rem;color:var(--text-mute);">'+esc(r.note)+'</div>':'')+'<div style="margin-top:6px;">'+(r.tags||'').split(/[,，]/).filter(Boolean).map(t=>'<span class="chip">'+esc(t.trim())+'</span>').join('')+'</div></div><div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;"><button class="add-btn ghost" style="padding:4px 10px;font-size:.75rem;" onclick="toggleRefRead(\''+r.id+'\')">'+(r.read?'已读':'标记已读')+'</button><button class="del-btn" onclick="delRef(\''+r.id+'\')">删除</button></div></div></div>').join(''):emptyState('📝','还没有文献，拖拽PDF到下方区域自动提取元数据');
+  const actives=data.refs.filter(r=>!r.deleted);const list=actives.length?actives.map(r=>'<div class="list-item"><div style="display:flex;align-items:flex-start;gap:8px;"><input type="checkbox" style="margin-top:6px;" '+(refSelection.has(r.id)?'checked':'')+' onchange="toggleRefSelect(\''+r.id+'\',this)"><div class="item-text" style="flex:1;"><strong>'+esc(r.title)+'</strong><div class="item-meta">'+esc(r.author||'未知作者')+' · '+esc(r.source||'未知来源')+' · '+(r.year||'')+(r.extracted?' <span class="chip">已自动提取</span>':'')+'</div>'+(r.note?'<div style="margin-top:4px;font-size:.82rem;color:var(--text-mute);">'+esc(r.note)+'</div>':'')+'<div style="margin-top:6px;">'+(r.tags||'').split(/[,，]/).filter(Boolean).map(t=>'<span class="chip">'+esc(t.trim())+'</span>').join('')+'</div></div><div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;"><button class="add-btn ghost" style="padding:4px 10px;font-size:.75rem;" onclick="toggleRefRead(\''+r.id+'\')">'+(r.read?'已读':'标记已读')+'</button><button class="del-btn" onclick="delRef(\''+r.id+'\')">删除</button>'+(sessionPdfBlobs[r.id]?'<button class="add-btn ghost" style="padding:4px 10px;font-size:.75rem;" onclick="openPdfReader(\''+r.id+'\')">📖 PDF</button>':'')+'</div></div></div>').join(''):emptyState('📝','还没有文献，拖拽PDF到下方区域自动提取元数据');
   document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>📝 文献管理</h1><p>拖拽PDF/Word自动提取标题、作者、期刊、发表年份 · 全部本地存储</p></div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">📂</span>我的文献库 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">共 '+data.refs.length+' 篇</span></div>'+list+'</div>'
-    +'<div class="card"><div class="card-title"><span class="title-icon">📚</span>GB/T 7714 参考文献生成</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;"><label style="font-size:.85rem;"><input type="checkbox" onchange="toggleAllRefs(this)"/> 全选</label><span style="font-size:.8rem;color:var(--text-mute);">已选 '+refSelection.size+' 篇</span><button class="add-btn" onclick="generateGB7714()" style="margin-left:auto;">生成 GB/T 7714</button></div><div id="gb7714Result"></div></div>'+'<div class="card"><div class="card-title"><span class="title-icon">⬆️</span>拖拽上传文献</div><div class="drop-zone" id="dropZone" ondragover="event.preventDefault();this.classList.add(\'dragover\')" ondragleave="this.classList.remove(\'dragover\')" ondrop="handleDrop(event)"><div class="drop-icon">📄</div><p>将PDF或Word文件拖拽到此处</p><p style="font-size:.78rem;margin-top:6px;">自动提取标题、作者、期刊、发表年份等元数据</p><input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.txt" style="display:none;" onchange="processFiles(this.files)"><button class="add-btn ghost" style="margin-top:12px;" onclick="document.getElementById(\'fileInput\').click()">选择文件</button></div></div>'
+    +'<div class="card"><div class="card-title"><span class="title-icon">📚</span>GB/T 7714 参考文献生成</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;"><label style="font-size:.85rem;"><input type="checkbox" onchange="toggleAllRefs(this)"/> 全选</label><span style="font-size:.8rem;color:var(--text-mute);">已选 '+refSelection.size+' 篇</span><button class="add-btn" onclick="generateGB7714()" style="margin-left:auto;">生成 GB/T 7714</button></div><div id="gb7714Result"></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);"><button class="add-btn" onclick="distillCrossRefs()">🔬 跨文献蒸馏（需勾选≥2篇）</button><div id="distillResult" style="margin-top:10px;"></div></div></div>'+'<div class="card"><div class="card-title"><span class="title-icon">📰</span>公众号文章接入</div><div class="form-group"><label>mp.weixin.qq.com 链接</label><input id="wxUrl" placeholder="粘贴公众号文章链接"></div><div class="form-group"><label>或直接粘贴正文（降级方案，100%可用）</label><textarea id="wxBody" rows="3" placeholder="粘贴正文..."></div><button class="add-btn" onclick="importWechat()">📥 解析并入库</button><p style="font-size:.75rem;color:var(--text-mute);margin-top:6px;">仅处理您主动提交的公开链接，用于个人学习。</p></div>'+'<div class="card"><div class="card-title"><span class="title-icon">⬆️</span>拖拽上传文献</div><div class="drop-zone" id="dropZone" ondragover="event.preventDefault();this.classList.add(\'dragover\')" ondragleave="this.classList.remove(\'dragover\')" ondrop="handleDrop(event)"><div class="drop-icon">📄</div><p>将PDF或Word文件拖拽到此处</p><p style="font-size:.78rem;margin-top:6px;">自动提取标题、作者、期刊、发表年份等元数据</p><input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.txt" style="display:none;" onchange="processFiles(this.files)"><button class="add-btn ghost" style="margin-top:12px;" onclick="document.getElementById(\'fileInput\').click()">选择文件</button></div></div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">➕</span>手动录入文献</div><div class="form-row"><div><label>文献标题</label><input id="refTitle" placeholder="论文完整标题"></div><div><label>作者</label><input id="refAuthor" placeholder="作者姓名"></div></div><div class="form-row"><div><label>期刊/来源</label><input id="refSource" placeholder="如：国际安全研究"></div><div><label>发表年份</label><input id="refYear" type="number" placeholder="2025"></div></div><div class="form-group"><label>关键词（逗号分隔）</label><input id="refTags" placeholder="如：总体国家安全观,非传统安全"></div><div class="form-group"><label>备注</label><textarea id="refNote" placeholder="阅读心得、核心观点等"></textarea></div><button class="add-btn" onclick="addRef()">+ 保存文献</button></div>';
 }
 function handleDrop(e){e.preventDefault();document.getElementById('dropZone').classList.remove('dragover');processFiles(e.dataTransfer.files);}
@@ -1280,6 +1432,7 @@ function extractPdfFullText(file){
           const finalTitle=title||file.name.replace(/\.pdf$/i,'');
           const refEntry={id:uid(),title:finalTitle.substring(0,150),author:(author||'').substring(0,100),source:source||'PDF上传',year:year||new Date().getFullYear().toString(),note:'自动提取元数据+全文剖析 · 文件大小：'+(file.size/1024).toFixed(1)+'KB · 共'+pdf.numPages+'页',tags:'',read:false,file:file.name,uploadDate:fmtDate(new Date()),extracted:true};
           data.refs.unshift(refEntry);
+          sessionPdfBlobs[refEntry.id]=file;
           runAnalysis(fullText,finalTitle,refEntry);
         });
       }).catch(function(err){
@@ -1668,6 +1821,216 @@ function hardDeleteFromBin(mod,id){hardDelete(data[mod],id);saveData();renderRec
 function restoreAllBin(){allDeleted().forEach(({arr})=>arr.forEach(x=>{if(x.deleted){delete x.deleted;delete x.deletedAt;}}));saveData();renderRecycleBin();toast('全部还原');}
 function emptyBin(){if(!confirm('确定清空回收站？此操作不可恢复。'))return;allDeleted().forEach(({arr})=>{for(let i=arr.length-1;i>=0;i--){if(arr[i].deleted)arr.splice(i,1);}});saveData();renderRecycleBin();toast('回收站已清空');}
 
+
+// ===== E. GitHub Gist 云同步 =====
+async function gistApi(method, path, body){
+  const token=data.settings.githubToken;
+  if(!token)throw new Error('未配置 GitHub Token');
+  const opts={method:method,headers:{'Authorization':'token '+token,'Accept':'application/vnd.github+json','Content-Type':'application/json'}};
+  if(body!==undefined)opts.body=JSON.stringify(body);
+  const r=await fetch('https://api.github.com'+path,opts);
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+async function testGitHubConn(){
+  // 从输入框即时读取（未点保存也可测试）
+  const ti=document.getElementById('ghToken');if(ti)data.settings.githubToken=ti.value.trim();
+  const out=document.getElementById('ghTestResult');
+  try{
+    const j=await gistApi('GET','/user');
+    out.innerHTML='<span style="color:#2d8672;">✅ 连接成功：'+esc(j.login)+'</span>';
+  }catch(e){out.innerHTML='<span style="color:#c0392b;">失败：'+esc(String(e.message||e))+'</span>';}
+}
+async function saveGistConfig(){
+  data.settings.githubToken=document.getElementById('ghToken').value.trim();
+  data.settings.gistId=document.getElementById('ghGistId').value.trim();
+  data.settings.autoSync=document.getElementById('ghAutoSync').checked;
+  saveData();toast('云同步配置已保存');
+}
+async function uploadToGist(){
+  const status=document.getElementById('syncStatus');
+  if(status)status.textContent='同步中...';
+  try{
+    const content=JSON.stringify(data);
+    if(!data.settings.gistId){
+      const j=await gistApi('POST','/gists',{description:'国安学术工作台数据',public:false,files:{'guoan-workbench-data.json':{content:content}}});
+      data.settings.gistId=j.id;
+      document.getElementById('ghGistId').value=j.id;
+    }else{
+      await gistApi('PATCH','/gists/'+data.settings.gistId,{files:{'guoan-workbench-data.json':{content:content}}});
+    }
+    data.settings.lastSyncAt=new Date().toISOString();
+    saveData();
+    if(status)status.textContent='☁️ 已同步 '+new Date().toLocaleTimeString();
+    toast('已上云');
+  }catch(e){if(status)status.textContent='⚠️ 同步失败';toast('上云失败：'+e.message);}
+}
+async function downloadFromGist(){
+  if(!data.settings.gistId){toast('请先配置 Gist ID');return;}
+  try{
+    const j=await gistApi('GET','/gists/'+data.settings.gistId);
+    const f=j.files['guoan-workbench-data.json'];
+    if(!f||!f.content)throw new Error('云端无数据');
+    const cloud=JSON.parse(f.content);
+    data._conflictBackup={local:JSON.parse(JSON.stringify(data)),at:new Date().toISOString()};
+    data={...cloud,settings:{...data.settings,...(cloud.settings||{})}};
+    saveData();applyTheme(data.settings.theme);
+    toast('已拉取云端数据');renderSettings();
+  }catch(e){toast('拉取失败：'+e.message);}
+}
+function genShareLink(){
+  if(!data.settings.gistId){toast('请先上云生成 Gist ID');return;}
+  const url=location.origin+location.pathname+'?share='+data.settings.gistId;
+  prompt('共享链接（只读模式打开）：',url);
+}
+async function tryShareLoad(){
+  const m=new URLSearchParams(location.search).get('share');
+  if(!m)return false;
+  try{
+    const r=await fetch('https://api.github.com/gists/'+m);
+    if(!r.ok)return false;
+    const j=await r.json();
+    const f=j.files['guoan-workbench-data.json'];
+    if(!f||!f.content)return false;
+    const cloud=JSON.parse(f.content);
+    data={...cloud,settings:data.settings,shareMode:true};
+    applyTheme(data.settings.theme);
+    toast('已加载共享数据（只读模式）');
+    return true;
+  }catch(e){return false;}
+}
+let _syncTimer=null;
+function scheduleAutoSync(){
+  if(!data.settings.autoSync||!data.settings.githubToken)return;
+  if(_syncTimer)clearTimeout(_syncTimer);
+  _syncTimer=setTimeout(()=>{uploadToGist();},5000);
+}
+
+// ===== F. 邮件导出 .eml =====
+function exportEml(){
+  const to=prompt('收件人邮箱：','')||'';
+  const subject=prompt('邮件主题：','国安研究周报')||'';
+  const body=prompt('邮件正文：','本周完成文献阅读、素材整理、选题评测...')||'';
+  const eml='To: '+to+'\nSubject: '+subject+'\nContent-Type: text/plain; charset=utf-8\nMIME-Version: 1.0\n\n'+body;
+  const b=new Blob(['\ufeff'+eml],{type:'message/rfc822'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='email.eml';a.click();
+  toast('.eml 已导出');
+}
+
+// ===== A. 跨文献蒸馏 =====
+function distillCrossRefs(){
+  const refs=data.refs.filter(r=>!r.deleted&&refSelection.has(r.id));
+  if(refs.length<2){toast('请至少勾选2篇文献');return;}
+  // 汇总文本
+  let allText='';
+  refs.forEach(r=>{allText+=' '+(r.title||'')+' '+(r.tags||'')+' '+(r.note||'')+' '+(r.source||'');});
+  // 理论频次
+  const theories=matchTheoryLibrary(allText);
+  // 方法谱系
+  const methodKw={'定性研究':/定性|质性|访谈|田野|文本分析/, '定量研究':/定量|计量|回归|面板|模型|问卷/, '案例研究':/案例/, '比较研究':/比较/, '混合方法':/混合|多元方法/};
+  const methodCount={};
+  refs.forEach(r=>{const t=(r.title||'')+' '+(r.note||'');Object.keys(methodKw).forEach(k=>{if(methodKw[k].test(t)){methodCount[k]=(methodCount[k]||0)+1;}});});
+  // 政策/数据频次
+  const policies=extractPolicies(allText);
+  // 关键词共现
+  const tags=[];refs.forEach(r=>(r.tags||'').split(/[,，]/).forEach(t=>{t=t.trim();if(t)tags.push(t);}));
+  const tagCount={};tags.forEach(t=>{tagCount[t]=(tagCount[t]||0)+1;});
+  const topTags=Object.entries(tagCount).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  // 研究缺口
+  const gapRe=/[^。！？]*(有待|缺乏|不足|尚需|未来|展望|空白|薄弱)[^。！？]*。/g;
+  const gaps=allText.match(gapRe)||[];
+  // 组装报告
+  let html='<h3>🔬 跨文献蒸馏报告（'+refs.length+'篇）</h3>';
+  html+='<div style="margin:10px 0;"><b>📚 理论使用：</b><ul>'+theories.slice(0,8).map(t=>'<li>'+esc(t.name)+'</li>').join('')+'</ul></div>';
+  html+='<div style="margin:10px 0;"><b>📐 研究方法谱系：</b><ul>'+Object.entries(methodCount).map(([k,v])=>'<li>'+k+'：'+v+'篇</li>').join('')+'</ul></div>';
+  html+='<div style="margin:10px 0;"><b>📜 高频政策：</b>'+policies.slice(0,10).map(p=>'<span class="chip">'+esc(p)+'</span> ').join('')+'</div>';
+  html+='<div style="margin:10px 0;"><b>🏷 高频关键词：</b>'+topTags.map(([t,c])=>'<span class="chip">'+esc(t)+'×'+c+'</span> ').join('')+'</div>';
+  html+='<div style="margin:10px 0;"><b>🕳 研究缺口：</b><ul>'+gaps.slice(0,6).map(g=>'<li>'+esc(g.trim())+'</li>').join('')+'</ul></div>';
+  // LLM 增强
+  if(data.settings.apiKey){
+    html+='<div style="margin:10px 0;"><b>🤖 LLM 深度蒸馏：</b><button class="add-btn ghost" onclick="llmDistill()">调用大模型分析共识/分歧/学派</button><div id="llmDistillResult"></div></div>';
+  }
+  html+='<div style="margin-top:14px;display:flex;gap:8px;"><button class="add-btn ghost" onclick="distillExportTxt()">📄 导出TXT</button><button class="add-btn ghost" onclick="distillExportWord()">📄 导出Word</button></div>';
+  document.getElementById('distillResult').innerHTML=html;
+  window._distillHtml=html;
+}
+async function llmDistill(){
+  const out=document.getElementById('llmDistillResult');
+  out.textContent='分析中...';
+  const refs=data.refs.filter(r=>!r.deleted&&refSelection.has(r.id));
+  const titles=refs.map(r=>r.title).join('；');
+  try{
+    const reply=await callLLM([{role:'user',content:'以下是'+refs.length+'篇国家安全学文献标题：'+titles+'。请用200字总结：①共识点②主要分歧③学派/理论归属。简洁分点。'}],30000);
+    out.innerHTML='<div style="background:var(--bg);padding:10px;border-radius:6px;margin-top:8px;white-space:pre-wrap;">'+esc(reply)+'</div>';
+  }catch(e){out.textContent='失败：'+e.message;}
+}
+function distillExportTxt(){const t=(window._distillHtml||'').replace(/<[^>]+>/g,'');const b=new Blob([t],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='跨文献蒸馏报告.txt';a.click();}
+function distillExportWord(){const h='<html><body>'+(window._distillHtml||'')+'</body></html>';const b=new Blob(['\ufeff'+h],{type:'application/msword'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='跨文献蒸馏报告.doc';a.click();}
+
+// ===== C. 研究数据看板 =====
+function renderDashboard2(){
+  const totalRefs=data.refs.filter(r=>!r.deleted).length;
+  const totalMats=data.materials.filter(m=>!m.deleted).length;
+  const totalTopics=data.topics.filter(t=>!t.deleted).length;
+  const totalNotes=data.notes.filter(n=>!n.deleted).length;
+  const wordCount=data.materials.filter(m=>!m.deleted).reduce((s,m)=>s+(m.content||'').length,0)+data.notes.filter(n=>!n.deleted).reduce((s,n)=>s+(n.content||'').length,0);
+  const taskTotal=data.paperTasks.filter(t=>!t.deleted).length;
+  const taskDone=data.paperTasks.filter(t=>!t.deleted&&t.done).length;
+  const catCount={'金句观点':0,'理论框架':0,'政策文件':0,'数据来源':0};
+  data.materials.filter(m=>!m.deleted).forEach(m=>{if(catCount[m.category]!=null)catCount[m.category]++;});
+  let html='<div class="page-header"><h1>📊 研究数据看板</h1><p>学术资产总览 · 增长趋势 · 分类分布</p></div>';
+  html+='<div class="stat-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px;">';
+  [['📚 文献',totalRefs],['✍️ 素材',totalMats],['🔍 选题',totalTopics],['🧠 笔记',totalNotes],['📝 总字数',wordCount],['✅ 待办完成',taskDone+'/'+taskTotal]].forEach(([l,v])=>{
+    html+='<div class="card" style="text-align:center;padding:14px;"><div style="font-size:1.6rem;font-weight:700;color:var(--primary);">'+v+'</div><div style="font-size:.82rem;color:var(--text-mute);">'+l+'</div></div>';
+  });
+  html+='</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
+  html+='<div class="card"><div class="card-title">素材分类占比</div><div id="chartCat" style="height:260px;"></div></div>';
+  html+='<div class="card"><div class="card-title">待办完成率</div><div id="chartTask" style="height:260px;"></div></div>';
+  html+='</div>';
+  document.getElementById('mainContent').innerHTML=html;
+  // Render charts
+  if(window.echarts){
+    const c1=echarts.init(document.getElementById('chartCat'));
+    c1.setOption({tooltip:{},series:[{type:'pie',radius:['40%','70%'],data:Object.entries(catCount).map(([k,v])=>({name:k,value:v}))}]});
+    const c2=echarts.init(document.getElementById('chartTask'));
+    c2.setOption({tooltip:{},series:[{type:'pie',radius:['40%','70%'],data:[{name:'已完成',value:taskDone},{name:'未完成',value:taskTotal-taskDone}]}]});
+  }
+}
+
+// ===== D. 公众号文章接入 =====
+async function importWechat(){
+  const url=document.getElementById('wxUrl').value.trim();
+  const body=document.getElementById('wxBody').value.trim();
+  if(!url&&!body){toast('请粘贴链接或正文');return;}
+  let title='',author='',content=body;
+  if(url&&!body){
+    try{
+      const proxy='https://api.allorigins.win/raw?url='+encodeURIComponent(url);
+      const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),5000);
+      const r=await fetch(proxy,{signal:ctrl.signal});clearTimeout(timer);
+      const html=await r.text();
+      const dm=document.createElement('div');dm.innerHTML=html;
+      title=(dm.querySelector('#activity-name')||{}).textContent||'';
+      author=(dm.querySelector('#js_name')||{}).textContent||'';
+      content=(dm.querySelector('#js_content')||{}).textContent||'';
+    }catch(e){toast('代理解析失败，请直接粘贴正文');return;}
+  }
+  if(!content||content.length<50){toast('内容过短');return;}
+  // 分类
+  if(/征稿|征文|会议|截稿|投稿|论坛|研讨会/.test(content)){
+    data.schedule.push({id:uid(),title:title||'会议征稿',date:new Date().toISOString().slice(0,10),type:'学术会议',location:'',desc:content.substring(0,200)});
+    saveData();toast('已建学术日程');
+  }else{
+    const analysis=autoAnalyzeText(content,title||'公众号文章');
+    data.refs.unshift({id:uid(),title:title||'公众号文章',author:author||'微信公众号',source:'微信公众号',year:new Date().getFullYear().toString(),note:content.substring(0,200),tags:'',read:false,uploadDate:fmtDate(new Date())});
+    if(analysis)commitAnalysis({title:title||'公众号文章',author:author,source:'微信公众号'},analysis);
+    toast('已入文献库并自动剖析');
+  }
+  navigate('ref');
+}
+
+
 // ===== 设置（含数据导入导出、周报生成）=====
 function renderSettings(){
   const themeBtns=THEMES.map(t=>{
@@ -1676,7 +2039,7 @@ function renderSettings(){
   }).join('');
   document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>⚙️ 设置</h1><p>主题配色 · 数据管理 · 周报生成 · 访问密钥</p></div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">🎨</span>主题配色 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">共 '+THEMES.length+' 套 · 当前：'+THEME_NAMES[data.settings.theme]+'</span></div><div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;"><label style="font-size:.85rem;display:flex;align-items:center;gap:6px;"><input type="checkbox" '+(data.settings.autoRotate?'checked':'')+' onchange="data.settings.autoRotate=this.checked;saveData();" style="width:16px;height:16px;"> 自动轮换</label><select id="rotateDays" onchange="data.settings.rotateDays=parseInt(this.value);saveData();" style="padding:6px 10px;border:1px solid var(--line);border-radius:6px;"><option value="3" '+(data.settings.rotateDays===3?'selected':'')+'>每3天</option><option value="7" '+(data.settings.rotateDays===7?'selected':'')+'>每7天</option><option value="14" '+(data.settings.rotateDays===14?'selected':'')+'>每14天</option><option value="30" '+(data.settings.rotateDays===30?'selected':'')+'>每月</option></select></div><div class="theme-grid">'+themeBtns+'</div></div>'
-    +'<div class="card"><div class="card-title"><span class="title-icon">💾</span>数据管理</div><p style="font-size:.85rem;color:var(--text-soft);margin-bottom:12px;">当前模式：<strong>'+(apiMode?'☁️ 云端同步（Supabase）':'💻 本地存储（localStorage）')+'</strong>。'+(apiMode?'数据已同步至云端数据库，换设备登录后自动恢复。':'所有数据存储在浏览器本地，导出备份可防止清除浏览器数据后丢失。支持从JSON备份文件恢复数据。')+'</p><div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="add-btn" onclick="exportData()">📤 导出全部数据备份</button><button class="add-btn ghost" onclick="document.getElementById(\'importInput\').click()">📥 导入备份文件</button><button class="del-btn" onclick="clearAllData()" style="padding:10px 20px;font-size:.9rem;">🗑 清空全部数据</button><button class="add-btn" style="background:linear-gradient(135deg,var(--primary),var(--primary-deep));font-weight:700;" onclick="generateWeeklyReport()">📰 生成国安研究周报</button>'+(apiMode?'<button class="add-btn ghost" onclick="logout()" style="padding:10px 20px;font-size:.9rem;">🚪 退出登录</button>':'')+'<input type="file" id="importInput" accept=".json" style="display:none;" onchange="importData(this.files[0])"></div></div>'
+    +'<div class="card"><div class="card-title"><span class="title-icon">💾</span>数据管理</div><p style="font-size:.85rem;color:var(--text-soft);margin-bottom:12px;">当前模式：<strong>'+(apiMode?'☁️ 云端同步（Supabase）':'💻 本地存储（localStorage）')+'</strong>。'+(apiMode?'数据已同步至云端数据库，换设备登录后自动恢复。':'所有数据存储在浏览器本地，导出备份可防止清除浏览器数据后丢失。支持从JSON备份文件恢复数据。')+'</p><div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="add-btn" onclick="exportData()">📤 导出全部数据备份</button><button class="add-btn ghost" onclick="document.getElementById(\'importInput\').click()">📥 导入备份文件</button><button class="del-btn" onclick="clearAllData()" style="padding:10px 20px;font-size:.9rem;">🗑 清空全部数据</button><button class="add-btn" style="background:linear-gradient(135deg,var(--primary),var(--primary-deep));font-weight:700;" onclick="generateWeeklyReport()">📰 生成国安研究周报</button><button class="add-btn ghost" onclick="exportEml()">📧 导出.eml</button>'+(apiMode?'<button class="add-btn ghost" onclick="logout()" style="padding:10px 20px;font-size:.9rem;">🚪 退出登录</button>':'')+'<input type="file" id="importInput" accept=".json" style="display:none;" onchange="importData(this.files[0])"></div></div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">🔐</span>访问密钥</div><div class="form-group"><label>修改登录密钥</label><input id="newKey" type="password" placeholder="输入新的访问密钥" value="'+esc(data.settings.accessKey||'')+'"></div><button class="add-btn" onclick="saveKey()">保存密钥</button></div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">🤖</span>大模型 API 配置 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">可选 · 留空则使用本地规则引擎剖析</span></div>'
     +'<p style="font-size:.82rem;color:var(--text-soft);margin-bottom:10px;">兼容 OpenAI / 豆包 / DeepSeek 等 OpenAI 接口格式。配置后上传 PDF/Word 时自动走 LLM 剖析；未配置时使用内置规则引擎，永不联网。</p>'
@@ -1685,7 +2048,20 @@ function renderSettings(){
     +'<div class="form-group"><label>模型名（Model）</label><input id="apiModel" placeholder="gpt-4o-mini" value="'+esc(data.settings.apiModel||'')+'"></div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="add-btn" onclick="saveApiConfig()">💾 保存配置</button><button class="add-btn ghost" onclick="testApiConnection()">🔌 测试连接</button><span id="apiTestResult" style="font-size:.85rem;align-self:center;"></span></div>'
     +'</div>'
-    +'<div class="card"><div class="card-title"><span class="title-icon">🔒</span>隐私与数据说明</div><p style="font-size:.85rem;color:var(--text-soft);line-height:1.8;">本工作台所有数据均存储在您当前浏览器的本地存储（localStorage）中，<strong>不会上传到任何服务器</strong>。清除浏览器数据或更换设备后数据将丢失，请定期导出备份。PDF元数据提取在本地浏览器完成，文件内容不会上传。</p></div>';
+    +'<div class="card"><div class="card-title"><span class="title-icon">☁️</span>云同步（GitHub Gist）<span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">可选 · 国内直连 api.github.com</span></div>'
+    +'<p style="font-size:.82rem;color:var(--text-soft);margin-bottom:10px;">将工作区数据存为 GitHub secret gist，多设备同步。secret gist 不出现在搜索，但知道链接即可访问，请勿包含敏感信息。</p>'
+    +'<div class="form-group"><label>GitHub Token（repo 权限）</label><input id="ghToken" type="password" placeholder="gho_..." value="'+esc(data.settings.githubToken||'')+'"></div>'
+    +'<div class="form-row"><div><label>Gist ID（留空自动创建）</label><input id="ghGistId" placeholder="自动创建" value="'+esc(data.settings.gistId||'')+'"></div>'
+    +'<div><label style="display:flex;align-items:center;gap:6px;margin-top:22px;"><input type="checkbox" id="ghAutoSync" '+(data.settings.autoSync?'checked':'')+'> 自动同步（改动5秒后上云）</label></div></div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">'
+    +'<button class="add-btn" onclick="saveGistConfig()">💾 保存</button>'
+    +'<button class="add-btn ghost" onclick="testGitHubConn()">🔌 测试连接</button>'
+    +'<button class="add-btn" onclick="uploadToGist()">⬆️ 立即上云</button>'
+    +'<button class="add-btn ghost" onclick="downloadFromGist()">⬇️ 拉取云端</button>'
+    +'<button class="add-btn ghost" onclick="genShareLink()">🔗 生成共享链接</button>'
+    +'<span id="ghTestResult" style="align-self:center;font-size:.85rem;"></span>'
+    +'<span id="syncStatus" style="align-self:center;font-size:.85rem;color:var(--text-mute);">'+(data.settings.lastSyncAt?'☁️ 已同步 '+data.settings.lastSyncAt.slice(11,19):'⚠️ 未同步')+'</span>'
+    +'</div></div>'
 }
 function exportData(){
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
