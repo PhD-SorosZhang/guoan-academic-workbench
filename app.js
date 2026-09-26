@@ -18,7 +18,7 @@ const NAV_ITEMS=[
 {id:'note',icon:'🧠',label:'研究笔记'},
 {id:'aitools',icon:'🤖',label:'AI技能库'},
 {id:'aichat',icon:'💬',label:'论文AI对话'},
-{id:'settings',icon:'⚙️',label:'设置'}
+{id:'recycle',icon:'🗑',label:'回收站'},{id:'settings',icon:'⚙️',label:'设置'}
 ];
 
 const DIMENSIONS=['选题创新性','理论深度','现实意义','方法可行性','数据可获得性','文献支撑度','学科契合度','政策相关性','研究缺口','写作可操作性','时间可控性','发表潜力'];
@@ -337,6 +337,77 @@ function checkAutoRotate(){
 }
 
 // ===== 导航 =====
+
+// ===== 全局搜索 =====
+let _searchTimer=null;
+function debouncedGlobalSearch(q){
+  if(_searchTimer)clearTimeout(_searchTimer);
+  _searchTimer=setTimeout(()=>renderGlobalSearch(q),200);
+}
+function highlightSnippet(text,kw){
+  if(!text)return '';
+  const idx=text.toLowerCase().indexOf(kw.toLowerCase());
+  if(idx<0)return text.substring(0,60);
+  const start=Math.max(0,idx-30);
+  const end=Math.min(text.length,idx+kw.length+30);
+  let sn=(start>0?'...':'')+text.substring(start,end)+(end<text.length?'...':'');
+  const re=new RegExp('('+kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+  return sn.replace(re,'<mark>$1</mark>');
+}
+function globalSearch(query){
+  const kws=query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if(!kws.length)return [];
+  const out=[];
+  const hay={
+    '选题':{arr:data.topics.filter(t=>!t.deleted),page:'topic',fields:t=>[t.title,t.question]},
+    '文献':{arr:data.refs.filter(r=>!r.deleted),page:'ref',fields:r=>[r.title,r.author,r.source,r.note,r.tags]},
+    '好文剖析':{arr:data.articles.filter(a=>!a.deleted),page:'article',fields:a=>[a.title,a.author,a.coreArg,(a.quotes||[]).join(' ')]},
+    '素材':{arr:data.materials.filter(m=>!m.deleted),page:'material',fields:m=>[m.content,m.source,m.category]},
+    '笔记':{arr:data.notes.filter(n=>!n.deleted),page:'note',fields:n=>[n.title,n.content]},
+    '日程':{arr:data.schedule.filter(s=>!s.deleted),page:'schedule',fields:s=>[s.title,s.location,s.type]},
+    '待办':{arr:data.paperTasks.filter(t=>!t.deleted),page:'dashboard',fields:t=>[t.title,t.desc]},
+  };
+  Object.keys(hay).forEach(mod=>{
+    const cfg=hay[mod];
+    cfg.arr.forEach(item=>{
+      const text=cfg.fields(item).filter(Boolean).join(' ');
+      const low=text.toLowerCase();
+      const hit=kws.every(k=>low.includes(k));
+      if(hit)out.push({module:mod,page:cfg.page,id:item.id,title:(item.title||item.content||'').substring(0,60),snippet:highlightSnippet(text,kws[0])});
+    });
+  });
+  return out;
+}
+function renderGlobalSearch(q){
+  const box=document.getElementById('globalSearchResults');
+  if(!box)return;
+  if(!q.trim()){box.style.display='none';box.innerHTML='';return;}
+  const res=globalSearch(q);
+  if(!res.length){box.style.display='block';box.innerHTML='<div class="gs-empty">无匹配结果</div>';return;}
+  const groups={};
+  res.forEach(r=>{if(!groups[r.module])groups[r.module]=[];groups[r.module].push(r);});
+  let html='';
+  Object.keys(groups).forEach(mod=>{
+    html+='<div class="gs-group"><div class="gs-group-title">'+mod+' · '+groups[mod].length+'</div>';
+    groups[mod].slice(0,8).forEach(r=>{
+      html+='<div class="gs-item" onclick="jumpToResult(\''+r.page+'\',\''+r.id+'\')"><div class="gs-item-title">'+esc(r.title)+'</div><div class="gs-item-snippet">'+r.snippet+'</div></div>';
+    });
+    html+='</div>';
+  });
+  box.style.display='block';
+  box.innerHTML=html;
+}
+function clearGlobalSearch(){
+  const i=document.getElementById('globalSearchInput');
+  const b=document.getElementById('globalSearchResults');
+  if(i)i.value='';if(b){b.innerHTML='';b.style.display='none';}
+}
+function jumpToResult(page,id){
+  try{localStorage.setItem('_searchHighlightId',id);}catch(e){}
+  navigate(page);
+  clearGlobalSearch();
+}
+
 function renderNav(){
   document.getElementById('navMenu').innerHTML=NAV_ITEMS.map(n=>
     '<div class="nav-item '+(currentPage===n.id?'active':'')+'" onclick="navigate(\''+n.id+'\')"><span class="nav-icon">'+n.icon+'</span>'+n.label+'</div>'
@@ -365,6 +436,7 @@ function render(){
     case 'aitools':renderAITools();break;
     case 'aichat':renderAIChat();break;
     case 'settings':renderSettings();break;
+    case 'recycle':renderRecycleBin();break;
   }
 }
 
@@ -426,7 +498,7 @@ function renderDashboard(){
   const projRefs=data.refs.filter(r=>r.projectId===currentProjectId||!r.projectId);
   const projArticles=data.articles.filter(a=>a.projectId===currentProjectId||!a.projectId);
   const projNotes=data.notes.filter(n=>n.projectId===currentProjectId||!n.projectId);
-  const projTasks=data.paperTasks.filter(t=>t.projectId===currentProjectId||!t.projectId);
+  const projTasks=data.paperTasks.filter(t=>!t.deleted&&(t.projectId===currentProjectId||!t.projectId));
 
   // 问候横幅
   const banner='<div class="greeting-banner">'
@@ -486,7 +558,7 @@ function renderDashboard(){
   fetchWeather();
 }
 
-function delTask(id){data.paperTasks=data.paperTasks.filter(t=>t.id!==id);saveData();renderDashboard();}
+function delTask(id){softDelete(data.paperTasks,id);saveData();renderDashboard();toast('已删除，可在回收站还原');}
 
 function showAddProject(){
   const name=prompt('请输入项目名称：');
@@ -580,11 +652,11 @@ function renderTopic(){
   const tabs='<div class="sub-tabs"><button class="sub-tab '+(topicTab==='topics'?'active':'')+'" onclick="topicTab=\'topics\';expandedTopic=null;renderTopic()">我的选题</button><button class="sub-tab '+(topicTab==='match'?'active':'')+'" onclick="topicTab=\'match\';renderTopic()">论点匹配引文</button><button class="sub-tab '+(topicTab==='package'?'active':'')+'" onclick="topicTab=\'package\';renderTopic()">📦 选题素材包</button></div>';
   let body='';
   if(topicTab==='topics'){
-    const list=data.topics.length?data.topics.map((t,i)=>{
+    const list=(data.topics.filter(t=>!t.deleted).length?data.topics.filter(t=>!t.deleted).map((t,i)=>{
       const isOpen=expandedTopic===i;
       const dimsHtml=isOpen&&t.dims?'<div class="dim-grid" style="margin-top:10px;">'+DIMENSIONS.map(d=>'<div class="dim-item"><label>'+d+'</label><input type="range" min="0" max="10" value="'+(t.dims[d]||0)+'" onchange="updateDim(\''+t.id+'\',\''+d+'\',this.value)"><span class="dim-val">'+(t.dims[d]||0)+'/10</span></div>').join('')+'</div><div class="radar-wrap" id="radar_'+t.id+'"></div>':'';
       return '<div class="list-item" style="flex-direction:column;align-items:stretch;"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;"><div class="item-text" onclick="expandedTopic='+(isOpen?'null':i)+';renderTopic()" style="cursor:pointer;"><strong>'+esc(t.title)+'</strong><div class="item-meta">'+(t.date||'')+' · AI评分 <strong>'+calcScore(t)+'</strong>/120 '+scoreGrade(calcScore(t))+'</div>'+(t.question?'<div style="margin-top:4px;font-size:.82rem;color:var(--text-soft);">'+esc(t.question)+'</div>':'')+'</div><div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;"><button class="add-btn ghost" style="padding:4px 10px;font-size:.75rem;" onclick="event.stopPropagation();expandedTopic='+(isOpen?'null':i)+';renderTopic()">'+(isOpen?'收起':'展开评测')+'</button><button class="del-btn" onclick="event.stopPropagation();delTopic(\''+t.id+'\')">删除</button></div></div>'+dimsHtml+'</div>';
-    }).join(''):emptyState('🔍','还没有选题，点击下方添加');
+    }).join(''):emptyState('🔍','还没有选题，点击下方添加'));
     body=tabs+'<div class="card"><div class="card-title"><span class="title-icon">📋</span>我的选题 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">共 '+data.topics.length+' 个</span></div>'+list+'</div>'
       +'<div class="card"><div class="card-title"><span class="title-icon">📥</span>投递选题文档（Word/PDF/TXT）直出评测</div>'
       +'<p style="font-size:.82rem;color:var(--text-soft);margin-bottom:10px;">上传开题报告/选题申报书，自动提取标题、研究问题、方法、创新点，填入下方表单后一键AI评测。</p>'
@@ -652,7 +724,7 @@ function addTopic(){
   toast('选题已创建，AI评测完成');
   renderTopic();
 }
-function delTopic(id){data.topics=data.topics.filter(t=>t.id!==id);saveData();renderTopic();}
+function delTopic(id){softDelete(data.topics,id);saveData();renderTopic();toast('已删除，可在回收站还原');}
 
 function extractTopicFromDoc(text){
   const out={title:'',question:'',method:'',innovation:''};
@@ -739,7 +811,7 @@ function renderArticle(){
   const flowHtml=daily.detailedFlow.map((s,i)=>'<div class="flow-step" onclick="this.querySelector(\'.flow-detail\').style.display=this.querySelector(\'.flow-detail\').style.display===\'none\'?\'block\':\'none\'"><div style="background:var(--primary);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;">'+(i+1)+'</div><div><strong style="font-size:.88rem;">'+esc(s.step)+'</strong><div class="flow-detail" style="display:none;margin-top:6px;font-size:.82rem;color:var(--text-soft);line-height:1.7;">'+esc(s.detail)+'</div></div></div>').join('');
   const conceptHtml='<div class="concept-map"><div class="concept-map-title">🧩 概念图谱</div>'+daily.conceptMap.layers.map(l=>'<div class="concept-layer"><div class="concept-layer-label">'+esc(l.label)+'</div><div class="concept-chain">'+l.nodes.map((n,ni)=>'<span class="concept-node '+(n.type==='accent'?'accent':'')+'">'+esc(n.text)+'</span>'+(ni<l.nodes.length-1?'<span class="concept-arrow">→</span>':'')).join('')+'</div></div>').join('')+'</div>';
   // 记录列表：可展开
-  const list=data.articles.length?data.articles.map(a=>{
+  const list=data.articles.filter(a=>!a.deleted).length?data.articles.filter(a=>!a.deleted).map(a=>{
     const detailHtml=(a.detailedFlow||a.quotes||a.theoryFramework)?'<div class="article-detail" style="display:none;margin-top:10px;padding:10px;background:var(--bg-soft,#f7f7f7);border-radius:8px;font-size:.82rem;color:var(--text-soft);line-height:1.8;">'+
       (a.coreArg?'<div style="margin-bottom:6px;"><b>核心论点：</b>'+esc(a.coreArg)+'</div>':'')+
       (a.detailedFlow?'<div style="margin:6px 0;"><b>📝 论证流程：</b><ol style="margin:4px 0 4px 20px;padding:0;">'+a.detailedFlow.map(f=>'<li>'+esc(f.step)+'：'+esc(f.detail)+'</li>').join('')+'</ol></div>':'')+
@@ -781,7 +853,7 @@ function markDailyRead(){
   const daily=getDailyArticle();
   if(!data.readArticles.includes(daily.title)){data.readArticles.push(daily.title);saveData();renderArticle();}
 }
-function delArticle(id){data.articles=data.articles.filter(a=>a.id!==id);saveData();renderArticle();}
+function delArticle(id){softDelete(data.articles,id);saveData();renderArticle();toast('已删除，可在回收站还原');}
 function addArticle(){
   const title=document.getElementById('artTitle').value.trim();
   if(!title){toast('请输入论文标题');return;}
@@ -886,11 +958,90 @@ function renderJob(){
 }
 
 // ===== 文献管理（含PDF拖拽上传）=====
+
+// ===== GB/T 7714 参考文献生成 =====
+let refSelection=new Set();
+function toggleRefSelect(id,chk){if(chk.checked)refSelection.add(id);else refSelection.delete(id);renderRef();}
+function toggleAllRefs(chk){data.refs.filter(r=>!r.deleted).forEach(r=>{if(chk.checked)refSelection.add(r.id);else refSelection.delete(r.id);});renderRef();}
+function detectRefType(r){
+  if(r.url||/https?:\/\//.test(r.source||''))return 'EB/OL';
+  if(/出版社|出版公司|书店/.test(r.source||''))return 'M';
+  if(/日报|时报|公报|人民日报|光明日报|参考消息/.test(r.source||''))return 'N';
+  if(/论文集|会议录|proceedings/i.test(r.source||''))return 'C';
+  if(/GB\/?T?|ISO|标准/.test((r.title||'')+(r.source||'')))return 'S';
+  return 'J';
+}
+function formatAuthors(a){
+  if(!a)return '[缺:作者]';
+  const parts=String(a).split(/[,，;；、\/]/).map(x=>x.trim()).filter(Boolean);
+  if(!parts.length)return '[缺:作者]';
+  const head=parts.slice(0,3).join(', ');
+  return parts.length>3?head+', 等':head;
+}
+function buildGB7714(){
+  const refs=data.refs.filter(r=>!r.deleted&&refSelection.has(r.id));
+  if(!refs.length)return {lines:[],missing:[]};
+  const lines=[];const missing=[];
+  refs.forEach((r,i)=>{
+    const type=detectRefType(r);
+    const authors=formatAuthors(r.author);
+    const title=esc(r.title||'[缺:题名]');
+    let line='';
+    if(type==='J'){
+      const source=r.source||'[缺:刊名]';
+      const year=r.year||'[缺:年]';
+      line=authors+'. '+title+'[J]. '+source+', '+year+'.';
+      if(!r.source)missing.push({id:r.id,title:r.title,field:'刊名'});
+      if(!r.year)missing.push({id:r.id,title:r.title,field:'年'});
+    }else if(type==='M'){
+      const source=r.source||'[缺:出版社]';
+      const year=r.year||'[缺:年]';
+      line=authors+'. '+title+'[M]. 北京: '+source+', '+year+'.';
+      if(!r.source)missing.push({id:r.id,title:r.title,field:'出版社'});
+    }else if(type==='N'){
+      const source=r.source||'[缺:报名]';
+      const year=r.year||'[缺:日期]';
+      line=authors+'. '+title+'[N]. '+source+', '+year+'.';
+    }else if(type==='EB/OL'){
+      const url=r.url||'[缺:URL]';
+      line=authors+'. '+title+'[EB/OL]. ['+new Date().toISOString().slice(0,10)+']. '+url+'.';
+      if(!r.url)missing.push({id:r.id,title:r.title,field:'URL'});
+    }else if(type==='C'){
+      const source=r.source||'[缺:论文集名]';
+      line=authors+'. '+title+'[C]//'+source+'. '+(r.year||'[缺:年]')+'.';
+    }else if(type==='S'){
+      line=(r.source||'[缺:标准号]')+' '+title+'[S]. '+(r.year||'')+'.';
+    }
+    lines.push('['+(i+1)+'] '+line);
+  });
+  return {lines:lines,missing:missing};
+}
+function generateGB7714(){
+  const {lines,missing}=buildGB7714();
+  const area=document.getElementById('gb7714Result');
+  if(!area)return;
+  if(!lines.length){area.innerHTML='<div style="color:var(--text-mute);padding:12px;">请先勾选至少一篇文献</div>';return;}
+  const missHtml=missing.length?'<div style="margin-top:10px;padding:8px;background:rgba(231,76,60,.1);border-radius:6px;font-size:.82rem;">⚠️ 缺失字段：'+missing.map(m=>esc(m.title.substring(0,30))+'['+m.field+']').join('；')+'</div>':'';
+  area.innerHTML='<div style="background:var(--bg);padding:14px;border-radius:8px;font-family:Georgia,serif;font-size:.92rem;line-height:1.9;white-space:pre-wrap;">'+lines.join('\n')+'</div>'+missHtml+
+    '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">'+
+    '<button class="add-btn ghost" onclick="copyGB7714()">📋 一键复制</button>'+
+    '<button class="add-btn ghost" onclick="exportGB7714Txt()">📄 导出TXT</button>'+
+    '<button class="add-btn ghost" onclick="exportGB7714Word()">📝 导出Word</button></div>';
+}
+function getGBText(){const {lines}=buildGB7714();return '参考文献\n\n'+lines.join('\n');}
+function copyGB7714(){const t=getGBText();navigator.clipboard.writeText(t).then(()=>toast('已复制到剪贴板'));}
+function exportGB7714Txt(){const t=getGBText();const b=new Blob([t],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='参考文献_GB7714.txt';a.click();}
+function exportGB7714Word(){
+  const {lines}=buildGB7714();
+  const html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"></head><body><h2>参考文献</h2><ol>'+lines.map(l=>'<li>'+l.replace(/^\[\d+\] /,'')+'</li>').join('')+'</ol></body></html>';
+  const b=new Blob(['\ufeff'+html],{type:'application/msword'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='参考文献_GB7714.doc';a.click();
+}
+
 function renderRef(){
-  const list=data.refs.length?data.refs.map(r=>'<div class="list-item"><div class="item-text"><strong>'+esc(r.title)+'</strong><div class="item-meta">'+esc(r.author||'未知作者')+' · '+esc(r.source||'未知来源')+' · '+(r.year||'')+(r.extracted?' <span class="chip">已自动提取</span>':'')+'</div>'+(r.note?'<div style="margin-top:4px;font-size:.82rem;color:var(--text-mute);">'+esc(r.note)+'</div>':'')+'<div style="margin-top:6px;">'+(r.tags||'').split(/[,，]/).filter(Boolean).map(t=>'<span class="chip">'+esc(t.trim())+'</span>').join('')+'</div></div><div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;"><button class="add-btn ghost" style="padding:4px 10px;font-size:.75rem;" onclick="toggleRefRead(\''+r.id+'\')">'+(r.read?'已读':'标记已读')+'</button><button class="del-btn" onclick="delRef(\''+r.id+'\')">删除</button></div></div>').join(''):emptyState('📝','还没有文献，拖拽PDF到下方区域自动提取元数据');
+  const actives=data.refs.filter(r=>!r.deleted);const list=actives.length?actives.map(r=>'<div class="list-item"><div style="display:flex;align-items:flex-start;gap:8px;"><input type="checkbox" style="margin-top:6px;" '+(refSelection.has(r.id)?'checked':'')+' onchange="toggleRefSelect(\''+r.id+'\',this)"><div class="item-text" style="flex:1;"><strong>'+esc(r.title)+'</strong><div class="item-meta">'+esc(r.author||'未知作者')+' · '+esc(r.source||'未知来源')+' · '+(r.year||'')+(r.extracted?' <span class="chip">已自动提取</span>':'')+'</div>'+(r.note?'<div style="margin-top:4px;font-size:.82rem;color:var(--text-mute);">'+esc(r.note)+'</div>':'')+'<div style="margin-top:6px;">'+(r.tags||'').split(/[,，]/).filter(Boolean).map(t=>'<span class="chip">'+esc(t.trim())+'</span>').join('')+'</div></div><div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;"><button class="add-btn ghost" style="padding:4px 10px;font-size:.75rem;" onclick="toggleRefRead(\''+r.id+'\')">'+(r.read?'已读':'标记已读')+'</button><button class="del-btn" onclick="delRef(\''+r.id+'\')">删除</button></div></div></div>').join(''):emptyState('📝','还没有文献，拖拽PDF到下方区域自动提取元数据');
   document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>📝 文献管理</h1><p>拖拽PDF/Word自动提取标题、作者、期刊、发表年份 · 全部本地存储</p></div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">📂</span>我的文献库 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">共 '+data.refs.length+' 篇</span></div>'+list+'</div>'
-    +'<div class="card"><div class="card-title"><span class="title-icon">⬆️</span>拖拽上传文献</div><div class="drop-zone" id="dropZone" ondragover="event.preventDefault();this.classList.add(\'dragover\')" ondragleave="this.classList.remove(\'dragover\')" ondrop="handleDrop(event)"><div class="drop-icon">📄</div><p>将PDF或Word文件拖拽到此处</p><p style="font-size:.78rem;margin-top:6px;">自动提取标题、作者、期刊、发表年份等元数据</p><input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.txt" style="display:none;" onchange="processFiles(this.files)"><button class="add-btn ghost" style="margin-top:12px;" onclick="document.getElementById(\'fileInput\').click()">选择文件</button></div></div>'
+    +'<div class="card"><div class="card-title"><span class="title-icon">📚</span>GB/T 7714 参考文献生成</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;"><label style="font-size:.85rem;"><input type="checkbox" onchange="toggleAllRefs(this)"/> 全选</label><span style="font-size:.8rem;color:var(--text-mute);">已选 '+refSelection.size+' 篇</span><button class="add-btn" onclick="generateGB7714()" style="margin-left:auto;">生成 GB/T 7714</button></div><div id="gb7714Result"></div></div>'+'<div class="card"><div class="card-title"><span class="title-icon">⬆️</span>拖拽上传文献</div><div class="drop-zone" id="dropZone" ondragover="event.preventDefault();this.classList.add(\'dragover\')" ondragleave="this.classList.remove(\'dragover\')" ondrop="handleDrop(event)"><div class="drop-icon">📄</div><p>将PDF或Word文件拖拽到此处</p><p style="font-size:.78rem;margin-top:6px;">自动提取标题、作者、期刊、发表年份等元数据</p><input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.txt" style="display:none;" onchange="processFiles(this.files)"><button class="add-btn ghost" style="margin-top:12px;" onclick="document.getElementById(\'fileInput\').click()">选择文件</button></div></div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">➕</span>手动录入文献</div><div class="form-row"><div><label>文献标题</label><input id="refTitle" placeholder="论文完整标题"></div><div><label>作者</label><input id="refAuthor" placeholder="作者姓名"></div></div><div class="form-row"><div><label>期刊/来源</label><input id="refSource" placeholder="如：国际安全研究"></div><div><label>发表年份</label><input id="refYear" type="number" placeholder="2025"></div></div><div class="form-group"><label>关键词（逗号分隔）</label><input id="refTags" placeholder="如：总体国家安全观,非传统安全"></div><div class="form-group"><label>备注</label><textarea id="refNote" placeholder="阅读心得、核心观点等"></textarea></div><button class="add-btn" onclick="addRef()">+ 保存文献</button></div>';
 }
 function handleDrop(e){e.preventDefault();document.getElementById('dropZone').classList.remove('dragover');processFiles(e.dataTransfer.files);}
@@ -1035,6 +1186,27 @@ function commitAnalysis(refEntry, analysis){
 }
 
 // ===== LLM 双模式剖析 =====
+// 通用 LLM 调用：messages=[{role,content}], timeoutMs 超时，返回文本内容
+async function callLLM(messages, timeoutMs){
+  const endpoint=data.settings.apiEndpoint;
+  const key=data.settings.apiKey;
+  if(!key||!endpoint)throw new Error('未配置API Key');
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(), timeoutMs||30000);
+  try{
+    const resp=await fetch(endpoint,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:data.settings.apiModel,messages:messages,temperature:0.4,stream:false}),
+      signal:ctrl.signal
+    });
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const j=await resp.json();
+    const c=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
+    if(!c)throw new Error('空响应');
+    return c;
+  }finally{clearTimeout(timer);}
+}
 async function analyzeWithLLM(text,title){
   const endpoint=data.settings.apiEndpoint;
   const key=data.settings.apiKey;
@@ -1162,7 +1334,7 @@ function addRef(){
   data.refs.unshift({id:uid(),title:title,author:document.getElementById('refAuthor').value,source:document.getElementById('refSource').value,year:document.getElementById('refYear').value,tags:document.getElementById('refTags').value,note:document.getElementById('refNote').value,read:false,uploadDate:fmtDate(new Date()),projectId:currentProjectId});
   saveData();toast('文献已保存');renderRef();
 }
-function delRef(id){data.refs=data.refs.filter(r=>r.id!==id);saveData();renderRef();}
+function delRef(id){softDelete(data.refs,id);saveData();renderRef();toast('已删除，可在回收站还原');}
 function toggleRefRead(id){const r=data.refs.find(x=>x.id===id);if(r){r.read=!r.read;saveData();renderRef();}}
 
 // ===== 写作素材 =====
@@ -1268,7 +1440,7 @@ function autoBuildTopicCards(){
 
 function renderMaterial(){
   const cats=[...new Set(data.materials.map(m=>m.category||'未分类'))];
-  const list=data.materials.length?data.materials.map(m=>'<div class="list-item"><div class="item-text"><div class="material-cat">['+esc(m.category||'未分类')+']</div><div style="font-size:.88rem;line-height:1.6;">'+esc(m.content)+'</div><div class="item-meta">'+(m.source?'来源：'+esc(m.source)+' · ':'')+(m.date||'')+'</div></div><button class="del-btn" onclick="delMaterial(\''+m.id+'\')">删除</button></div>').join(''):emptyState('✍️','暂无素材，好文剖析中的金句可一键存入');
+  const list=(data.materials.filter(m=>!m.deleted).length?data.materials.filter(m=>!m.deleted).map(m=>'<div class="list-item"><div class="item-text"><div class="material-cat">['+esc(m.category||'未分类')+']</div><div style="font-size:.88rem;line-height:1.6;">'+esc(m.content)+'</div><div class="item-meta">'+(m.source?'来源：'+esc(m.source)+' · ':'')+(m.date||'')+'</div></div><button class="del-btn" onclick="delMaterial(\''+m.id+'\')">删除</button></div>').join(''):emptyState('✍️','暂无素材，好文剖析中的金句可一键存入'));
 
   // 智能沉淀：专题卡片
   const cardsHtml=data.topicCards&&data.topicCards.length?data.topicCards.map((c,idx)=>{
@@ -1300,11 +1472,11 @@ function addMaterial(){
   data.materials.unshift({id:uid(),category:document.getElementById('matCat').value,content:content,source:document.getElementById('matSource').value,date:fmtDate(new Date())});
   saveData();toast('素材已保存');renderMaterial();
 }
-function delMaterial(id){data.materials=data.materials.filter(m=>m.id!==id);saveData();renderMaterial();}
+function delMaterial(id){softDelete(data.materials,id);saveData();renderMaterial();toast('已删除，可在回收站还原');}
 
 // ===== 学术日程 =====
 function renderSchedule(){
-  const sorted=[...data.schedule].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const sorted=[...data.schedule].filter(x=>!x.deleted).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   const list=sorted.length?sorted.map(s=>'<div class="schedule-item"><div class="schedule-date">'+(s.date||'')+'</div><div class="item-text"><strong>'+esc(s.title)+'</strong><div class="item-meta">'+esc(s.type||'会议')+(s.location?' · '+esc(s.location):'')+'</div></div><button class="del-btn" onclick="delSchedule(\''+s.id+'\')">删除</button></div>').join(''):emptyState('📅','暂无日程');
   document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>📅 学术日程</h1><p>会议 · 讲座 · 截止日期 · 答辩安排</p></div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">📆</span>我的日程</div>'+list+'</div>'
@@ -1318,11 +1490,11 @@ function addSchedule(){
   data.schedule.push({id:uid(),title:title,date:document.getElementById('schDate').value,type:document.getElementById('schType').value,location:document.getElementById('schLoc').value});
   saveData();toast('日程已添加');renderSchedule();
 }
-function delSchedule(id){data.schedule=data.schedule.filter(s=>s.id!==id);saveData();renderSchedule();}
+function delSchedule(id){softDelete(data.schedule,id);saveData();renderSchedule();toast('已删除，可在回收站还原');}
 
 // ===== 研究笔记（含导出Word）=====
 function renderNote(){
-  const list=data.notes.length?data.notes.map(n=>'<div class="list-item"><div class="item-text"><strong>'+esc(n.title)+'</strong><div class="item-meta">'+(n.date||'')+' · '+esc(n.type||'灵感')+'</div><div style="margin-top:6px;font-size:.9rem;white-space:pre-wrap;">'+esc(n.content)+'</div><div style="margin-top:8px;"><button class="add-btn ghost" style="padding:6px 14px;font-size:.8rem;" onclick="exportNoteWord(\''+n.id+'\')">📄 导出Word</button></div></div><button class="del-btn" onclick="delNote(\''+n.id+'\')">删除</button></div>').join(''):emptyState('🧠','随时记录灵感与思考');
+  const list=(data.notes.filter(n=>!n.deleted).length?data.notes.filter(n=>!n.deleted).map(n=>'<div class="list-item"><div class="item-text"><strong>'+esc(n.title)+'</strong><div class="item-meta">'+(n.date||'')+' · '+esc(n.type||'灵感')+'</div><div style="margin-top:6px;font-size:.9rem;white-space:pre-wrap;">'+esc(n.content)+'</div><div style="margin-top:8px;"><button class="add-btn ghost" style="padding:6px 14px;font-size:.8rem;" onclick="exportNoteWord(\''+n.id+'\')">📄 导出Word</button></div></div><button class="del-btn" onclick="delNote(\''+n.id+'\')">删除</button></div>').join(''):emptyState('🧠','随时记录灵感与思考'));
   document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>🧠 研究笔记</h1><p>灵感记录 · 思考整理 · 支持导出Word</p></div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">📝</span>我的笔记</div>'+list+'<div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--line);"><div class="form-row"><div><label>笔记标题</label><input id="noteTitle" placeholder="如：第三章论证思路"></div><div><label>类型</label><select id="noteType"><option>灵感</option><option>研究思路</option><option>文献笔记</option><option>方法笔记</option><option>其他</option></select></div></div>'
     +'<div class="form-group"><label>笔记内容</label><textarea id="noteContent" style="min-height:120px;" placeholder="记录你的思考..."></textarea></div>'
@@ -1335,7 +1507,7 @@ function addNote(){
   data.notes.unshift({id:uid(),title:title,content:content,type:document.getElementById('noteType').value,date:fmtDate(new Date()),projectId:currentProjectId});
   saveData();toast('笔记已保存');renderNote();
 }
-function delNote(id){data.notes=data.notes.filter(x=>x.id!==id);saveData();renderNote();}
+function delNote(id){softDelete(data.notes,id);saveData();renderNote();toast('已删除，可在回收站还原');}
 function exportNoteWord(id){
   const n=data.notes.find(x=>x.id===id);
   if(!n){toast('笔记不存在');return;}
@@ -1379,6 +1551,23 @@ function sendChat(){
   input.value='';
   renderAIChat();
   saveData();
+  // 本地 LLM 模式（用户配置了 API Key）
+  if(data.settings.apiKey&&data.settings.apiKey.trim()){
+    const cm=document.getElementById('chatMessages');
+    if(cm){cm.innerHTML+='<div class="chat-msg ai"><div class="bubble">⏳ 正在思考（LLM）...</div></div>';cm.scrollTop=cm.scrollHeight;}
+    (async()=>{
+      try{
+        const history=data.chatMessages.slice(-11,-1).slice(-10).map(m=>({role:m.role,content:m.content}));
+        const sys={role:'system',content:'你是国安学术工作台的AI学术助手，服务国家安全学研究生。回答要求：①结合总体国家安全观与学科规范②建议具体可操作③引用规范时注明文献名④中文回答，简洁有学术感。'};
+        const reply=await callLLM([sys].concat(history).concat([{role:'user',content:q}]),30000);
+        data.chatMessages.push({role:'ai',content:reply,time:fmtDate(new Date())});
+      }catch(e){
+        data.chatMessages.push({role:'ai',content:'⚠️ API连接失败：'+(e.message||e)+'。已回退本地规则回复：'+generateAIReply(q),time:fmtDate(new Date())});
+      }
+      saveData();renderAIChat();
+    })();
+    return;
+  }
   // 优先调用后端真实AI API
   if(apiMode&&token){
     const cm=document.getElementById('chatMessages');
@@ -1397,7 +1586,6 @@ function sendChat(){
       saveData();renderAIChat();
     })();
   }else{
-    // 本地模式：模拟回复
     setTimeout(()=>{
       data.chatMessages.push({role:'ai',content:generateAIReply(q),time:fmtDate(new Date())});
       saveData();renderAIChat();
@@ -1411,6 +1599,74 @@ function generateAIReply(q){
   if(q.includes('考博')||q.includes('导师'))return '考博信息：可在「考博信息」模块查看各院校导师数据库，包含学校-学院-导师-研究方向-代表文献等完整信息。建议提前联系意向导师，附上你的研究计划和代表性成果。';
   return '收到你的问题："'+q+'"。作为国安学术助手，我可以帮你：①选题评测与建议②文献检索与管理③论文写作指导④考博导师信息查询⑤研究笔记整理。请在左侧导航中选择对应模块，或继续提问。';
 }
+
+
+// ===== 回收站（软删除）=====
+function softDelete(arr,id){
+  const item=arr.find(x=>x.id===id);
+  if(item){item.deleted=true;item.deletedAt=new Date().toISOString();}
+}
+function restoreItem(arr,id){
+  const item=arr.find(x=>x.id===id);
+  if(item){delete item.deleted;delete item.deletedAt;}
+}
+function hardDelete(arr,id){
+  const i=arr.findIndex(x=>x.id===id);
+  if(i>=0)arr.splice(i,1);
+}
+function allDeleted(){
+  return [
+    {module:'refs',label:'文献',arr:data.refs,titleF:r=>r.title||r.file||'未命名'},
+    {module:'materials',label:'素材',arr:data.materials,titleF:m=>m.content||''},
+    {module:'topics',label:'选题',arr:data.topics,titleF:t=>t.title||''},
+    {module:'articles',label:'好文剖析',arr:data.articles,titleF:a=>a.title||''},
+    {module:'notes',label:'笔记',arr:data.notes,titleF:n=>n.title||''},
+    {module:'schedule',label:'日程',arr:data.schedule,titleF:s=>s.title||''},
+    {module:'paperTasks',label:'待办',arr:data.paperTasks,titleF:t=>t.title||''}
+  ];
+}
+function autoPurge(){
+  const now=Date.now();
+  const DAY=86400000*30;
+  allDeleted().forEach(({arr})=>{
+    // 物理删除超过30天的
+    for(let i=arr.length-1;i>=0;i--){
+      const it=arr[i];
+      if(it.deleted&&it.deletedAt){
+        if(now-new Date(it.deletedAt).getTime()>DAY)arr.splice(i,1);
+      }
+    }
+  });
+  // 总量超50条物理删除最老的
+  let all=[];
+  allDeleted().forEach(({arr})=>arr.forEach(x=>{if(x.deleted)all.push(x);}));
+  all.sort((a,b)=>(a.deletedAt||'').localeCompare(b.deletedAt||''));
+  while(all.length>50){
+    const oldest=all.shift();
+    allDeleted().forEach(({arr})=>{
+      const i=arr.findIndex(x=>x.id===oldest.id);
+      if(i>=0)arr.splice(i,1);
+    });
+  }
+}
+function renderRecycleBin(){
+  autoPurge();
+  const groups=allDeleted().map(g=>{
+    const items=g.arr.filter(x=>x.deleted).map(x=>({id:x.id,title:g.titleF(x),at:x.deletedAt||''}));
+    if(!items.length)return '';
+    return '<div class="card" style="margin-bottom:12px;"><div class="card-title"><span class="title-icon">🗂</span>'+g.label+' <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">'+items.length+' 条</span></div>'+
+      items.map(it=>'<div class="list-item"><div class="item-text"><strong>'+esc(it.title.substring(0,80))+'</strong><div class="item-meta">删除于：'+esc(it.at)+'</div></div>'+
+      '<div style="display:flex;gap:6px;"><button class="add-btn ghost" style="padding:4px 10px;font-size:.75rem;" onclick="restoreFromBin(\''+g.module+'\',\''+it.id+'\')">还原</button>'+
+      '<button class="del-btn" style="padding:4px 10px;font-size:.75rem;" onclick="hardDeleteFromBin(\''+g.module+'\',\''+it.id+'\')">彻底删除</button></div></div>').join('')+'</div>';
+  }).join('');
+  document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>🗑 回收站</h1><p>已删除记录 · 还原后回到原模块 · 保留30天或50条</p></div>'+
+    '<div style="display:flex;gap:10px;margin-bottom:16px;"><button class="add-btn ghost" onclick="restoreAllBin()">♻️ 全部还原</button><button class="del-btn" onclick="emptyBin()">🗑 清空回收站</button></div>'+
+    (groups||'<div class="empty-state">📭 回收站为空</div>');
+}
+function restoreFromBin(mod,id){restoreItem(data[mod],id);saveData();renderRecycleBin();toast('已还原');}
+function hardDeleteFromBin(mod,id){hardDelete(data[mod],id);saveData();renderRecycleBin();toast('已彻底删除');}
+function restoreAllBin(){allDeleted().forEach(({arr})=>arr.forEach(x=>{if(x.deleted){delete x.deleted;delete x.deletedAt;}}));saveData();renderRecycleBin();toast('全部还原');}
+function emptyBin(){if(!confirm('确定清空回收站？此操作不可恢复。'))return;allDeleted().forEach(({arr})=>{for(let i=arr.length-1;i>=0;i--){if(arr[i].deleted)arr.splice(i,1);}});saveData();renderRecycleBin();toast('回收站已清空');}
 
 // ===== 设置（含数据导入导出、周报生成）=====
 function renderSettings(){
