@@ -25,15 +25,40 @@ const DIMENSIONS=['选题创新性','理论深度','现实意义','方法可行�
 
 const TABLES=['projects','literature','topics','articles','materials','notes','schedule_events','paper_tasks','user_settings','chat_messages'];
 
+// ===== 国学名言库 =====
+const QUOTES=[
+{text:'安而不忘危，存而不忘亡，治而不忘乱。',source:'《周易》'},
+{text:'兵者，国之大事，死生之地，存亡之道，不可不察也。',source:'《孙子兵法》'},
+{text:'居安思危，思则有备，有备无患。',source:'《左传》'},
+{text:'国家安全是民族复兴的根基，社会稳定是国家强盛的前提。',source:'党的二十大报告'},
+{text:'于安思危，于治忧乱。',source:'《道德经》'},
+{text:'明者防祸于未萌，智者图患于将来。',source:'《三国志》'},
+{text:'路漫漫其修远兮，吾将上下而求索。',source:'屈原《离骚》'},
+{text:'千淘万漉虽辛苦，吹尽狂沙始到金。',source:'刘禹锡《浪淘沙》'},
+{text:'博观而约取，厚积而薄发。',source:'苏轼《稼说送张琥》'},
+{text:'天行健，君子以自强不息。',source:'《周易》'},
+{text:'为天地立心，为生民立命，为往圣继绝学，为万世开太平。',source:'张载《横渠四句》'},
+{text:'苟利国家生死以，岂因祸福避趋之。',source:'林则徐《赴戍登程口占示家人》'}
+];
+
+// ===== 自动剖析：关键词库 =====
+const THEORY_KEYWORDS=['总体国家安全观','安全化理论','建构主义','现实主义','自由主义','治理理论','协同治理','风险社会','韧性治理','制度主义','博弈论','复杂系统','路径依赖','政策网络','多中心治理','整体性治理','新公共管理','网络治理','危机管理','安全共同体'];
+const POLICY_PATTERNS=[/《[^》]{2,30}法》/g,/《[^》]{2,30}条例》/g,/《[^》]{2,30}意见》/g,/《[^》]{2,30}规划》/g,/《[^》]{2,30}纲要》/g,/《[^》]{2,30}决定》/g,/《[^》]{2,30}方案》/g,/二十大报告/g,/十九届/g,/二十届/g,/中央经济工作会议/g];
+const DATA_PATTERNS=[/国家统计局/g,/年鉴/g,/数据库/g,/问卷调查/g,/深度访谈/g,/案例分析/g,/面板数据/g,/截面数据/g,/CGSS/g,/CFPS/g,/World Bank/g,/IMF/g,/WDI/g];
+
 // ===== 状态 =====
 let currentPage='dashboard';
 let currentProjectId=null;
-let data={projects:[],topics:[],refs:[],articles:[],materials:[],notes:[],schedule:[],paperTasks:[],settings:{theme:'A',autoRotate:false,rotateDays:7,email:'',accessKey:'guoan2026'},chatMessages:[],privacyAccepted:false};
+let data={projects:[],topics:[],refs:[],articles:[],materials:[],notes:[],schedule:[],paperTasks:[],topicCards:[],settings:{theme:'A',autoRotate:false,rotateDays:7,email:'',accessKey:'guoan2026'},chatMessages:[],privacyAccepted:false};
 let expandedSchools={};
 let topicTab='topics';
 let litSearch='';
 let expandedTopic=null;
 let radarChart=null;
+let clockTimer=null;
+let currentQuoteIdx=Math.floor(Math.random()*QUOTES.length);
+let dashboardTab='overview';
+let expandedTopicCard=null;
 
 // ===== 工具函数 =====
 function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,9);}
@@ -83,6 +108,10 @@ function loadData(){
   try{
     const raw=localStorage.getItem(STORAGE_KEY);
     if(raw){const parsed=JSON.parse(raw);data={...data,...parsed,settings:{...data.settings,...(parsed.settings||{})}};}
+    // 兼容老数据：新增字段兜底
+    if(!Array.isArray(data.topicCards))data.topicCards=[];
+    if(!Array.isArray(data.materials))data.materials=[];
+    if(!Array.isArray(data.paperTasks))data.paperTasks=[];
   }catch(e){console.warn('load failed',e);}
 }
 
@@ -183,6 +212,55 @@ function render(){
 }
 
 // ===== 论文工作台 Dashboard =====
+function getGreeting(){const h=new Date().getHours();if(h<6)return'夜深了';if(h<11)return'早上好';if(h<13)return'中午好';if(h<18)return'下午好';return'晚上好';}
+const WEEK_CN=['周日','周一','周二','周三','周四','周五','周六'];
+function pad2(n){return String(n).padStart(2,'0');}
+function tickClock(){
+  const el=document.getElementById('liveClock');
+  if(!el){if(clockTimer){clearInterval(clockTimer);clockTimer=null;}return;}
+  const d=new Date();
+  el.textContent=d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+' '+WEEK_CN[d.getDay()]+' '+pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds());
+}
+function startClock(){
+  if(clockTimer)clearInterval(clockTimer);
+  tickClock();
+  clockTimer=setInterval(tickClock,1000);
+}
+async function fetchWeather(){
+  const el=document.getElementById('weatherInfo');
+  if(!el)return;
+  let lat=38.91, lon=121.61, city='大连';
+  try{
+    const ipRes=await fetch('https://ipapi.co/json/');
+    if(ipRes.ok){
+      const ipData=await ipRes.json();
+      lat=ipData.latitude||lat; lon=ipData.longitude||lon; city=ipData.city||city;
+    }
+  }catch(e){/* ipapi不可用则用大连坐标 */}
+  try{
+    el.textContent='🌡️ '+city+' ...';
+    const wRes=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m');
+    if(!wRes.ok)throw new Error('weather failed');
+    const wData=await wRes.json();
+    const temp=wData.current&&wData.current.temperature_2m;
+    el.textContent='🌡️ '+city+' '+(temp!=null?temp.toFixed(0)+'°C':'--°C');
+  }catch(e){
+    el.textContent='🌡️ 大连 --°C';
+  }
+}
+function refreshQuote(){
+  let idx=currentQuoteIdx;
+  while(idx===currentQuoteIdx)idx=Math.floor(Math.random()*QUOTES.length);
+  currentQuoteIdx=idx;
+  renderQuote();
+}
+function renderQuote(){
+  const el=document.getElementById('quoteBox');
+  if(!el)return;
+  const q=QUOTES[currentQuoteIdx];
+  el.innerHTML='<div class="quote-text-cn">“'+esc(q.text)+'”</div><div class="quote-source-cn">—— '+esc(q.source)+'</div>';
+}
+
 function renderDashboard(){
   const proj=data.projects.length?data.projects:[];
   const curProj=proj.find(p=>p.id===currentProjectId)||proj[0]||null;
@@ -192,6 +270,21 @@ function renderDashboard(){
   const projArticles=data.articles.filter(a=>a.projectId===currentProjectId||!a.projectId);
   const projNotes=data.notes.filter(n=>n.projectId===currentProjectId||!n.projectId);
   const projTasks=data.paperTasks.filter(t=>t.projectId===currentProjectId||!t.projectId);
+
+  // 问候横幅
+  const banner='<div class="greeting-banner">'
+    +'<div class="greeting-left">'
+    +'<div class="greeting-hi">'+getGreeting()+'，<span class="greeting-name">张一达</span></div>'
+    +'<div class="greeting-datetime"><span id="liveClock" class="clock-digital">--</span> <span id="weatherInfo" class="weather-chip">🌡️ 获取中...</span></div>'
+    +'</div>'
+    +'<div class="greeting-right"><div class="quote-box" id="quoteBox"></div><button class="quote-refresh" onclick="refreshQuote()" title="换一句">🔄 换一句</button></div>'
+    +'</div>';
+
+  // 子标签页
+  const subTabs='<div class="sub-tabs">'
+    +'<button class="sub-tab '+(dashboardTab==='overview'?'active':'')+'" onclick="dashboardTab=\'overview\';renderDashboard()">📊 概览</button>'
+    +'<button class="sub-tab '+(dashboardTab==='todos'?'active':'')+'" onclick="dashboardTab=\'todos\';renderDashboard()">📋 待办清单 <span class="tab-badge">'+projTasks.filter(t=>!t.done).length+'</span></button>'
+    +'</div>';
 
   const statsHtml='<div class="stats-grid">'
     +'<div class="stat-card"><div class="stat-num">'+projTopics.length+'</div><div class="stat-label">选题数</div></div>'
@@ -211,17 +304,32 @@ function renderDashboard(){
 
   const recentTopics=projTopics.slice(0,5).map(t=>'<div class="list-item"><div class="item-text"><strong>'+esc(t.title)+'</strong><div class="item-meta">'+(t.date||'')+' · AI评分 '+calcScore(t)+'/120 '+scoreGrade(calcScore(t))+'</div></div><button class="add-btn ghost" style="padding:4px 10px;font-size:.75rem;" onclick="navigate(\'topic\')">查看</button></div>').join('')||emptyState('📋','暂无选题');
   const recentRefs=projRefs.slice(0,5).map(r=>'<div class="list-item"><div class="item-text"><strong>'+esc(r.title)+'</strong><div class="item-meta">'+esc(r.author||'未知')+' · '+esc(r.source||'')+' '+(r.year||'')+'</div></div></div>').join('')||emptyState('📚','暂无文献');
-  const tasksHtml=projTasks.length?projTasks.map(t=>'<div class="list-item"><div class="item-text"><strong>'+esc(t.title)+'</strong><div class="item-meta">截止：'+(t.deadline||'未设')+' · '+(t.status||'进行中')+'</div></div><button class="add-btn ghost" style="padding:4px 10px;font-size:.75rem;" onclick="toggleTask(\''+t.id+'\')">'+(t.done?'✓ 已完成':'标记完成')+'</button></div>').join(''):emptyState('✅','暂无任务');
+
+  // 待办清单视图
+  const undoneCount=projTasks.filter(t=>!t.done).length;
+  const doneCount=projTasks.length-undoneCount;
+  const todoList=projTasks.length?projTasks.map(t=>'<div class="todo-item '+(t.done?'done':'')+'"><label class="todo-check"><input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleTask(\''+t.id+'\')"><span class="todo-box"></span></label><div class="item-text todo-text"><strong>'+esc(t.title)+'</strong><div class="item-meta">截止：'+(t.deadline||'未设')+' · '+(t.done?'已完成':'进行中')+'</div></div><button class="del-btn" onclick="delTask(\''+t.id+'\')">删除</button></div>').join(''):emptyState('✅','暂无待办事项');
+  const todosHtml=subTabs
+    +'<div class="card"><div class="card-title"><span class="title-icon">📋</span>待办清单 <span class="todo-stat">待办 '+undoneCount+' · 已完成 '+doneCount+'</span></div>'+todoList
+    +'<div style="margin-top:16px;"><div class="form-row"><div><label>任务标题</label><input id="taskTitle" placeholder="如：完成文献综述"></div><div><label>截止日期</label><input id="taskDeadline" type="date"></div></div>'
+    +'<button class="add-btn" onclick="addTask()">+ 添加任务</button></div></div>';
+
+  const overviewHtml=subTabs
+    +projSelect+statsHtml
+    +'<div class="card"><div class="card-title"><span class="title-icon">🔍</span>最近选题</div>'+recentTopics+'</div>'
+    +'<div class="card"><div class="card-title"><span class="title-icon">📝</span>最近文献</div>'+recentRefs+'</div>';
 
   document.getElementById('mainContent').innerHTML=
     '<div class="page-header"><h1>📊 论文工作台</h1><p>多项目管理 · 数据总览 · 任务追踪</p></div>'
-    +projSelect+statsHtml
-    +'<div class="card"><div class="card-title"><span class="title-icon">🔍</span>最近选题</div>'+recentTopics+'</div>'
-    +'<div class="card"><div class="card-title"><span class="title-icon">📝</span>最近文献</div>'+recentRefs+'</div>'
-    +'<div class="card"><div class="card-title"><span class="title-icon">✅</span>论文任务</div>'+tasksHtml
-    +'<div style="margin-top:16px;"><div class="form-row"><div><label>任务标题</label><input id="taskTitle" placeholder="如：完成文献综述"></div><div><label>截止日期</label><input id="taskDeadline" type="date"></div></div>'
-    +'<button class="add-btn" onclick="addTask()">+ 添加任务</button></div></div>';
+    +banner
+    +(dashboardTab==='todos'?todosHtml:overviewHtml);
+
+  startClock();
+  renderQuote();
+  fetchWeather();
 }
+
+function delTask(id){data.paperTasks=data.paperTasks.filter(t=>t.id!==id);saveData();renderDashboard();}
 
 function showAddProject(){
   const name=prompt('请输入项目名称：');
@@ -254,8 +362,65 @@ function toggleTask(id){
 }
 
 // ===== 选题筛选（含论点匹配引文）=====
+let packageResult=null;
+function splitKeywords(title){
+  // 中文2-gram + 英文单词，过滤停用词
+  const stop=new Set(['的','了','和','与','及','在','对','为','以','及','或','等','中','上','下','视域','研究','分析','基于','我国','中国','that','the','of','and','in','to','a','for','on','with']);
+  const kws=[];
+  const cn=String(title||'').replace(/[^\u4e00-\u9fa5A-Za-z]/g,' ');
+  // 英文词
+  cn.split(/\s+/).forEach(w=>{if(/^[A-Za-z]{3,}$/.test(w)&&!stop.has(w.toLowerCase()))kws.push(w.toLowerCase());});
+  // 中文2-gram
+  const cnOnly=String(title||'').replace(/[^\u4e00-\u9fa5]/g,'');
+  for(let i=0;i<cnOnly.length-1;i++){
+    const g=cnOnly.substr(i,2);
+    if(!stop.has(g))kws.push(g);
+  }
+  return [...new Set(kws)];
+}
+function generateMaterialPackage(){
+  const input=document.getElementById('pkgKeyword').value.trim();
+  if(!input){toast('请输入选题关键词');return;}
+  const kws=splitKeywords(input);
+  if(!kws.length){toast('关键词过少');return;}
+  const scored=data.materials.map(m=>{
+    const content=m.content||'';
+    let hit=0;
+    kws.forEach(k=>{if(content.includes(k))hit++;});
+    const sim=jaccard(input,content);
+    return{m:m,score:hit*2+sim*3};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,20).map(x=>x.m);
+  // 按论证顺序分四类
+  const intro=[],theory=[],empirical=[],policy=[];
+  scored.forEach(m=>{
+    const cat=m.category||'';
+    if(cat==='金句观点'||cat==='金句摘录')intro.push(m);
+    else if(cat==='理论框架')theory.push(m);
+    else if(cat==='数据来源'||cat==='案例素材')empirical.push(m);
+    else if(cat==='政策文件')policy.push(m);
+    else intro.push(m);
+  });
+  packageResult={keyword:input,intro:intro,theory:theory,empirical:empirical,policy:policy};
+  renderTopic();
+}
+function exportPackageTxt(){
+  if(!packageResult){toast('请先生成素材包');return;}
+  const p=packageResult;
+  let txt='【选题素材包】'+p.keyword+'\n生成时间：'+fmtDate(new Date())+'\n\n';
+  const secs=[('一、引言素材',p.intro),('二、理论框架',p.theory),('三、实证数据',p.empirical),('四、政策对策',p.policy)];
+  secs.forEach(([title,arr])=>{
+    txt+='\n===== '+title+' =====\n';
+    if(!arr.length){txt+='（暂无）\n';return;}
+    arr.forEach((m,i)=>{txt+=(i+1)+'. ['+(m.category||'')+'] '+(m.content||'')+(m.source?' —— '+m.source:'')+'\n';});
+  });
+  const blob=new Blob(['\ufeff'+txt],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='素材包_'+p.keyword.substring(0,20)+'.txt';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  toast('素材包已导出');
+}
 function renderTopic(){
-  const tabs='<div class="sub-tabs"><button class="sub-tab '+(topicTab==='topics'?'active':'')+'" onclick="topicTab=\'topics\';expandedTopic=null;renderTopic()">我的选题</button><button class="sub-tab '+(topicTab==='match'?'active':'')+'" onclick="topicTab=\'match\';renderTopic()">论点匹配引文</button></div>';
+  const tabs='<div class="sub-tabs"><button class="sub-tab '+(topicTab==='topics'?'active':'')+'" onclick="topicTab=\'topics\';expandedTopic=null;renderTopic()">我的选题</button><button class="sub-tab '+(topicTab==='match'?'active':'')+'" onclick="topicTab=\'match\';renderTopic()">论点匹配引文</button><button class="sub-tab '+(topicTab==='package'?'active':'')+'" onclick="topicTab=\'package\';renderTopic()">📦 选题素材包</button></div>';
   let body='';
   if(topicTab==='topics'){
     const list=data.topics.length?data.topics.map((t,i)=>{
@@ -268,22 +433,35 @@ function renderTopic(){
       +'<div class="form-group"><label>选题标题</label><input id="topicTitle" placeholder="如：总体国家安全观视域下的南海通道安全治理研究"></div>'
       +'<div class="form-group"><label>核心问题</label><textarea id="topicQuestion" placeholder="该选题要回答的核心研究问题"></textarea></div>'
       +'<button class="add-btn" onclick="addTopic()">+ 创建选题并AI评测</button></div>';
+  }else if(topicTab==='package'){
+    const topicOpts=data.topics.map(t=>'<option value="'+esc(t.title)+'">'+esc(t.title)+'</option>').join('');
+    const secHtml=p=>(p&&p.length)?p.map(m=>'<div class="pkg-item"><div class="pkg-content">'+esc(m.content)+'</div><div class="pkg-meta">['+esc(m.category||'')+']'+(m.source?' · 来源：'+esc(m.source):'')+'</div></div>').join(''):'<div class="pkg-empty">暂无匹配素材</div>';
+    let resultHtml='';
+    if(packageResult){
+      resultHtml='<div class="pkg-result"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div style="font-weight:700;color:var(--primary-deep);">📦 「'+esc(packageResult.keyword)+'」素材包</div><button class="add-btn ghost" onclick="exportPackageTxt()">📄 导出为TXT</button></div>'
+        +'<div class="material-package-section"><div class="pkg-sec-title">📖 引言素材（金句/定义）</div>'+secHtml(packageResult.intro)+'</div>'
+        +'<div class="material-package-section"><div class="pkg-sec-title">🧩 理论框架</div>'+secHtml(packageResult.theory)+'</div>'
+        +'<div class="material-package-section"><div class="pkg-sec-title">📊 实证数据</div>'+secHtml(packageResult.empirical)+'</div>'
+        +'<div class="material-package-section"><div class="pkg-sec-title">📜 政策对策</div>'+secHtml(packageResult.policy)+'</div></div>';
+    }
+    body=tabs+'<div class="card"><div class="card-title"><span class="title-icon">📦</span>选题素材包 · 从素材库智能召回</div>'
+      +'<div class="form-group"><label>选题关键词（可下拉选择已有选题，或手动输入）</label><input id="pkgKeyword" list="pkgTopicList" placeholder="如：总体国家安全观 南海通道 治理" value="'+(packageResult?esc(packageResult.keyword):'')+'"><datalist id="pkgTopicList">'+topicOpts+'</datalist></div>'
+      +'<button class="add-btn" onclick="generateMaterialPackage()">🎯 生成素材包</button>'
+      +'<div style="margin-top:12px;font-size:.8rem;color:var(--text-mute);">已收录 '+data.materials.length+' 条素材 · 按"引言→理论→实证→对策"论证顺序自动排序</div>'
+      +'</div>'+resultHtml;
   }else{
-    // 论点匹配引文
     const q=litSearch.trim();
     const cnkiUrl='https://kns.cnki.net/kns8s/defaultresult/index?kw='+encodeURIComponent(q);
     const wanfangUrl='https://s.wanfangdata.com.cn/paper?q='+encodeURIComponent(q);
     const cqvipUrl='https://qikan.cqvip.com/Search/Index?key='+encodeURIComponent(q);
-    // 从内置文献库匹配
     const matched=LITERATURE_DB.filter(l=>!q||l.title.includes(q)||l.keywords.includes(q)||l.authors.includes(q));
     const matchedHtml=matched.length?matched.map(l=>'<div class="lit-card"><div class="lit-title">'+esc(l.title)+'</div><div class="lit-meta">'+esc(l.authors)+' · '+esc(l.journal)+' · '+l.year+'</div><div class="lit-summary">'+esc(l.summary)+'</div><div class="lit-writing"><strong>写作范式：</strong>'+esc(l.writing)+'</div><div style="margin-top:8px;"><a href="'+cnkiUrl+'" target="_blank" class="job-link">🔵 知网检索</a><a href="'+wanfangUrl+'" target="_blank" class="job-link">🟠 万方检索</a><a href="'+cqvipUrl+'" target="_blank" class="job-link">🟢 维普检索</a></div></div>').join(''):'';
-    const localHtml=q?matchedHtml+'<div style="padding:12px 16px;background:var(--bg-soft);border-radius:8px;font-size:.85rem;line-height:1.8;margin-top:12px;"><strong>💡 使用提示：</strong><br>• 输入<strong>论点关键词</strong>（如"总体国家安全观 治理"）检索相关论文<br>• 输入<strong>作者姓名</strong>（如"王义桅"）检索该作者全部论文<br>• 输入<strong>研究方向</strong>（如"海洋安全 通道"）检索领域文献<br>• 点击上方按钮直接跳转对应数据库检索结果页</div>':'<div style="padding:40px 20px;text-align:center;color:var(--text-mute);"><div style="font-size:2.5rem;margin-bottom:12px;">🔍</div><p>输入论点关键词、作者或研究方向</p><p style="font-size:.8rem;margin-top:4px;">点击检索后匹配内置文献库并跳转知网/万方/维普</p></div>';
+    const localHtml=q?matchedHtml+'<div style="padding:12px 16px;background:var(--primary-bg);border-radius:8px;font-size:.85rem;line-height:1.8;margin-top:12px;"><strong>💡 使用提示：</strong><br>• 输入<strong>论点关键词</strong>（如"总体国家安全观 治理"）检索相关论文<br>• 输入<strong>作者姓名</strong>（如"王义桅"）检索该作者全部论文<br>• 输入<strong>研究方向</strong>（如"海洋安全 通道"）检索领域文献<br>• 点击上方按钮直接跳转对应数据库检索结果页</div>':'<div style="padding:40px 20px;text-align:center;color:var(--text-mute);"><div style="font-size:2.5rem;margin-bottom:12px;">🔍</div><p>输入论点关键词、作者或研究方向</p><p style="font-size:.8rem;margin-top:4px;">点击检索后匹配内置文献库并跳转知网/万方/维普</p></div>';
     body=tabs+'<div class="card"><div class="card-title"><span class="title-icon">🔗</span>论点匹配引文 · 直达知网/万方/维普</div><div class="search-box"><input id="litSearchInput" placeholder="输入论点关键词、作者、研究方向..." value="'+esc(litSearch)+'" onkeydown="if(event.key===\'Enter\'){litSearch=this.value;renderTopic();}"><button class="add-btn" style="margin-left:8px;white-space:nowrap;" onclick="litSearch=document.getElementById(\'litSearchInput\').value;renderTopic()">🔍 检索</button></div>'
       +(q?'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px;"><a href="'+cnkiUrl+'" target="_blank" style="display:block;padding:16px;background:linear-gradient(135deg,var(--primary),var(--primary-deep));color:#fff;border-radius:10px;text-align:center;text-decoration:none;font-weight:700;"><div style="font-size:1.2rem;">🔵</div><div style="margin-top:4px;">中国知网 CNKI</div><div style="font-size:.75rem;font-weight:400;opacity:.8;margin-top:2px;">最全面的中文学术数据库</div></a><a href="'+wanfangUrl+'" target="_blank" style="display:block;padding:16px;background:linear-gradient(135deg,#C96E3F,#AA3724);color:#fff;border-radius:10px;text-align:center;text-decoration:none;font-weight:700;"><div style="font-size:1.2rem;">🟠</div><div style="margin-top:4px;">万方数据</div><div style="font-size:.75rem;font-weight:400;opacity:.8;margin-top:2px;">期刊/学位/会议论文</div></a><a href="'+cqvipUrl+'" target="_blank" style="display:block;padding:16px;background:linear-gradient(135deg,#2D8672,#1B5853);color:#fff;border-radius:10px;text-align:center;text-decoration:none;font-weight:700;"><div style="font-size:1.2rem;">🟢</div><div style="margin-top:4px;">维普资讯</div><div style="font-size:.75rem;font-weight:400;opacity:.8;margin-top:2px;">期刊文献检索</div></a></div>':'')
       +localHtml+'</div>';
   }
-  document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>🔍 选题筛选</h1><p>AI自动12维度评测报告 + 论点匹配直达知网/万方/维普</p></div>'+body;
-  // 渲染雷达图
+  document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>🔍 选题筛选</h1><p>AI自动12维度评测报告 + 论点匹配直达知网/万方/维普 + 选题素材包</p></div>'+body;
   if(topicTab==='topics'&&expandedTopic!==null){
     const t=data.topics[expandedTopic];
     if(t&&t.dims){
@@ -300,7 +478,6 @@ function renderTopic(){
     }
   }
 }
-
 function addTopic(){
   const title=document.getElementById('topicTitle').value.trim();
   const question=document.getElementById('topicQuestion').value.trim();
@@ -376,7 +553,7 @@ function renderPhd(){
   const totalSup=PHD_DB.reduce((s,sch)=>s+sch.supervisors.length,0);
   const schoolsHtml=filtered.length?filtered.map((sch,idx)=>{
     const isOpen=expandedSchools[idx]!==false;
-    const supList=sch.supervisors.length?sch.supervisors.map(sup=>'<div class="sup-item"><span class="sup-name">'+esc(sup.name)+'</span><span class="sup-title">'+esc(sup.title||'')+'</span><div class="sup-dir">'+esc(sup.direction||'')+'</div>'+(sup.email?'<div class="sup-email">📧 '+esc(sup.email)+'</div>':'')+(sup.repWorks&&sup.repWorks.length?'<div class="sup-works">'+sup.repWorks.map(rw=>'<div class="sup-work-item">📄 '+esc(rw.title)+(rw.journal?' · '+esc(rw.journal):'')+(rw.year?' · '+rw.year:'')+'</div>').join('')+'</div>':'')+(sup.url?'<div style="margin-top:4px;"><a href="'+sup.url+'" target="_blank" class="job-link">导师主页 ↗</a></div>':'')+'</div>').join(''):'<div style="padding:10px 0;color:var(--text-mute);font-size:.85rem;">该学院导师信息待补充</div>';
+    const supList=sch.supervisors.length?sch.supervisors.map(sup=>'<div class="sup-item"><span class="sup-name">'+esc(sup.name)+'</span><span class="sup-title">'+esc(sup.title||'')+'</span><div class="sup-dir">'+esc(sup.direction||'')+'</div>'+(sup.email?'<div class="sup-email">📧 '+esc(sup.email)+'</div>':'')+(sup.repWorks&&sup.repWorks.length?'<div class="sup-works">'+sup.repWorks.map(rw=>'<div class="sup-work-item">📄 '+esc(rw.title)+(rw.cnki?' <a href="'+rw.cnki+'" target="_blank" class="job-link">🔗知网检索</a>':'')+'</div>').join('')+'</div>':'')+(sup.url?'<div style="margin-top:4px;"><a href="'+sup.url+'" target="_blank" class="job-link">导师主页 ↗</a></div>':'')+'</div>').join(''):'<div style="padding:10px 0;color:var(--text-mute);font-size:.85rem;">该学院导师信息待补充</div>';
     return '<div class="school-block"><div class="school-header" onclick="toggleSchool('+idx+')"><div><strong>'+esc(sch.school)+'</strong><div class="school-meta">'+esc(sch.college)+' · '+esc(sch.degree)+'</div></div><span style="font-size:.8rem;color:var(--text-mute);">'+(isOpen?'收起 ▲':'展开 ▼')+' ('+sch.supervisors.length+'位导师)</span></div><div class="school-body '+(isOpen?'open':'')+'"><div style="margin-bottom:10px;font-size:.82rem;color:var(--text-soft);"><strong>培养方向：</strong>'+esc(sch.direction)+'</div>'+supList+(sch.url?'<div style="margin-top:10px;"><a href="'+sch.url+'" target="_blank" class="job-link">🏛 学院官网 ↗</a></div>':'')+'</div></div>';
   }).join(''):emptyState('🎓','未找到匹配的院校/导师');
   document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>🎓 考博信息</h1><p>共 '+PHD_DB.length+' 所院校 · '+totalSup+' 位博士生导师 · 学校-学院-专业-方向-导师-代表文献一一对应</p></div><div class="card"><div class="search-box"><input placeholder="搜索学校、学院、导师姓名或研究方向..." value="'+esc(window._phdSearch||'')+'" oninput="window._phdSearch=this.value;renderPhd();"></div>'+schoolsHtml+'</div>';
@@ -384,19 +561,17 @@ function renderPhd(){
 function toggleSchool(idx){expandedSchools[idx]=expandedSchools[idx]===false?true:false;renderPhd();}
 
 // ===== 就业导航 =====
-const JOBS=[
-{title:'国家安全部公务员',org:'国家安全部',type:'国考',url:'http://www.scs.gov.cn/',desc:'国家安全机关人民警察招录，需通过国考+专业测试'},
-{title:'中央军委联合参谋部',org:'中央军委',type:'军队文职',url:'http://81rc.81.cn/',desc:'军队文职人员招考，战略研究、情报分析岗位'},
-{title:'中国现代国际关系研究院(CICIR)',org:'CICIR',type:'事业单位',url:'https://www.cicir.ac.cn/',desc:'顶级国家安全智库，研究员/助理研究员岗位'},
-{title:'中国国际问题研究院(CIIS)',org:'外交部',type:'事业单位',url:'https://www.ciis.org.cn/',desc:'外交部直属智库，国际问题研究岗位'},
-{title:'各省国家安全厅',org:'地方国安系统',type:'省考',url:'',desc:'各省市国家安全机关招录'},
-{title:'高校国家安全学院教师',org:'各高校',type:'高校教职',url:'',desc:'国家安全学一级学科高校教师岗位'},
-{title:'央企安全研究岗',org:'央企研究院',type:'企业',url:'',desc:'能源、金融、科技类央企安全研究部门'},
-{title:'智库研究员',org:'各类智库',type:'事业单位/企业',url:'',desc:'盘古智库、人大重阳、清华战略与安全研究中心等'}
-];
 function renderJob(){
-  const list=JOBS.map(j=>'<div class="list-item"><div class="item-text"><strong>'+esc(j.title)+'</strong><div class="item-meta">'+esc(j.org)+' · <span class="chip">'+esc(j.type)+'</span></div><div style="margin-top:4px;font-size:.82rem;color:var(--text-soft);">'+esc(j.desc)+'</div></div>'+(j.url?'<a href="'+j.url+'" target="_blank" class="job-link">官网 ↗</a>':'')+'</div>').join('');
-  document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>💼 就业导航</h1><p>国家安全学专业就业方向 · 公务员 · 智库 · 高校 · 央企</p></div><div class="card"><div class="card-title"><span class="title-icon">🎯</span>主要就业方向</div>'+list+'</div>';
+  const feed=window.JOB_FEED||{};
+  const cats=Object.keys(feed);
+  const catIcons={'高校教职':'🎓','公务员':'🏛️','事业单位科研院所':'🔬','国央企':'🏢','警察军官':'🎖️'};
+  const total=cats.reduce((s,c)=>s+feed[c].length,0);
+  const catsHtml=cats.map(cat=>{
+    const jobs=feed[cat]||[];
+    const listHtml=jobs.map(j=>'<div class="job-item"><div class="job-item-head"><strong>'+esc(j.title)+'</strong>'+(j.url?'<a href="'+j.url+'" target="_blank" class="job-link">查看详情 ↗</a>':'')+'</div><div class="item-meta">'+esc(j.org)+' · <span class="chip">'+esc(j.type||cat)+'</span> · ⏰ 截止：'+esc(j.deadline||'待定')+'</div><div class="job-desc">'+esc(j.desc||'')+'</div></div>').join('');
+    return '<div class="job-category-card"><div class="job-cat-title">'+(catIcons[cat]||'📌')+' '+esc(cat)+'<span class="chip accent" style="margin-left:8px;">'+jobs.length+' 个岗位</span></div>'+listHtml+'</div>';
+  }).join('');
+  document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>💼 就业导航</h1><p>五分区岗位推送 · 高校教职 / 公务员 / 科研院所 / 国央企 / 警察军官 · 共 '+total+' 个岗位</p></div><div class="job-categories-wrap">'+catsHtml+'</div>';
 }
 
 // ===== 文献管理（含PDF拖拽上传）=====
@@ -408,47 +583,86 @@ function renderRef(){
     +'<div class="card"><div class="card-title"><span class="title-icon">➕</span>手动录入文献</div><div class="form-row"><div><label>文献标题</label><input id="refTitle" placeholder="论文完整标题"></div><div><label>作者</label><input id="refAuthor" placeholder="作者姓名"></div></div><div class="form-row"><div><label>期刊/来源</label><input id="refSource" placeholder="如：国际安全研究"></div><div><label>发表年份</label><input id="refYear" type="number" placeholder="2025"></div></div><div class="form-group"><label>关键词（逗号分隔）</label><input id="refTags" placeholder="如：总体国家安全观,非传统安全"></div><div class="form-group"><label>备注</label><textarea id="refNote" placeholder="阅读心得、核心观点等"></textarea></div><button class="add-btn" onclick="addRef()">+ 保存文献</button></div>';
 }
 function handleDrop(e){e.preventDefault();document.getElementById('dropZone').classList.remove('dragover');processFiles(e.dataTransfer.files);}
+
+// ===== 自动文献剖析引擎 =====
+function autoAnalyzeText(text,title){
+  if(!text||text.length<50)return null;
+  const sentences=text.split(/[。！？\n]/).filter(s=>s.trim().length>=20&&s.trim().length<=150);
+  const judgeWords=['认为','指出','表明','说明','意味着','体现','反映','揭示','论证','提出','构建','强调','关键','核心','重要','本质','必然','趋势'];
+  const quotes=sentences.filter(s=>judgeWords.some(w=>s.includes(w))).slice(0,5).map(s=>s.trim());
+  const theories=THEORY_KEYWORDS.filter(t=>text.includes(t)).slice(0,5);
+  const theoryFramework=theories.length?theories.map(t=>({name:t,content:'文中运用了'+t+'作为分析框架，可迁移至同类安全议题研究。'})):[{name:'待补充理论框架',content:'文本中未明确识别出核心理论框架，建议精读后手动补充。'}];
+  const policies=[];
+  POLICY_PATTERNS.forEach(p=>{const m=text.match(p);if(m)m.forEach(x=>{if(!policies.includes(x)&&x.length<40)policies.push(x);});});
+  const policyDocs=policies.length?policies.slice(0,5).map(p=>({name:p,content:'文中引用了'+p+'，可作为政策依据素材。'})):[{name:'待补充政策文件',content:'文本中未识别出明确的政策文件引用。'}];
+  const dataSources=[];
+  DATA_PATTERNS.forEach(p=>{const m=text.match(p);if(m)m.forEach(x=>{if(!dataSources.includes(x))dataSources.push(x);});});
+  const dataSrc=dataSources.length?dataSources.slice(0,5).map(d=>({name:d,type:'数据来源',content:'文中使用了'+d+'作为数据支撑。'})):[{name:'待补充数据来源',type:'数据来源',content:'文本中未识别出明确的数据来源。'}];
+  const flowSteps=[
+    {step:'问题提出',detail:'从'+(title||'该议题')+'的现实背景切入，识别研究问题与研究缺口。'},
+    {step:'理论资源梳理',detail:'梳理'+(theories.length?theories.slice(0,2).join('、'):'相关理论')+'等理论资源，确立分析视角。'},
+    {step:'核心框架构建',detail:'构建本文的核心分析框架，明确核心概念与变量关系。'},
+    {step:'实证/案例分析',detail:'运用'+(dataSources.length?dataSources.slice(0,2).join('、'):'相关数据或案例')+'进行实证分析。'},
+    {step:'机制阐释',detail:'阐释核心变量之间的作用机制与因果逻辑。'},
+    {step:'结论与政策建议',detail:'总结研究发现，提出针对性政策建议。'}
+  ];
+  return{quotes:quotes,theoryFramework:theoryFramework,policyDocs:policyDocs,dataSources:dataSrc,detailedFlow:flowSteps};
+}
+function commitAnalysis(refEntry, analysis){
+  if(!analysis)return{q:0,t:0,p:0,d:0};
+  const src=refEntry.title||'上传文献';
+  let q=0,t=0,p=0,d=0;
+  analysis.quotes.forEach(s=>{data.materials.unshift({id:uid(),category:'金句观点',content:s,source:src,date:fmtDate(new Date())});q++;});
+  analysis.theoryFramework.forEach(o=>{if(o.name&&!o.name.startsWith('待补充')){data.materials.unshift({id:uid(),category:'理论框架',content:o.name+'：'+o.content,source:src,date:fmtDate(new Date())});t++;}});
+  analysis.policyDocs.forEach(o=>{if(o.name&&!o.name.startsWith('待补充')){data.materials.unshift({id:uid(),category:'政策文件',content:o.name+'：'+o.content,source:src,date:fmtDate(new Date())});p++;}});
+  analysis.dataSources.forEach(o=>{if(o.name&&!o.name.startsWith('待补充')){data.materials.unshift({id:uid(),category:'数据来源',content:o.name+'：'+o.content,source:src,date:fmtDate(new Date())});d++;}});
+  data.articles.unshift({id:uid(),title:refEntry.title||'自动剖析文献',author:refEntry.author||'',journal:refEntry.source||'',year:refEntry.year||'',coreArg:'自动剖析提取金句'+q+'条、理论'+t+'个、政策'+p+'个、数据'+d+'个。',date:fmtDate(new Date()),projectId:currentProjectId,autoAnalyzed:true,quoteCount:q,theoryCount:t,policyCount:p,dataCount:d});
+  return{q:q,t:t,p:p,d:d};
+}
 function processFiles(files){
-  let count=0;
   for(const f of files){
-    const isPdf=f.name.toLowerCase().endsWith('.pdf');
-    if(isPdf&&window.pdfjsLib){extractPdfMetadata(f);}
+    const lower=f.name.toLowerCase();
+    if(lower.endsWith('.pdf')&&window.pdfjsLib){extractPdfFullText(f);}
+    else if(lower.endsWith('.docx')){extractDocxText(f);}
+    else if(lower.endsWith('.txt')){extractTxtText(f);}
     else{
       const name=f.name.replace(/\.(pdf|caj|doc|docx|txt)$/i,'');
       data.refs.unshift({id:uid(),title:name,author:'',source:'文件上传',year:new Date().getFullYear().toString(),note:'文件大小：'+(f.size/1024).toFixed(1)+'KB · 类型：'+f.type,tags:'',read:false,file:f.name,uploadDate:fmtDate(new Date())});
-      count++;
+      saveData();renderRef();toast('已导入：'+name);
     }
   }
-  if(count>0){saveData();renderRef();toast('已导入 '+count+' 篇文献');}
 }
-function extractPdfMetadata(file){
+function extractPdfFullText(file){
   const reader=new FileReader();
   reader.onload=function(e){
     try{
       const typedarray=new Uint8Array(e.target.result);
       pdfjsLib.getDocument(typedarray).promise.then(function(pdf){
-        pdf.getMetadata().then(function(meta){
+        pdf.getMetadata().then(async function(meta){
           let title='',author='',source='',year='';
           if(meta.info){title=meta.info.Title||'';author=meta.info.Author||'';if(meta.info.CreationDate){const m=meta.info.CreationDate.match(/D:(\d{4})/);if(m)year=m[1];}}
-          pdf.getPage(1).then(function(page){
-            page.getTextContent().then(function(textContent){
-              const text=textContent.items.map(function(item){return item.str;}).join(' ');
-              if(!title){const lines=text.split(/\n|\.\s+/).filter(function(l){return l.trim().length>5&&l.trim().length<100;});if(lines.length>0)title=lines[0].trim();}
-              const journalMatch=text.match(/(《[^》]+》|[A-Z][a-z]+ (?:Journal|Review|Studies|Quarterly)[^,\s]*)/);
-              if(journalMatch)source=journalMatch[1];
-              if(!year){const yearMatch=text.match(/(19|20)\d{2}/);if(yearMatch)year=yearMatch[0];}
-              if(!author){const authorMatch=text.match(/([\u4e00-\u9fa5]{2,4}(?:、|,|，)[\u4e00-\u9fa5]{2,4})/);if(authorMatch)author=authorMatch[1];}
-              const finalTitle=title||file.name.replace(/\.pdf$/i,'');
-              data.refs.unshift({id:uid(),title:finalTitle.substring(0,150),author:author.substring(0,100),source:source||'PDF上传',year:year||new Date().getFullYear().toString(),note:'自动提取元数据 · 文件大小：'+(file.size/1024).toFixed(1)+'KB · 共'+pdf.numPages+'页',tags:'',read:false,file:file.name,uploadDate:fmtDate(new Date()),extracted:true});
-              saveData();renderRef();toast('已自动提取：'+finalTitle.substring(0,20)+'...');
-            });
-          });
+          let fullText='';
+          try{for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const tc=await page.getTextContent();fullText+=tc.items.map(function(item){return item.str;}).join(' ')+'\n';}}catch(pe){console.warn('page text err',pe);}
+          let firstPageText='';
+          try{const p1=await pdf.getPage(1);const tc1=await p1.getTextContent();firstPageText=tc1.items.map(function(it){return it.str;}).join(' ');}catch(_){}
+          if(!title){const lines=firstPageText.split(/\n|\.\s+/).filter(function(l){return l.trim().length>5&&l.trim().length<100;});if(lines.length>0)title=lines[0].trim();}
+          const journalMatch=firstPageText.match(/(《[^》]+》|[A-Z][a-z]+ (?:Journal|Review|Studies|Quarterly)[^,\s]*)/);
+          if(journalMatch)source=journalMatch[1];
+          if(!year){const yearMatch=firstPageText.match(/(19|20)\d{2}/);if(yearMatch)year=yearMatch[0];}
+          if(!author){const authorMatch=firstPageText.match(/([\u4e00-\u9fa5]{2,4}(?:、|,|，)[\u4e00-\u9fa5]{2,4})/);if(authorMatch)author=authorMatch[1];}
+          const finalTitle=title||file.name.replace(/\.pdf$/i,'');
+          const refEntry={id:uid(),title:finalTitle.substring(0,150),author:(author||'').substring(0,100),source:source||'PDF上传',year:year||new Date().getFullYear().toString(),note:'自动提取元数据+全文剖析 · 文件大小：'+(file.size/1024).toFixed(1)+'KB · 共'+pdf.numPages+'页',tags:'',read:false,file:file.name,uploadDate:fmtDate(new Date()),extracted:true};
+          data.refs.unshift(refEntry);
+          const analysis=autoAnalyzeText(fullText,finalTitle);
+          const r=commitAnalysis(refEntry,analysis);
+          saveData();renderRef();
+          toast('已自动剖析：提取金句'+r.q+'条、理论'+r.t+'个、政策'+r.p+'个、数据'+r.d+'个');
         });
       }).catch(function(err){
         console.warn('PDF parse error:',err);
         const name=file.name.replace(/\.pdf$/i,'');
         data.refs.unshift({id:uid(),title:name,author:'',source:'PDF上传',year:new Date().getFullYear().toString(),note:'文件大小：'+(file.size/1024).toFixed(1)+'KB · 元数据提取失败',tags:'',read:false,file:file.name,uploadDate:fmtDate(new Date())});
-        saveData();renderRef();toast('已导入（元数据提取失败）');
+        saveData();renderRef();toast('已导入（PDF解析失败）');
       });
     }catch(err){
       const name=file.name.replace(/\.pdf$/i,'');
@@ -457,6 +671,44 @@ function extractPdfMetadata(file){
     }
   };
   reader.readAsArrayBuffer(file);
+}
+function extractDocxText(file){
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const name=file.name.replace(/\.docx?$/i,'');
+    if(!window.mammoth){
+      data.refs.unshift({id:uid(),title:name,author:'',source:'DOCX上传',year:new Date().getFullYear().toString(),note:'mammoth未加载，未剖析',tags:'',read:false,file:file.name,uploadDate:fmtDate(new Date())});
+      saveData();renderRef();toast('已导入（mammoth未加载）');return;
+    }
+    mammoth.extractRawText({arrayBuffer:e.target.result}).then(function(result){
+      const text=result.value||'';
+      const refEntry={id:uid(),title:name,author:'',source:'DOCX上传',year:new Date().getFullYear().toString(),note:'mammoth提取全文 · 字数'+text.length,tags:'',read:false,file:file.name,uploadDate:fmtDate(new Date()),extracted:true};
+      data.refs.unshift(refEntry);
+      const analysis=autoAnalyzeText(text,name);
+      const r=commitAnalysis(refEntry,analysis);
+      saveData();renderRef();
+      toast('已自动剖析：提取金句'+r.q+'条、理论'+r.t+'个、政策'+r.p+'个、数据'+r.d+'个');
+    }).catch(function(err){
+      console.warn('docx err',err);
+      data.refs.unshift({id:uid(),title:name,author:'',source:'DOCX上传',year:new Date().getFullYear().toString(),note:'DOCX解析失败',tags:'',read:false,file:file.name,uploadDate:fmtDate(new Date())});
+      saveData();renderRef();toast('DOCX解析失败');
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+function extractTxtText(file){
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const text=String(e.target.result||'');
+    const name=file.name.replace(/\.txt$/i,'');
+    const refEntry={id:uid(),title:name,author:'',source:'TXT上传',year:new Date().getFullYear().toString(),note:'TXT全文 · 字数'+text.length,tags:'',read:false,file:file.name,uploadDate:fmtDate(new Date()),extracted:true};
+    data.refs.unshift(refEntry);
+    const analysis=autoAnalyzeText(text,name);
+    const r=commitAnalysis(refEntry,analysis);
+    saveData();renderRef();
+    toast('已自动剖析：提取金句'+r.q+'条、理论'+r.t+'个、政策'+r.p+'个、数据'+r.d+'个');
+  };
+  reader.readAsText(file,'UTF-8');
 }
 function addRef(){
   const title=document.getElementById('refTitle').value.trim();
@@ -468,15 +720,134 @@ function delRef(id){data.refs=data.refs.filter(r=>r.id!==id);saveData();renderRe
 function toggleRefRead(id){const r=data.refs.find(x=>x.id===id);if(r){r.read=!r.read;saveData();renderRef();}}
 
 // ===== 写作素材 =====
+function bigramSet(s){
+  s=String(s||'').replace(/\s+/g,'');
+  const set=new Set();
+  for(let i=0;i<s.length-1;i++)set.add(s.substr(i,2));
+  return set;
+}
+function jaccard(a,b){
+  const sa=bigramSet(a),sb=bigramSet(b);
+  if(!sa.size||!sb.size)return 0;
+  let inter=0;
+  sa.forEach(x=>{if(sb.has(x))inter++;});
+  return inter/(sa.size+sb.size-inter);
+}
+function dedupMaterials(){
+  if(!data.materials.length){toast('素材库为空');return;}
+  const kept=[];
+  let mergedCount=0;
+  const removed=new Set();
+  for(let i=0;i<data.materials.length;i++){
+    if(removed.has(data.materials[i].id))continue;
+    const cur=data.materials[i];
+    for(let j=i+1;j<data.materials.length;j++){
+      if(removed.has(data.materials[j].id))continue;
+      const o=data.materials[j];
+      // 同分类才合并
+      if((cur.category||'')!==(o.category||''))continue;
+      const sim=jaccard(cur.content,o.content);
+      if(sim>0.5){
+        // 保留较长者
+        let keep=cur,drop=o;
+        if((o.content||'').length>(cur.content||'').length){keep=o;drop=cur;}
+        // 合并来源
+        const srcSet=new Set();
+        String(keep.source||'').split(/[、,，;；]/).filter(Boolean).forEach(x=>srcSet.add(x.trim()));
+        String(drop.source||'').split(/[、,，;；]/).filter(Boolean).forEach(x=>srcSet.add(x.trim()));
+        keep.source=[...srcSet].slice(0,4).join('、');
+        removed.add(drop.id);
+        mergedCount++;
+        if(keep!==cur){cur=keep;data.materials[i]=keep;}
+      }
+    }
+  }
+  if(mergedCount>0){
+    data.materials=data.materials.filter(m=>!removed.has(m.id));
+    saveData();
+    toast('去重完成：合并了 '+mergedCount+' 条重复素材');
+  }else{
+    toast('未发现重复素材');
+  }
+  renderMaterial();
+}
+
+// 自动从素材库凝结专题卡片
+function autoBuildTopicCards(){
+  if(data.materials.length<5)return;
+  // 按 category 分组后再按内容关键词聚簇
+  const groups={};
+  data.materials.forEach(m=>{
+    const cat=m.category||'未分类';
+    if(!groups[cat])groups[cat]=[];
+    groups[cat].push(m);
+  });
+  // 简单聚簇：基于 bigram Jaccard
+  const clusters=[];
+  Object.keys(groups).forEach(cat=>{
+    const arr=groups[cat];
+    arr.forEach(m=>{
+      let placed=null;
+      for(const c of clusters){
+        if(c.cat!==cat)continue;
+        const rep=c.members[0].content;
+        if(jaccard(rep,m.content)>0.25){placed=c;break;}
+      }
+      if(placed){placed.members.push(m);}
+      else{clusters.push({cat:cat,members:[m]});}
+    });
+  });
+  // 仅保留 >=5 条的簇
+  const newCards=[];
+  clusters.forEach(c=>{
+    if(c.members.length<5)return;
+    // 主题名：取最长公共前缀/高频词，简单取成员内容前12字
+    const sample=c.members.slice().sort((a,b)=>b.content.length-a.content.length)[0];
+    let title=(sample.content||'').replace(/[。！？，、；：\s]/g,'').substring(0,16);
+    if(!title)title='未命名专题';
+    const quotes=c.members.filter(m=>m.category==='金句观点'||m.category==='金句摘录').map(m=>m.content);
+    const policies=c.members.filter(m=>m.category==='政策文件').map(m=>m.content);
+    const cases=c.members.filter(m=>m.category==='数据来源'||m.category==='案例素材').map(m=>m.content);
+    const sources=[...new Set(c.members.map(m=>m.source).filter(Boolean))];
+    newCards.push({id:uid(),title:title,definition:sample.content.substring(0,80),quotes:quotes,policies:policies,cases:cases,sources:sources,createdAt:fmtDate(new Date()),materialCount:c.members.length});
+  });
+  if(newCards.length){
+    // 合并：相同主题名的卡片去重
+    const seen={};
+    newCards.forEach(c=>{if(!seen[c.title]||seen[c.title].materialCount<c.materialCount)seen[c.title]=c;});
+    data.topicCards=Object.values(seen);
+    saveData();
+  }
+}
+
 function renderMaterial(){
   const cats=[...new Set(data.materials.map(m=>m.category||'未分类'))];
   const list=data.materials.length?data.materials.map(m=>'<div class="list-item"><div class="item-text"><div class="material-cat">['+esc(m.category||'未分类')+']</div><div style="font-size:.88rem;line-height:1.6;">'+esc(m.content)+'</div><div class="item-meta">'+(m.source?'来源：'+esc(m.source)+' · ':'')+(m.date||'')+'</div></div><button class="del-btn" onclick="delMaterial(\''+m.id+'\')">删除</button></div>').join(''):emptyState('✍️','暂无素材，好文剖析中的金句可一键存入');
-  document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>✍️ 写作素材</h1><p>金句 · 理论框架 · 政策文件 · 数据来源 · 分类管理</p></div>'
+
+  // 智能沉淀：专题卡片
+  const cardsHtml=data.topicCards&&data.topicCards.length?data.topicCards.map((c,idx)=>{
+    const open=expandedTopicCard===idx;
+    const detail=open?('<div class="topic-card-detail">'
+      +(c.definition?'<div class="topic-row"><span class="topic-label">📖 定义</span><div>'+esc(c.definition)+'</div></div>':'')
+      +(c.quotes&&c.quotes.length?'<div class="topic-row"><span class="topic-label">💡 金句</span><ul>'+c.quotes.slice(0,8).map(q=>'<li>'+esc(q)+'</li>').join('')+'</ul></div>':'')
+      +(c.policies&&c.policies.length?'<div class="topic-row"><span class="topic-label">📜 政策</span><ul>'+c.policies.slice(0,8).map(p=>'<li>'+esc(p)+'</li>').join('')+'</ul></div>':'')
+      +(c.cases&&c.cases.length?'<div class="topic-row"><span class="topic-label">📊 数据/案例</span><ul>'+c.cases.slice(0,8).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')
+      +(c.sources&&c.sources.length?'<div class="topic-row"><span class="topic-label">📚 出处</span><div>'+c.sources.map(s=>'<span class="chip">'+esc(s)+'</span>').join(' ')+'</div></div>':'')
+      +'</div>'):'';
+    return '<div class="topic-card"><div class="topic-card-head" onclick="expandedTopicCard='+(open?'null':idx)+';renderMaterial()"><div class="topic-card-title">🧷 '+esc(c.title)+'</div><div style="display:flex;gap:8px;align-items:center;flex-shrink:0;"><span class="chip accent">'+c.materialCount+' 条素材</span><button class="del-btn" onclick="event.stopPropagation();delTopicCard(\''+c.id+'\')">删除</button><span style="font-size:.78rem;color:var(--text-mute);">'+(open?'收起 ▲':'展开 ▼')+'</span></div></div>'+detail+'</div>';
+  }).join(''):'<div class="empty-state" style="padding:20px;"><div class="empty-icon">🃏</div><p style="font-size:.85rem;">攒够5条同主题素材后，将自动凝结为专题卡片</p></div>';
+
+  document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>✍️ 写作素材</h1><p>金句 · 理论框架 · 政策文件 · 数据来源 · 智能沉淀</p></div>'
+    +'<div class="card"><div class="card-title"><span class="title-icon">💧</span>智能沉淀 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">去重合并 · 专题凝结</span></div>'
+    +'<div class="precipitate-bar"><button class="add-btn" onclick="dedupMaterials()">🔀 一键去重合并</button><button class="add-btn ghost" onclick="autoBuildTopicCards();renderMaterial()">🃏 凝结专题卡片</button><span style="font-size:.8rem;color:var(--text-mute);align-self:center;">当前 '+data.materials.length+' 条素材 · 已凝结 '+data.topicCards.length+' 张专题卡</span></div>'
+    +'<div class="topic-cards-wrap">'+cardsHtml+'</div>'
+    +'</div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">📂</span>素材库 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">共 '+data.materials.length+' 条 · '+cats.length+' 个分类</span></div>'+list+'</div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">➕</span>添加素材</div><div class="form-row"><div><label>分类</label><select id="matCat"><option>金句摘录</option><option>理论框架</option><option>政策文件</option><option>数据来源</option><option>案例素材</option><option>其他</option></select></div><div><label>来源</label><input id="matSource" placeholder="如：国际安全研究2025年第4期"></div></div>'
     +'<div class="form-group"><label>素材内容</label><textarea id="matContent" placeholder="金句、理论观点、政策条文、数据等"></textarea></div>'
     +'<button class="add-btn" onclick="addMaterial()">+ 保存素材</button></div>';
 }
+function delTopicCard(id){data.topicCards=data.topicCards.filter(c=>c.id!==id);saveData();renderMaterial();}
 function addMaterial(){
   const content=document.getElementById('matContent').value.trim();
   if(!content){toast('请输入素材内容');return;}
@@ -634,7 +1005,7 @@ function importData(file){
 }
 function clearAllData(){
   if(confirm('确定要清空全部数据吗？此操作不可恢复，建议先导出备份。')){
-    data={projects:[],topics:[],refs:[],articles:[],materials:[],notes:[],schedule:[],paperTasks:[],settings:{theme:'A',autoRotate:false,rotateDays:7,email:'',accessKey:data.settings.accessKey||'guoan2026'},chatMessages:[],privacyAccepted:true};
+    data={projects:[],topics:[],refs:[],articles:[],materials:[],notes:[],schedule:[],paperTasks:[],topicCards:[],settings:{theme:'A',autoRotate:false,rotateDays:7,email:'',accessKey:data.settings.accessKey||'guoan2026'},chatMessages:[],privacyAccepted:true};
     saveData();applyTheme('A');
     toast('数据已清空');renderSettings();
   }
