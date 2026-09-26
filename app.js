@@ -409,7 +409,7 @@ function cleanPdfText(text){
   s=s.replace(/[ \t]+\n/g,'\n');
   // 5. 去掉页眉页脚常见模式：纯数字行、"第X卷第X期"、"第X页共X页"
   s=s.replace(/^\s*\d+\s*[\/\-–]\s*\d+\s*[\/\-–]\s*\d+\s*[\/\-–]\s*\d+.*$/gm,'');
-  s=s.replace(/^\s*第\s*[０-零一二三四五六七八九十百0-9]+\s*卷\s*第\s*[０-零一二三四五六七八九十百0-9]+\s*期.*$/gm,'');
+  s=s.replace(/^\s*第\s*[0-9０-９零一二三四五六七八九十百]+\s*卷\s*第\s*[0-9０-９零一二三四五六七八九十百]+\s*期.*$/gm,'');
   s=s.replace(/^\s*第\s*\d+\s*页\s*共\s*\d+\s*页\s*$/gm,'');
   // 6. 去掉孤立的数字行（页码）
   s=s.replace(/^\s*\d{1,4}\s*$/gm,'');
@@ -427,7 +427,7 @@ function isGarbageTitle(t){
   // 开头是大量数字
   if(/^[\d\s\/\-–.]{6,}/.test(t))return true;
   // 包含"第X卷第X期"
-  if(/第\s*[０-零一二三四五六七八九十百0-9]+\s*卷/.test(t)&&/期/.test(t))return true;
+  if(/第\s*[0-9０-９零一二三四五六七八九十百]+\s*卷/.test(t)&&/期/.test(t))return true;
   // 包含大量空格分隔的单字（PDF 提取的页眉）
   var cjk=(t.match(/[\u4e00-\u9fa5]/g)||[]).length;
   var spaces=(t.match(/\s/g)||[]).length;
