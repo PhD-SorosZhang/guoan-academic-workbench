@@ -14,6 +14,7 @@ const NAV_ITEMS=[
 {id:'job',icon:'💼',label:'就业导航'},
 {id:'ref',icon:'📝',label:'文献管理'},
 {id:'material',icon:'✍️',label:'写作素材'},
+{id:'writing',icon:'🖋️',label:'论文写作'},
 {id:'schedule',icon:'📅',label:'学术日程'},
 {id:'note',icon:'🧠',label:'研究笔记'},
 {id:'aitools',icon:'🤖',label:'AI技能库'},
@@ -438,6 +439,7 @@ function render(){
     case 'settings':renderSettings();break;
     case 'dash2':renderDashboard2();break;
     case 'recycle':renderRecycleBin();break;
+    case 'writing':renderWriting();break;
   }
 }
 
@@ -1843,7 +1845,7 @@ async function testGitHubConn(){
 }
 async function saveGistConfig(){
   data.settings.githubToken=document.getElementById('ghToken').value.trim();
-  data.settings.gistId=document.getElementById('ghGistId').value.trim();
+  var _gid=document.getElementById('ghGistId').value.trim();if(_gid==='自动创建'||_gid==='')_gid='';data.settings.gistId=_gid;
   data.settings.autoSync=document.getElementById('ghAutoSync').checked;
   saveData();toast('云同步配置已保存');
 }
@@ -2006,30 +2008,154 @@ async function importWechat(){
   let title='',author='',content=body;
   if(url&&!body){
     try{
+      toast('正在解析公众号文章...');
       const proxy='https://api.allorigins.win/raw?url='+encodeURIComponent(url);
-      const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),5000);
+      const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),10000);
       const r=await fetch(proxy,{signal:ctrl.signal});clearTimeout(timer);
       const html=await r.text();
       const dm=document.createElement('div');dm.innerHTML=html;
       title=(dm.querySelector('#activity-name')||{}).textContent||'';
       author=(dm.querySelector('#js_name')||{}).textContent||'';
       content=(dm.querySelector('#js_content')||{}).textContent||'';
+      if(!content||content.length<20){
+        // try alternative selector
+        content=(dm.querySelector('rich_media_content')||{}).textContent||'';
+      }
     }catch(e){toast('代理解析失败，请直接粘贴正文');return;}
   }
-  if(!content||content.length<50){toast('内容过短');return;}
-  // 分类
-  if(/征稿|征文|会议|截稿|投稿|论坛|研讨会/.test(content)){
-    data.schedule.push({id:uid(),title:title||'会议征稿',date:new Date().toISOString().slice(0,10),type:'学术会议',location:'',desc:content.substring(0,200)});
-    saveData();toast('已建学术日程');
-  }else{
+  title=(title||'').trim();author=(author||'').trim();content=(content||'').trim();
+  if(!content||content.length<30){toast('内容过短或解析失败，请直接粘贴正文');return;}
+  // 自动识别类型
+  var isCallForPapers=/征稿|征文|会议|截稿|投稿|论坛|研讨会|峰会|年会|call for paper/i.test(content);
+  var isAcademicPaper=/摘要|关键词|文献综述|理论框架|实证分析|研究假设|参考文献/.test(content);
+  if(isCallForPapers){
+    // 智能提取截稿日期
+    var deadlineMatch=content.match(/截稿[日期：:\s]*([0-9]{4}[-年./月][0-9]{1,2}[-月./日][0-9]{0,2})/);
+    var confDateMatch=content.match(/(?:会议|举办|召开|时间)[：:\s]*([0-9]{4}[-年./月][0-9]{1,2}[-月./日][0-9]{0,2}(?:\s*[-—~至到]\s*[0-9]{1,2}[月日]?)?)/);
+    var evDate=deadlineMatch?deadlineMatch[1].replace(/[年月]/g,'-').replace(/[日号]/g,''):(confDateMatch?confDateMatch[1].replace(/[年月]/g,'-').replace(/[日号]/g,''):new Date().toISOString().slice(0,10));
+    evDate=evDate.replace(/[-./]$/,'');
+    data.schedule.push({id:uid(),title:title||'会议征稿',date:evDate,type:'学术会议',location:author||'',desc:content.substring(0,300),url:url||''});
+    saveData();
+    toast('已自动创建学术日程：'+(title||'会议征稿'));
+    navigate('schedule');
+  }else if(isAcademicPaper){
     const analysis=autoAnalyzeText(content,title||'公众号文章');
     data.refs.unshift({id:uid(),title:title||'公众号文章',author:author||'微信公众号',source:'微信公众号',year:new Date().getFullYear().toString(),note:content.substring(0,200),tags:'',read:false,uploadDate:fmtDate(new Date())});
     if(analysis)commitAnalysis({title:title||'公众号文章',author:author,source:'微信公众号'},analysis);
     toast('已入文献库并自动剖析');
+    navigate('ref');
+  }else{
+    // 默认入库
+    data.refs.unshift({id:uid(),title:title||'公众号文章',author:author||'微信公众号',source:'微信公众号',year:new Date().getFullYear().toString(),note:content.substring(0,200),tags:'',read:false,uploadDate:fmtDate(new Date())});
+    saveData();toast('已保存为文献笔记');
+    navigate('ref');
   }
-  navigate('ref');
 }
 
+
+
+// ===== 论文写作（内嵌工作台）=====
+function renderWriting(){
+  const mats=(data.materials||[]).filter(m=>!m.deleted);
+  const refs=(data.refs||[]).filter(r=>!r.deleted);
+  // Sidebar: relevant materials
+  var matList=mats.length?mats.slice(-20).map(m=>'<div class="list-item" style="padding:8px 10px;cursor:pointer;" onclick="insertMaterial(\''+m.id+'\')"><div style="font-size:.72rem;color:var(--primary);margin-bottom:2px;">['+esc(m.category||'素材')+']</div><div style="font-size:.82rem;line-height:1.5;">'+esc(m.content.substring(0,120))+(m.content.length>120?'…':'')+'</div></div>').join(''):'<div style="padding:20px;text-align:center;color:var(--text-mute);font-size:.85rem;">暂无素材<br><span style="font-size:.75rem;">好文剖析中的金句可一键存入</span></div>';
+  var refList=refs.length?refs.slice(-15).map(r=>'<div class="list-item" style="padding:8px 10px;cursor:pointer;" onclick="insertRef(\''+r.id+'\')"><div style="font-size:.82rem;font-weight:600;">'+esc(r.title||'未命名')+'</div><div style="font-size:.72rem;color:var(--text-mute);">'+esc(r.author||'')+' · '+esc(r.source||'')+'</div></div>').join(''):'<div style="padding:20px;text-align:center;color:var(--text-mute);font-size:.85rem;">暂无文献</div>';
+
+  document.getElementById('mainContent').innerHTML=
+  '<div class="page-header"><h1>🖋️ 论文写作</h1><p>内嵌写作台 · AI润色/评估/生成 · 素材联动 · 一键引用</p></div>'
+  +'<div style="display:flex;gap:16px;align-items:flex-start;">'
+  // Left: editor
+  +'<div style="flex:1;min-width:0;">'
+  +'<div class="card" style="margin-bottom:12px;">'
+  +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">'
+  +'<button class="add-btn" onclick="writingAction(\'polish\')">✨ 润色优化</button>'
+  +'<button class="add-btn" onclick="writingAction(\'evaluate\')">📊 学术评估</button>'
+  +'<button class="add-btn" onclick="writingAction(\'detect\')">🤖 AI检测</button>'
+  +'<button class="add-btn" onclick="writingAction(\'outline\')">📋 生成大纲</button>'
+  +'<button class="add-btn ghost" onclick="writingAction(\'expand\')">📈 扩写论述</button>'
+  +'<button class="add-btn ghost" onclick="writingAction(\'shorten\')">✂️ 精简压缩</button>'
+  +'<span style="margin-left:auto;font-size:.75rem;color:var(--text-mute);" id="writingStats">0 字</span>'
+  +'</div>'
+  +'<textarea id="writingArea" style="width:100%;min-height:420px;border:1px solid var(--border);border-radius:8px;padding:14px;font-size:.92rem;line-height:1.9;resize:vertical;background:var(--card-bg);color:var(--text);font-family:inherit;" placeholder="在此输入或粘贴论文正文...&#10;&#10;左侧素材库可点击插入引用，上方工具栏可调用AI辅助。" oninput="updateWritingStats()"></textarea>'
+  +'</div>'
+  // Result panel
+  +'<div class="card" id="writingResult" style="display:none;"><div id="writingResultContent"></div></div>'
+  +'</div>'
+  // Right: materials & references
+  +'<div style="width:280px;flex-shrink:0;">'
+  +'<div class="card" style="margin-bottom:12px;"><div class="card-title"><span class="title-icon">✍️</span>写作素材 <span style="font-size:.75rem;color:var(--text-mute);font-weight:400;">('+mats.length+') · 点击插入</span></div><div style="max-height:300px;overflow-y:auto;">'+matList+'</div></div>'
+  +'<div class="card"><div class="card-title"><span class="title-icon">📚</span>文献库 <span style="font-size:.75rem;color:var(--text-mute);font-weight:400;">('+refs.length+') · 点击引用</span></div><div style="max-height:250px;overflow-y:auto;">'+refList+'</div></div>'
+  +'</div>'
+  +'</div>';
+  // Restore saved draft
+  if(data._writingDraft){document.getElementById('writingArea').value=data._writingDraft;updateWritingStats();}
+}
+function updateWritingStats(){
+  var ta=document.getElementById('writingArea');if(!ta)return;
+  document.getElementById('writingStats').textContent=ta.value.length+' 字';
+  data._writingDraft=ta.value;saveData();
+}
+function insertMaterial(mid){
+  var m=(data.materials||[]).find(x=>x.id===mid);if(!m)return;
+  var ta=document.getElementById('writingArea');
+  var cite='【'+(m.category||'素材')+'】'+m.content+' (来源：'+(m.source||'工作台素材')+')';
+  ta.value+=(ta.value?'\n\n':'')+cite;
+  updateWritingStats();toast('已插入素材引用');
+}
+function insertRef(rid){
+  var r=(data.refs||[]).find(x=>x.id===rid);if(!r)return;
+  var ta=document.getElementById('writingArea');
+  var cite='['+r.title+'. '+r.author+'. '+r.source+', '+r.year+'.]';
+  ta.value+=(ta.value?' ':'')+cite;
+  updateWritingStats();toast('已插入文献引用');
+}
+async function writingAction(action){
+  var text=document.getElementById('writingArea').value.trim();
+  var resultDiv=document.getElementById('writingResult');
+  var resultContent=document.getElementById('writingResultContent');
+  resultDiv.style.display='block';
+  var labels={polish:'润色优化',evaluate:'学术评估',detect:'AI检测',outline:'生成大纲',expand:'扩写论述',shorten:'精简压缩'};
+  resultContent.innerHTML='<p style="color:var(--text-mute);">⏳ 正在'+labels[action]+'...</p>';
+  if(!text){resultContent.innerHTML='<p style="color:var(--text-mute);">请先在编辑区输入内容</p>';return;}
+  var hasKey=data.settings.apiKey&&data.settings.apiEndpoint;
+  var prompts={
+    polish:'你是国家安全学论文写作润色专家。请对以下文字进行学术润色，保持原意，提升学术表达质量：使用更规范的学术术语、改善逻辑连接、去除口语化表达。直接输出润色后的文本，不要解释。\n\n原文：\n'+text,
+    evaluate:'你是国家安全学论文评审专家。请从以下维度评估这段文字：1.学术规范性 2.逻辑严密性 3.理论深度 4.论证力度 5.语言表达。每个维度打分(1-10)并给出具体修改建议。用简洁的表格形式输出。\n\n原文：\n'+text,
+    detect:'你是AI文本检测专家。请分析以下文本是否具有AI生成特征。判断依据：词汇多样性、句式变化度、逻辑连贯性、过度完美的过渡词、缺乏个人语气。给出AI概率估计(0-100%)和具体理由。\n\n原文：\n'+text,
+    outline:'你是国家安全学论文写作顾问。请根据以下内容，生成一个完整的论文写作大纲，包括：一级标题、二级标题、每节核心论点、建议引用的理论框架。\n\n当前内容：\n'+text,
+    expand:'你是国家安全学论文写作助手。请对以下段落进行学术扩写：补充理论支撑、增加论证层次、加入政策相关性分析。保持学术风格，扩写后约为原文2倍长度。\n\n原文：\n'+text,
+    shorten:'你是学术写作编辑。请精简以下文字，保留核心论点和关键论据，去除冗余表达，使文章更紧凑有力。直接输出精简后的文本。\n\n原文：\n'+text
+  };
+  if(hasKey){
+    try{
+      var out=await callLLM([{role:'user',content:prompts[action]}],60000);
+      resultContent.innerHTML='<div style="white-space:pre-wrap;line-height:1.9;font-size:.9rem;">'+esc(out)+'</div><div style="margin-top:12px;"><button class="add-btn" onclick="applyWritingResult()">✓ 应用结果</button></div>';
+      data._writingLastResult=out;
+    }catch(e){
+      resultContent.innerHTML='<p style="color:#c0392b;">调用AI失败：'+esc(e.message)+'</p>';
+    }
+  }else{
+    // Rule-based fallback
+    var fb={
+      polish:'【规则润色建议】\n1.检查口语化表达：将"我认为"改为"本文认为/研究认为"\n2.检查过渡词：确保段落间有"然而/因此/进一步而言"等逻辑连接\n3.检查术语一致性：同一概念前后用词统一\n4.检查标点：学术论文使用全角标点',
+      evaluate:'【规则评估】\n· 字数：'+text.length+'字\n· 段落数：'+(text.split('\n').filter(x=>x.trim()).length)+'段\n· 学术词密度：'+(text.match(/研究|分析|理论|框架|实证|政策|安全|治理|国家|战略/g)||[]).length+'个学术关键词\n· 建议：补充理论框架引用、增加文献支撑、明确研究问题',
+      detect:'【规则AI检测】\n· 文本长度：'+text.length+'字\n· 标点规范度：'+(text.match(/[，。；：]/g)||[]).length+'处\n· 长句比例：'+Math.round(text.split(/[。；]/).filter(s=>s.length>60).length/Math.max(1,text.split(/[。；]/).length)*100)+'%\n· 提示：AI生成文本通常句式均匀、过渡词密集、缺乏口语化表达。如需精确检测请配置API Key。',
+      outline:'【写作大纲建议】\n一、引言（研究背景+问题提出+研究意义）\n二、理论框架（核心概念界定+理论基础+分析框架）\n三、现状分析（问题描述+数据/案例呈现）\n四、影响机制（因果链条+作用路径）\n五、对策建议（短期措施+长期制度建设）\n六、结论',
+      expand:'【扩写建议】\n1.在每个论点后补充理论依据（引用理论框架库中的相关理论）\n2.加入政策相关性分析（对接总体国家安全观/相关政策文件）\n3.补充案例或数据支撑\n4.增加与现有文献的对话',
+      shorten:'【精简建议】\n1.删除重复表述\n2.合并相似论点\n3.将长句拆为短句或压缩为核心判断\n4.去除修饰性副词'
+    };
+    resultContent.innerHTML='<div style="white-space:pre-wrap;line-height:1.9;font-size:.9rem;color:var(--text-soft);">'+esc(fb[action])+'</div><p style="font-size:.75rem;color:var(--text-mute);margin-top:8px;">未配置API Key，以上为规则引擎建议。设置页填入Key后可获得AI深度分析。</p>';
+  }
+}
+function applyWritingResult(){
+  if(data._writingLastResult){
+    var ta=document.getElementById('writingArea');
+    ta.value=data._writingLastResult;
+    updateWritingStats();
+    toast('已应用到编辑区');
+  }
+}
 
 // ===== 设置（含数据导入导出、周报生成）=====
 function renderSettings(){
