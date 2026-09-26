@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>国安学术工作台 v3.2</title>
-<link rel="stylesheet" href="style.css?v=20260926e">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: https:;">
+<title>国安学术工作台 v3.3</title>
+<link rel="stylesheet" href="style.css?v=20260926f">
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";}</script>
@@ -25,7 +26,11 @@
 <nav class="sidebar" id="sidebar">
 <div class="sidebar-logo">
 <h1>🛡 国安学术工作台</h1>
-<p>National Security Academic Workbench v3.2</p>
+<p>National Security Academic Workbench v3.3</p>
+</div>
+<div class="global-search-box">
+<input type="text" id="globalSearchInput" placeholder="🔍 全局搜索..." oninput="debouncedGlobalSearch(this.value)" onkeydown="if(event.key==='Escape')clearGlobalSearch()">
+<div id="globalSearchResults" class="global-search-results" style="display:none;"></div>
 </div>
 <div id="navMenu"></div>
 </nav>
@@ -34,8 +39,8 @@
 </div>
 <div id="modalContainer"></div>
 <div id="toast" class="toast"></div>
-<script src="job-data.js?v=20260926e"></script>
-<script src="phd-data.js?v=20260926e"></script>
-<script src="app.js?v=20260926e"></script>
+<script src="job-data.js?v=20260926f"></script>
+<script src="phd-data.js?v=20260926f"></script>
+<script src="app.js?v=20260926f"></script>
 </body>
 </html>
