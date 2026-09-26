@@ -42,14 +42,166 @@ const QUOTES=[
 ];
 
 // ===== 自动剖析：关键词库 =====
-const THEORY_KEYWORDS=['总体国家安全观','安全化理论','建构主义','现实主义','自由主义','治理理论','协同治理','风险社会','韧性治理','制度主义','博弈论','复杂系统','路径依赖','政策网络','多中心治理','整体性治理','新公共管理','网络治理','危机管理','安全共同体'];
-const POLICY_PATTERNS=[/《[^》]{2,30}法》/g,/《[^》]{2,30}条例》/g,/《[^》]{2,30}意见》/g,/《[^》]{2,30}规划》/g,/《[^》]{2,30}纲要》/g,/《[^》]{2,30}决定》/g,/《[^》]{2,30}方案》/g,/二十大报告/g,/十九届/g,/二十届/g,/中央经济工作会议/g];
-const DATA_PATTERNS=[/国家统计局/g,/年鉴/g,/数据库/g,/问卷调查/g,/深度访谈/g,/案例分析/g,/面板数据/g,/截面数据/g,/CGSS/g,/CFPS/g,/World Bank/g,/IMF/g,/WDI/g];
+// ===== 理论术语库（4大类200+术语，含别名与一句话描述）=====
+const THEORY_LIBRARY={
+"国际关系与安全研究":[
+{name:"安全化理论",aliases:["securitization","哥本哈根学派","Copenhagen School","安全化"],desc:"哥本哈根学派：将议题建构成存在性威胁的过程"},
+{name:"英国学派",aliases:["English School","国际社会"],desc:"强调无政府状态下的国际社会与规范"},
+{name:"威慑理论",aliases:["deterrence","相互确保摧毁","MAD"],desc:"以惩罚能力阻止对手动武"},
+{name:"攻防理论",aliases:["offense-defense theory","攻防平衡"],desc:"攻防优势变化影响战争动机"},
+{name:"安全共同体",aliases:["security community","多元安全共同体"],desc:"成员间以和平方式解决争端的群体"},
+{name:"霸权稳定论",aliases:["hegemonic stability","霸权稳定"],desc:"霸权国提供国际公共物品维持秩序"},
+{name:"权力转移理论",aliases:["power transition","权力变迁"],desc:"崛起国与守成国权力转移易引发冲突"},
+{name:"自由制度主义",aliases:["neoliberal institutionalism","新自由制度主义","自由制度主义","国际机制理论","international regime","国际机制"],desc:"国际机制降低交易成本促进合作"},
+{name:"建构主义",aliases:["constructivism","社会建构"],desc:"观念、规范、身份建构利益与行为"},
+{name:"现实主义",aliases:["realism","新现实主义","neorealism","结构现实主义"],desc:"国际无政府状态下追求权力与安全"},
+{name:"自由主义",aliases:["liberalism","新自由主义","neoliberalism"],desc:"制度、民主、相互依赖促进和平"},
+{name:"民主和平论",aliases:["democratic peace"],desc:"民主国家之间很少开战"},
+{name:"复杂相互依赖",aliases:["complex interdependence"],desc:"多渠道互动与多元行为体削弱武力作用"},
+{name:"规范扩散理论",aliases:["norm diffusion","规范生命周期","norm life cycle"],desc:"国际规范经提出、普及、内化扩散"},
+{name:"地区安全复合体",aliases:["regional security complex","RSC"],desc:"次区域内安全行为者相互构成"},
+{name:"威胁建构",aliases:["threat construction"],desc:"威胁是社会与政治建构的产物"},
+{name:"身份政治",aliases:["identity politics"],desc:"身份认同塑造政治忠诚与冲突"},
+{name:"战略文化",aliases:["strategic culture"],desc:"历史经验与传统塑造战略偏好"},
+{name:"海权论",aliases:["sea power","马汉","Mahan"],desc:"控制海洋是国家强盛关键"},
+{name:"陆权论",aliases:["land power","麦金德","Mackinder","心脏地带"],desc:"控制心脏地带即控制世界岛"},
+{name:"空权论",aliases:["air power","杜黑","Douhet"],desc:"空中力量制胜论"},
+{name:"地缘政治学",aliases:["geopolitics","地缘政治"],desc:"地理空间因素塑造政治与安全"},
+{name:"文明冲突论",aliases:["clash of civilizations","亨廷顿","Huntington"],desc:"未来冲突以文明划线"},
+{name:"历史终结论",aliases:["end of history","福山","Fukuyama"],desc:"自由民主是人类意识形态终点"},
+{name:"大国政治悲剧",aliases:["tragedy of great power politics","米尔斯海默","Mearsheimer","进攻性现实主义"],desc:"大国必然追求地区霸权"},
+{name:"软权力",aliases:["soft power","软实力","约瑟夫奈","Joseph Nye"],desc:"文化、价值、政策的吸引力"},
+{name:"巧实力",aliases:["smart power"],desc:"硬软权力灵活结合"},
+{name:"离岸平衡",aliases:["offshore balancing"],desc:"离岸国借代理人制衡地区霸权"},
+{name:"选边站队",aliases:["bandwagoning","对冲","hedging"],desc:"小国在大国间选边或对冲"},
+{name:"同盟理论",aliases:["alliance theory","同盟困境"],desc:"同盟形成与束缚-牵连困境"},
+{name:"安全困境",aliases:["security dilemma"],desc:"一国自保举措引发他方不安全"},
+{name:"螺旋模型",aliases:["spiral model"],desc:"互不信任导致敌意螺旋上升"},
+{name:"国际公共物品",aliases:["international public goods"],desc:"跨国供给、非排他的公共品"},
+{name:"全球治理",aliases:["global governance"],desc:"多主体跨国规则与合作"},
+{name:"多边主义",aliases:["multilateralism"],desc:"多边协调的制度逻辑"},
+{name:"双边主义",aliases:["bilateralism"],desc:"两国间处理关系"},
+{name:"地区主义",aliases:["regionalism"],desc:"区域一体化与区域合作"},
+{name:"国际秩序",aliases:["international order","自由主义国际秩序","LIO"],desc:"大国主导的国际规则安排"},
+{name:"霸权更替",aliases:["hegemonic transition"],desc:"霸权国兴衰更替"},
+{name:"中等强国",aliases:["middle power"],desc:"在大国间发挥桥梁作用的国家"},
+{name:"非传统安全",aliases:["non-traditional security","NTS"],desc:"跨边界、非军事的新型安全威胁"},
+{name:"综合安全",aliases:["comprehensive security"],desc:"军事与非军事安全整体观"},
+{name:"共同安全",aliases:["common security","合作安全","cooperative security"],desc:"安全不可分割、合作实现"},
+{name:"人类安全",aliases:["human security"],desc:"以人的安全与尊严为中心"},
+{name:"总体国家安全观",aliases:["总体国家安全观","holistic national security outlook"],desc:"系统思维统筹各领域安全"},
+{name:"海洋安全",aliases:["maritime security"],desc:"海上通道、权益与海洋秩序安全"},
+{name:"能源安全",aliases:["energy security"],desc:"能源供应稳定与可负担"},
+{name:"粮食安全",aliases:["food security"],desc:"粮食可获得、可获取、可利用"},
+{name:"金融安全",aliases:["financial security"],desc:"金融体系稳定与风险防控"},
+{name:"网络安全",aliases:["cybersecurity","网络空间安全"],desc:"网络系统与数据免受破坏"},
+{name:"生物安全",aliases:["biosecurity"],desc:"生物技术与公共卫生安全"},
+{name:"生态安全",aliases:["ecological security"],desc:"生态系统服务与环境安全"},
+{name:"科技安全",aliases:["tech security","科技安全"],desc:"科技体系自主可控"},
+{name:"文化安全",aliases:["cultural security"],desc:"文化主权与意识形态安全"},
+{name:"社会安全",aliases:["social security","社会安全"],desc:"社会治安与公共秩序"},
+{name:"海外利益安全",aliases:["overseas interests security"],desc:"海外公民、资产与机构安全"},
+{name:"核安全",aliases:["nuclear security","核不扩散","NPT"],desc:"核材料与核不扩散安全"},
+{name:"太空安全",aliases:["space security"],desc:"太空资产与轨道安全"},
+{name:"极地安全",aliases:["polar security","北极治理","Arctic governance"],desc:"极地活动与治理安全"},
+{name:"数据安全",aliases:["data security"],desc:"数据全生命周期安全"},
+{name:"供应链安全",aliases:["supply chain security","产业链安全"],desc:"产业链供应链稳定可控"},
+{name:"关键基础设施安全",aliases:["critical infrastructure protection","CIP"],desc:"重要基础设施防护"}
+],
+"公共管理与治理理论":[
+{name:"整体性治理",aliases:["holistic governance","整体政府","whole of government","整体性政府","holistic government"],desc:"跨部门协同、打破碎片化"},
+{name:"协同治理",aliases:["collaborative governance","协同治理","协作治理"],desc:"多主体协商合作解决公共问题"},
+{name:"多中心治理",aliases:["polycentric governance","多中心"],desc:"多个决策中心而非单一权威"},
+{name:"网络治理",aliases:["network governance","网络治理"],desc:"政府、市场、社会网络化协作"},
+{name:"韧性治理",aliases:["resilient governance","韧性治理","resilience"],desc:"系统吸收扰动并恢复的能力"},
+{name:"新公共管理",aliases:["new public management","NPM"],desc:"引入市场机制与绩效导向"},
+{name:"新公共服务",aliases:["new public service"],desc:"服务公民而非掌舵顾客"},
+{name:"制度主义",aliases:["institutionalism","新制度主义","neoinstitutionalism"],desc:"制度塑造行为与结果"},
+{name:"历史制度主义",aliases:["historical institutionalism"],desc:"关键节点与路径依赖塑造制度"},
+{name:"政策网络",aliases:["policy network","政策网络"],desc:"政策子系统中的关系网络"},
+{name:"路径依赖",aliases:["path dependence","路径依赖"],desc:"一旦走上某路径自我强化"},
+{name:"多源流模型",aliases:["multiple streams framework","MSF","金登","Kingdon"],desc:"问题、政策、政治三流汇合打开窗口"},
+{name:"间断-平衡模型",aliases:["punctuated equilibrium","间断平衡"],desc:"政策长期稳定间以剧烈变迁"},
+{name:"倡导联盟框架",aliases:["advocacy coalition framework","ACF"],desc:"信念体系联盟主导政策变迁"},
+{name:"政策扩散",aliases:["policy diffusion","政策创新扩散"],desc:"政府间政策学习与传播"},
+{name:"政策转移",aliases:["policy transfer"],desc:"跨国政策借鉴移植"},
+{name:"街头官僚",aliases:["street-level bureaucracy"],desc:"一线人员自由裁量塑造政策"},
+{name:"委托代理理论",aliases:["principal-agent theory","委托代理","委托代理"],desc:"委托-代理间信息不对称与激励"},
+{name:"公共选择理论",aliases:["public choice","公共选择"],desc:"政治市场中的理性人选择"},
+{name:"数字治理",aliases:["digital governance","数字政府","e-government"],desc:"数字技术赋能治理"},
+{name:"风险治理",aliases:["risk governance","风险治理"],desc:"风险识别评估与制度化应对"},
+{name:"危机管理",aliases:["crisis management","危机管理","应急管理","emergency management"],desc:"事前预警、事中处置、事后恢复"},
+{name:"全过程人民民主",aliases:["whole-process people's democracy"],desc:"民主各环节贯穿人民参与"},
+{name:"国家治理现代化",aliases:["modernization of national governance","国家治理体系和治理能力现代化"],desc:"治理体系与能力现代化"},
+{name:"网格化管理",aliases:["grid management","网格化"],desc:"网格划分与精细化管理"},
+{name:"枫桥经验",aliases:["枫桥经验","新时代枫桥经验"],desc:"基层矛盾不上交、就地化解"}
+],
+"社会学与政治学理论":[
+{name:"风险社会",aliases:["risk society","贝克","Beck","风险社会理论"],desc:"现代制度制造的全球性风险"},
+{name:"结构化理论",aliases:["structuration theory","吉登斯","Giddens"],desc:"结构与行动二重性"},
+{name:"合法性理论",aliases:["legitimacy","合法性","韦伯合法性"],desc:"统治被自愿认可的基础"},
+{name:"场域理论",aliases:["field theory","布迪厄","Bourdieu","场域"],desc:"客观关系空间与惯习互动"},
+{name:"社会资本",aliases:["social capital","社会资本理论","帕特南","Putnam"],desc:"信任、规范、网络的集体效用"},
+{name:"社会网络分析",aliases:["social network analysis","SNA"],desc:"关系结构与位置分析"},
+{name:"弱关系优势",aliases:["strength of weak ties","格兰诺维特","Granovetter"],desc:"弱关系传递新信息"},
+{name:"结构洞",aliases:["structural holes","伯特","Burt"],desc:"非重复关系间的桥接优势"},
+{name:"集体行动",aliases:["collective action","集体行动逻辑","奥尔森","Olson"],desc:"群体利益追求的逻辑困境"},
+{name:"公地悲剧",aliases:["tragedy of the commons","哈丁","Hardin"],desc:"公共资源过度使用困境"},
+{name:"社会运动",aliases:["social movement","社会运动理论","资源动员","resource mobilization"],desc:"集体抗争的动员与框架"},
+{name:"政治机会结构",aliases:["political opportunity structure","POS"],desc:"外部政治环境影响运动成败"},
+{name:"现代化理论",aliases:["modernization theory"],desc:"传统社会向现代演进"},
+{name:"依附理论",aliases:["dependency theory","依附论"],desc:"外围国家受中心剥削"},
+{name:"世界体系理论",aliases:["world-systems theory","沃勒斯坦","Wallerstein"],desc:"核心-半边缘-边缘体系"},
+{name:"国家自主性",aliases:["state autonomy","斯考切波","Skocpol"],desc:"国家摆脱社会利益集团的能力"},
+{name:"法团主义",aliases:["corporatism","统合主义"],desc:"国家与垄断团体协商整合"},
+{name:"多元主义",aliases:["pluralism","多元主义"],desc:"利益集团竞争影响政策"},
+{name:"协商民主",aliases:["deliberative democracy","协商民主"],desc:"理性审议达成共识"},
+{name:"威权主义",aliases:["authoritarianism","威权"],desc:"有限多元、非竞争性政治"},
+{name:"央地关系",aliases:["central-local relations","央地关系"],desc:"中央与地方权责配置"},
+{name:"压力型体制",aliases:["pressure-type system"],desc:"自上而下任务加压与考核"},
+{name:"运动式治理",aliases:["campaign-style governance","运动式治理"],desc:"集中动员的非常规治理"},
+{name:"差序格局",aliases:["differential mode of association","费孝通"],desc:"以己为中心的亲疏圈层"}
+],
+"经济学与方法论理论":[
+{name:"博弈论",aliases:["game theory","博弈"],desc:"理性主体策略互动分析"},
+{name:"囚徒困境",aliases:["prisoner's dilemma","囚徒博弈"],desc:"个体理性导致集体非理性"},
+{name:"纳什均衡",aliases:["Nash equilibrium"],desc:"无人能单方面改善的策略组合"},
+{name:"交易成本",aliases:["transaction cost","交易成本经济学","威廉姆森","Williamson"],desc:"制度降低交易成本"},
+{name:"公共物品",aliases:["public goods","公共品"],desc:"非排他、非竞争的物品"},
+{name:"信息不对称",aliases:["information asymmetry","信息不对称"],desc:"交易双方信息分布不均"},
+{name:"有限理性",aliases:["bounded rationality","西蒙","Simon"],desc:"信息有限下的满意决策"},
+{name:"前景理论",aliases:["prospect theory","卡尼曼","Kahneman"],desc:"人们对损失敏感于收益"},
+{name:"制度变迁",aliases:["institutional change","诺斯","North"],desc:"制度演化与路径依赖"},
+{name:"创造性破坏",aliases:["creative destruction","熊彼特","Schumpeter"],desc:"创新摧毁旧结构"},
+{name:"全球价值链",aliases:["value chain","全球价值链","GVC"],desc:"价值链跨国分割布局"},
+{name:"比较优势",aliases:["comparative advantage"],desc:"相对成本优势决定贸易"},
+{name:"资源诅咒",aliases:["resource curse","资源诅咒"],desc:"丰裕资源反而阻碍发展"},
+{name:"中等收入陷阱",aliases:["middle income trap"],desc:"长期徘徊中等收入"},
+{name:"可持续发展",aliases:["sustainable development","SDGs","可持续发展目标"],desc:"代际公平的发展"},
+{name:"人类命运共同体",aliases:["community with shared future for mankind","人类命运共同体"],desc:"全球治理的中国理念"},
+{name:"全球安全倡议",aliases:["Global Security Initiative","GSI","全球安全倡议"],desc:"共同综合合作可持续安全观"},
+{name:"全球发展倡议",aliases:["Global Development Initiative","GDI","全球发展倡议"],desc:"推动全球发展议程"},
+{name:"全球文明倡议",aliases:["Global Civilization Initiative","GCI","全球文明倡议"],desc:"文明交流互鉴"},
+{name:"一带一路",aliases:["Belt and Road","BRI","一带一路倡议"],desc:"互联互通国际合作"},
+{name:"新质生产力",aliases:["new quality productive forces"],desc:"创新驱动的先进生产力质态"},
+{name:"双循环",aliases:["dual circulation","双循环新发展格局"],desc:"国内国际双循环相互促进"},
+{name:"高质量发展",aliases:["high-quality development"],desc:"创新协调绿色的发展"},
+{name:"共同富裕",aliases:["common prosperity"],desc:"全体人民富裕与公共服务均等"},
+{name:"中国式现代化",aliases:["Chinese-style modernization"],desc:"人口规模巨大的共同富裕现代化"}
+]
+};
+
+// 扁平理论词表（兼容旧代码）
+const THEORY_KEYWORDS=[].concat.apply([],Object.keys(THEORY_LIBRARY).map(cat=>THEORY_LIBRARY[cat].map(t=>t.name)));
+
+// 五层政策识别
+const POLICY_PATTERNS=[/《[^》]{2,30}法》/g,/《[^》]{2,30}条例》/g,/《[^》]{2,30}意见》/g,/《[^》]{2,30}规划》/g,/《[^》]{2,30}纲要》/g,/《[^》]{2,30}决定》/g,/《[^》]{2,30}方案》/g,/二十大报告/g,/二十届[一二三四]中全会/g,/十九届[一二三四五六]中全会/g,/中央经济工作会议/g,/中央国家安全委员会(?:第[一二三四五六七八九十]+次)?会议/g,/中央全面深化改革委员会(?:第[一二三四五六七八九十]+次)?会议/g,/中央网络安全和信息化委员会(?:第[一二三四五六七八九十]+次)?会议/g,/政府工作报告/g,/中央(?:一号|1号)文件/g,/总体国家安全观/g,/全球安全倡议/g,/全球发展倡议/g,/全球文明倡议/g,/国家安全战略(?:纲要)?/g,/(?:十四五|十五五|十三五)(?:规划|规划纲要)/g,/(?:乡村振兴|科教兴国|人才强国|创新驱动|网络强国|海洋强国|制造强国)战略/g,/人类命运共同体/g,/中国式现代化/g,/新质生产力/g,/双循环/g,/共同富裕/g,/高质量发展/g,/供给侧结构性改革/g,/依法治国/g,/平安中国/g,/碳达峰碳中和/g,/(?:粮食|能源|金融|网络|数据|科技|生态|海洋|核|生物|海外利益)安全/g];
+const DATA_PATTERNS=[/国家统计局/g,/年鉴/g,/数据库/g,/问卷调查/g,/深度访谈/g,/案例分析/g,/面板数据/g,/截面数据/g,/CGSS/g,/CFPS/g,/World Bank/g,/IMF/g,/WDI/g,/CiteSpace/g,/NVivo/g,/Stata/g,/SPSS/g];
 
 // ===== 状态 =====
 let currentPage='dashboard';
 let currentProjectId=null;
-let data={projects:[],topics:[],refs:[],articles:[],materials:[],notes:[],schedule:[],paperTasks:[],topicCards:[],settings:{theme:'A',autoRotate:false,rotateDays:7,email:'',accessKey:'guoan2026'},chatMessages:[],privacyAccepted:false};
+let data={projects:[],topics:[],refs:[],articles:[],materials:[],notes:[],schedule:[],paperTasks:[],topicCards:[],readArticles:[],settings:{theme:'A',autoRotate:false,rotateDays:7,email:'',accessKey:'guoan2026',apiEndpoint:'https://api.openai.com/v1/chat/completions',apiKey:'',apiModel:'gpt-4o-mini'},chatMessages:[],privacyAccepted:false};
 let expandedSchools={};
 let topicTab='topics';
 let litSearch='';
@@ -112,6 +264,11 @@ function loadData(){
     if(!Array.isArray(data.topicCards))data.topicCards=[];
     if(!Array.isArray(data.materials))data.materials=[];
     if(!Array.isArray(data.paperTasks))data.paperTasks=[];
+    if(!Array.isArray(data.readArticles))data.readArticles=[];
+    if(!data.settings)data.settings={};
+    if(!data.settings.apiEndpoint)data.settings.apiEndpoint='https://api.openai.com/v1/chat/completions';
+    if(!data.settings.apiModel)data.settings.apiModel='gpt-4o-mini';
+    if(!data.settings.apiKey)data.settings.apiKey='';
   }catch(e){console.warn('load failed',e);}
 }
 
@@ -429,6 +586,12 @@ function renderTopic(){
       return '<div class="list-item" style="flex-direction:column;align-items:stretch;"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;"><div class="item-text" onclick="expandedTopic='+(isOpen?'null':i)+';renderTopic()" style="cursor:pointer;"><strong>'+esc(t.title)+'</strong><div class="item-meta">'+(t.date||'')+' · AI评分 <strong>'+calcScore(t)+'</strong>/120 '+scoreGrade(calcScore(t))+'</div>'+(t.question?'<div style="margin-top:4px;font-size:.82rem;color:var(--text-soft);">'+esc(t.question)+'</div>':'')+'</div><div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;"><button class="add-btn ghost" style="padding:4px 10px;font-size:.75rem;" onclick="event.stopPropagation();expandedTopic='+(isOpen?'null':i)+';renderTopic()">'+(isOpen?'收起':'展开评测')+'</button><button class="del-btn" onclick="event.stopPropagation();delTopic(\''+t.id+'\')">删除</button></div></div>'+dimsHtml+'</div>';
     }).join(''):emptyState('🔍','还没有选题，点击下方添加');
     body=tabs+'<div class="card"><div class="card-title"><span class="title-icon">📋</span>我的选题 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">共 '+data.topics.length+' 个</span></div>'+list+'</div>'
+      +'<div class="card"><div class="card-title"><span class="title-icon">📥</span>投递选题文档（Word/PDF/TXT）直出评测</div>'
+      +'<p style="font-size:.82rem;color:var(--text-soft);margin-bottom:10px;">上传开题报告/选题申报书，自动提取标题、研究问题、方法、创新点，填入下方表单后一键AI评测。</p>'
+      +'<input type="file" id="topicFileInput" accept=".pdf,.docx,.txt" style="display:none;" onchange="handleTopicUpload(this.files)">'
+      +'<button class="add-btn" onclick="document.getElementById(\'topicFileInput\').click()">📂 选择选题文档</button>'
+      +'<div id="topicExtractPreview" style="margin-top:12px;display:none;padding:12px;background:var(--primary-bg);border-radius:8px;font-size:.82rem;line-height:1.8;"></div>'
+      +'</div>'
       +'<div class="card"><div class="card-title"><span class="title-icon">➕</span>新建选题</div>'
       +'<div class="form-group"><label>选题标题</label><input id="topicTitle" placeholder="如：总体国家安全观视域下的南海通道安全治理研究"></div>'
       +'<div class="form-group"><label>核心问题</label><textarea id="topicQuestion" placeholder="该选题要回答的核心研究问题"></textarea></div>'
@@ -490,6 +653,80 @@ function addTopic(){
   renderTopic();
 }
 function delTopic(id){data.topics=data.topics.filter(t=>t.id!==id);saveData();renderTopic();}
+
+function extractTopicFromDoc(text){
+  const out={title:'',question:'',method:'',innovation:''};
+  if(!text||text.length<200)return null;
+  const lines=text.split(/\n/).map(s=>s.trim()).filter(Boolean);
+  // 标题：匹配"题目/标题/选题"后的内容，或首行非空
+  const titleMatch=text.match(/(?:题目|标题|选题|论文题目)[:：]\s*([^\n。；]{4,80})/);
+  if(titleMatch)out.title=titleMatch[1].trim();
+  else if(lines.length)out.title=lines[0].replace(/^(开题报告|选题申报|论文设计|研究设计)[\s：:]*/,'').slice(0,80);
+  out.title=out.title.replace(/(开题报告|选题申报书|论文)$/,'').trim();
+  // 研究问题
+  const qMatch=text.match(/(?:研究问题|核心问题|拟解决的?关键?问题|研究内容|要解决的?问题)[：:，,]?([\s\S]{20,300}?)(?:\n\s*(?:[一二三四五六七八九十]|研究方法|研究思路|创新|研究意义|参考文献)|$)/);
+  if(qMatch)out.question=qMatch[1].replace(/\n/g,' ').trim().slice(0,200);
+  // 研究方法
+  const mMatch=text.match(/(?:研究方法|方法论|研究手段)[：:，,]?([\s\S]{10,250}?)(?:\n\s*(?:[一二三四五六七八九十]|研究内容|创新|研究意义|参考文献)|$)/);
+  if(mMatch)out.method=mMatch[1].replace(/\n/g,' ').trim().slice(0,200);
+  else{
+    const ms=[];['案例研究','比较分析','文本分析','深度访谈','问卷调查','计量模型','回归分析','定性','定量','田野','参与式观察'].forEach(k=>{if(text.includes(k))ms.push(k);});
+    if(ms.length)out.method='文中涉及方法：'+ms.join('、');
+  }
+  // 创新点
+  const iMatch=text.match(/(?:创新点?|可能的创新|研究贡献|创新之处|突破)[：:，,]?([\s\S]{10,250}?)(?:\n\s*(?:[一二三四五六七八九十]|研究意义|参考文献|结语)|$)/);
+  if(iMatch)out.innovation=iMatch[1].replace(/\n/g,' ').trim().slice(0,200);
+  return out;
+}
+
+function handleTopicUpload(files){
+  if(!files||!files.length)return;
+  const f=files[0];
+  const lower=f.name.toLowerCase();
+  const finalize=(text)=>{
+    const ex=extractTopicFromDoc(text);
+    if(!ex){toast('文档内容过短或无法识别，请手动输入');return;}
+    // 填表单
+    setTimeout(()=>{
+      const tEl=document.getElementById('topicTitle');
+      const qEl=document.getElementById('topicQuestion');
+      if(tEl&&ex.title)tEl.value=ex.title;
+      if(qEl&&ex.question)qEl.value=ex.question;
+      const pv=document.getElementById('topicExtractPreview');
+      if(pv){
+        pv.style.display='block';
+        pv.innerHTML='<b>📄 自动提取预览：</b><br>'+
+          (ex.title?'<b>标题：</b>'+esc(ex.title)+'<br>':'')+
+          (ex.question?'<b>研究问题：</b>'+esc(ex.question)+'<br>':'')+
+          (ex.method?'<b>研究方法：</b>'+esc(ex.method)+'<br>':'')+
+          (ex.innovation?'<b>创新点：</b>'+esc(ex.innovation)+'<br>':'')+
+          '<span style="color:var(--text-mute);">请核对下方表单后点击"+ 创建选题并AI评测"。</span>';
+      }
+      toast('已提取，核对表单后点击创建');
+    },100);
+  };
+  if(lower.endsWith('.pdf')&&window.pdfjsLib){
+    const reader=new FileReader();
+    reader.onload=function(e){
+      pdfjsLib.getDocument(new Uint8Array(e.target.result)).promise.then(async function(pdf){
+        let text='';
+        for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const tc=await page.getTextContent();text+=tc.items.map(it=>it.str).join(' ')+'\n';}
+        finalize(text);
+      }).catch(()=>toast('PDF解析失败'));
+    };
+    reader.readAsArrayBuffer(f);
+  }else if(lower.endsWith('.docx')&&window.mammoth){
+    const reader=new FileReader();
+    reader.onload=function(e){
+      mammoth.extractRawText({arrayBuffer:e.target.result}).then(function(r){finalize(r.value||'');}).catch(()=>toast('Word解析失败'));
+    };
+    reader.readAsArrayBuffer(f);
+  }else if(lower.endsWith('.txt')){
+    const reader=new FileReader();
+    reader.onload=function(e){finalize(String(e.target.result||''));};
+    reader.readAsText(f,'UTF-8');
+  }else{toast('不支持的文件类型');}
+}
 function updateDim(id,dim,val){
   const t=data.topics.find(x=>x.id===id);
   if(t){if(!t.dims)t.dims={};t.dims[dim]=Number(val);saveData();}
@@ -497,25 +734,51 @@ function updateDim(id,dim,val){
 
 // ===== 好文剖析 =====
 function renderArticle(){
-  const daily=DAILY_ARTICLE;
+  const daily=getDailyArticle();
+  const isNew=!data.readArticles.includes(daily.title);
   const flowHtml=daily.detailedFlow.map((s,i)=>'<div class="flow-step" onclick="this.querySelector(\'.flow-detail\').style.display=this.querySelector(\'.flow-detail\').style.display===\'none\'?\'block\':\'none\'"><div style="background:var(--primary);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;">'+(i+1)+'</div><div><strong style="font-size:.88rem;">'+esc(s.step)+'</strong><div class="flow-detail" style="display:none;margin-top:6px;font-size:.82rem;color:var(--text-soft);line-height:1.7;">'+esc(s.detail)+'</div></div></div>').join('');
   const conceptHtml='<div class="concept-map"><div class="concept-map-title">🧩 概念图谱</div>'+daily.conceptMap.layers.map(l=>'<div class="concept-layer"><div class="concept-layer-label">'+esc(l.label)+'</div><div class="concept-chain">'+l.nodes.map((n,ni)=>'<span class="concept-node '+(n.type==='accent'?'accent':'')+'">'+esc(n.text)+'</span>'+(ni<l.nodes.length-1?'<span class="concept-arrow">→</span>':'')).join('')+'</div></div>').join('')+'</div>';
-  const list=data.articles.length?data.articles.map(a=>'<div class="list-item"><div class="item-text"><strong>'+esc(a.title)+'</strong><div class="item-meta">'+esc(a.author||'')+' · '+esc(a.journal||'')+' '+(a.year||'')+'</div>'+(a.coreArg?'<div style="margin-top:4px;font-size:.82rem;color:var(--text-soft);">核心论点：'+esc(a.coreArg.substring(0,80))+'</div>':'')+'</div><button class="del-btn" onclick="delArticle(\''+a.id+'\')">删除</button></div>').join(''):emptyState('📖','暂无剖析记录');
+  // 记录列表：可展开
+  const list=data.articles.length?data.articles.map(a=>{
+    const detailHtml=(a.detailedFlow||a.quotes||a.theoryFramework)?'<div class="article-detail" style="display:none;margin-top:10px;padding:10px;background:var(--bg-soft,#f7f7f7);border-radius:8px;font-size:.82rem;color:var(--text-soft);line-height:1.8;">'+
+      (a.coreArg?'<div style="margin-bottom:6px;"><b>核心论点：</b>'+esc(a.coreArg)+'</div>':'')+
+      (a.detailedFlow?'<div style="margin:6px 0;"><b>📝 论证流程：</b><ol style="margin:4px 0 4px 20px;padding:0;">'+a.detailedFlow.map(f=>'<li>'+esc(f.step)+'：'+esc(f.detail)+'</li>').join('')+'</ol></div>':'')+
+      (a.quotes&&a.quotes.length?'<div style="margin:6px 0;"><b>💡 金句：</b><ul style="margin:4px 0 4px 20px;padding:0;">'+a.quotes.map(q=>'<li>'+esc(q)+'</li>').join('')+'</ul></div>':'')+
+      (a.theoryFramework&&a.theoryFramework.length?'<div style="margin:6px 0;"><b>📚 理论框架：</b>'+a.theoryFramework.map(t=>'<div>· '+esc(t.name)+(t.inferred?' <span style="color:#c0392b;">[推断]</span>':'')+'</div>').join('')+'</div>':'')+
+      (a.policyDocs&&a.policyDocs.length?'<div style="margin:6px 0;"><b>📜 政策依据：</b>'+a.policyDocs.map(p=>'<div>· '+esc(p.name)+(p.inferred?' <span style="color:#c0392b;">[推断]</span>':'')+'</div>').join('')+'</div>':'')+
+      '</div>':'';
+    return '<div class="list-item"><div class="item-text" style="flex:1;cursor:pointer;" onclick="var d=this.parentElement.querySelector(\'.article-detail\');if(d)d.style.display=d.style.display===\'none\'?\'block\':\'none\';">'+
+      '<strong>'+esc(a.title)+'</strong>'+(a.autoAnalyzed?' <span style="font-size:.72rem;background:#e8f4f0;color:#2d8672;padding:1px 6px;border-radius:4px;">自动剖析</span>':'')+
+      '<div class="item-meta">'+esc(a.author||'')+' · '+esc(a.journal||'')+' '+(a.year||'')+'</div>'+
+      (a.coreArg?'<div style="margin-top:4px;font-size:.82rem;color:var(--text-soft);">核心论点：'+esc(a.coreArg.substring(0,80))+'</div>':'')+
+      detailHtml+'</div><button class="del-btn" onclick="event.stopPropagation();delArticle(\''+a.id+'\')">删除</button></div>';
+  }).join(''):emptyState('📖','暂无剖析记录');
 
   document.getElementById('mainContent').innerHTML=
     '<div class="page-header"><h1>📖 好文剖析</h1><p>每日一篇核心期刊论文深度拆解 · 论证流程 · 概念图谱</p></div>'
-    +'<div class="daily-article"><span class="daily-badge">📌 每日好文</span><div class="daily-title">'+esc(daily.title)+'</div><div class="daily-meta">'+esc(daily.authors)+' · '+esc(daily.journal)+' '+daily.year+'年第'+daily.issue+'期 · 第'+daily.pages+'页</div>'
-    +'<a href="'+daily.url+'" target="_blank" class="job-link">🔗 原文链接 ↗</a>'
-    +'<div style="margin-top:16px;"><div class="analysis-label">📝 论证流程（点击展开）</div>'+flowHtml+'</div>'
+    +'<div class="daily-article" onclick="markDailyRead()">'
+    +(isNew?'<span class="daily-badge" style="background:#c0392b;">🆕 今日新文</span>':'<span class="daily-badge">📌 每日好文</span>')
+    +'<div class="daily-title">'+esc(daily.title)+'</div><div class="daily-meta">'+esc(daily.authors)+' · '+esc(daily.journal)+' '+daily.year+'年第'+daily.issue+'期 · 第'+daily.pages+'页</div>'
+    +'<a href="'+daily.url+'" target="_blank" class="job-link" onclick="event.stopPropagation()">🔗 知网检索 ↗</a>'
+    +'<div style="margin-top:16px;" onclick="event.stopPropagation()"><div class="analysis-label">📝 论证流程（点击展开）</div>'+flowHtml+'</div>'
     +conceptHtml
-    +'<div class="analysis-section"><div class="analysis-label">💡 金句摘录</div>'+daily.quotes.map(q=>'<div class="quote-item"><span class="quote-text">'+esc(q)+'</span><button class="quote-save" onclick="saveQuote(\''+esc(q).replace(/'/g,"\\'")+'\')">存入素材</button></div>').join('')+'</div>'
+    +'<div class="analysis-section" onclick="event.stopPropagation()"><div class="analysis-label">💡 金句摘录</div>'+daily.quotes.map(q=>'<div class="quote-item"><span class="quote-text">'+esc(q)+'</span><button class="quote-save" onclick="saveQuote(\''+esc(q).replace(/'/g,"\\'")+'\')">存入素材</button></div>').join('')+'</div>'
     +'</div>'
-    +'<div class="card"><div class="card-title"><span class="title-icon">📚</span>我的好文剖析记录 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">共 '+data.articles.length+' 篇</span></div>'+list+'</div>'
+    +'<div class="card"><div class="card-title"><span class="title-icon">📥</span>投递 PDF / Word 生成好文剖析</div>'
+    +'<p style="font-size:.82rem;color:var(--text-soft);margin-bottom:10px;">上传文献全文，自动提取金句、理论框架、政策依据，生成完整剖析记录。</p>'
+    +'<input type="file" id="articleFileInput" accept=".pdf,.docx,.txt" style="display:none;" onchange="handleArticleUpload(this.files)">'
+    +'<button class="add-btn" onclick="document.getElementById(\'articleFileInput\').click()">📂 选择文件投递</button>'
+    +'</div>'
+    +'<div class="card"><div class="card-title"><span class="title-icon">📚</span>我的好文剖析记录 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">共 '+data.articles.length+' 篇 · 点击展开详情</span></div>'+list+'</div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">➕</span>手动录入好文</div>'
     +'<div class="form-row"><div><label>论文标题</label><input id="artTitle" placeholder="论文完整标题"></div><div><label>作者</label><input id="artAuthor" placeholder="作者姓名"></div></div>'
     +'<div class="form-row"><div><label>期刊</label><input id="artJournal" placeholder="如：国际安全研究"></div><div><label>年份</label><input id="artYear" type="number" placeholder="2025"></div></div>'
     +'<div class="form-group"><label>核心论点</label><textarea id="artCore" placeholder="论文的核心论点或创新点"></textarea></div>'
     +'<button class="add-btn" onclick="addArticle()">+ 保存剖析</button></div>';
+}
+function markDailyRead(){
+  const daily=getDailyArticle();
+  if(!data.readArticles.includes(daily.title)){data.readArticles.push(daily.title);saveData();renderArticle();}
 }
 function delArticle(id){data.articles=data.articles.filter(a=>a.id!==id);saveData();renderArticle();}
 function addArticle(){
@@ -525,9 +788,56 @@ function addArticle(){
   saveData();toast('好文剖析已保存');renderArticle();
 }
 function saveQuote(q){
-  data.materials.unshift({id:uid(),category:'金句摘录',content:q,source:DAILY_ARTICLE.title,date:fmtDate(new Date())});
+  data.materials.unshift({id:uid(),category:'金句摘录',content:q,source:getDailyArticle().title,date:fmtDate(new Date())});
   saveData();toast('已存入素材库');
 }
+// 投递文件生成好文剖析
+function handleArticleUpload(files){
+  if(!files||!files.length)return;
+  const f=files[0];
+  const lower=f.name.toLowerCase();
+  const name=f.name.replace(/\.(pdf|docx?|txt)$/i,'');
+  const finalize=(text)=>{
+    if(!text||text.length<50){toast('文档内容过短，请手动录入');return;}
+    const analysis=autoAnalyzeText(text,name);
+    const longestQuote=analysis.quotes.slice().sort((a,b)=>b.length-a.length)[0]||'';
+    const rec={id:uid(),title:name,author:'',journal:'投递文献',year:new Date().getFullYear().toString(),
+      coreArg:longestQuote.substring(0,200),date:fmtDate(new Date()),projectId:currentProjectId,
+      autoAnalyzed:true,detailedFlow:analysis.detailedFlow,quotes:analysis.quotes,
+      theoryFramework:analysis.theoryFramework,policyDocs:analysis.policyDocs,
+      quoteCount:analysis.quotes.length,theoryCount:analysis.theoryFramework.length,policyCount:analysis.policyDocs.length};
+    data.articles.unshift(rec);
+    // 同步入素材库
+    analysis.quotes.forEach(q=>data.materials.unshift({id:uid(),category:'金句观点',content:q,source:name,date:fmtDate(new Date())}));
+    analysis.theoryFramework.forEach(t=>data.materials.unshift({id:uid(),category:'理论框架',content:t.name+'：'+t.content,source:name,date:fmtDate(new Date())}));
+    analysis.policyDocs.forEach(p=>data.materials.unshift({id:uid(),category:'政策文件',content:p.name+'：'+p.content,source:name,date:fmtDate(new Date())}));
+    saveData();toast('已生成好文剖析记录（金句'+analysis.quotes.length+'条）');renderArticle();
+  };
+  if(lower.endsWith('.pdf')&&window.pdfjsLib){
+    const reader=new FileReader();
+    reader.onload=function(e){
+      pdfjsLib.getDocument(new Uint8Array(e.target.result)).promise.then(async function(pdf){
+        let text='';
+        for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const tc=await page.getTextContent();text+=tc.items.map(it=>it.str).join(' ')+'\n';}
+        finalize(text);
+      }).catch(()=>toast('PDF解析失败'));
+    };
+    reader.readAsArrayBuffer(f);
+  }else if(lower.endsWith('.docx')&&window.mammoth){
+    const reader=new FileReader();
+    reader.onload=function(e){
+      mammoth.extractRawText({arrayBuffer:e.target.result}).then(function(r){finalize(r.value||'');}).catch(()=>toast('Word解析失败'));
+    };
+    reader.readAsArrayBuffer(f);
+  }else if(lower.endsWith('.txt')){
+    const reader=new FileReader();
+    reader.onload=function(e){finalize(String(e.target.result||''));};
+    reader.readAsText(f,'UTF-8');
+  }else{
+    toast('不支持的文件类型，请上传PDF/Word/TXT');
+  }
+}
+
 
 // ===== 考博信息 =====
 let PHD_DB=[];
@@ -585,26 +895,119 @@ function renderRef(){
 function handleDrop(e){e.preventDefault();document.getElementById('dropZone').classList.remove('dragover');processFiles(e.dataTransfer.files);}
 
 // ===== 自动文献剖析引擎 =====
+// 在 THEORY_LIBRARY 中精确匹配（name + aliases）
+function matchTheoryLibrary(text){
+  const found=[];
+  const seen=new Set();
+  Object.keys(THEORY_LIBRARY).forEach(cat=>{
+    THEORY_LIBRARY[cat].forEach(t=>{
+      if(seen.has(t.name))return;
+      const needles=[t.name].concat(t.aliases||[]);
+      const hit=needles.find(n=>n&&text.includes(n));
+      if(hit){seen.add(t.name);found.push({name:t.name,category:cat,desc:t.desc,content:'文中明确运用「'+t.name+'」：'+(t.desc||'该理论为该领域重要分析视角')+'.可迁移至同类安全议题研究。',inferred:false,confidence:1.0});}
+    });
+  });
+  return found;
+}
+// 由方法论特征反推理论谱系
+function inferTheoryFromMethod(text){
+  const rules=[
+    {keys:['成本','收益','效用','博弈','激励','最优','均衡','理性人'],name:'理性选择/制度主义',content:'【推断】文本方法论特征指向理性选择与制度主义分析路径，强调成本-收益与激励结构。',confidence:0.8},
+    {keys:['规范','认同','话语','建构','观念','文化','意义'],name:'建构主义/规范理论',content:'【推断】文本反复使用规范、认同、话语等概念，指向建构主义与规范研究路径。',confidence:0.8},
+    {keys:['多主体','协同','联动','网络','伙伴','平台'],name:'协同治理/网络治理',content:'【推断】文本强调多主体互动与协同，指向协同治理与网络治理路径。',confidence:0.75},
+    {keys:['风险','应急','韧性','危机','灾害','脆弱性'],name:'风险社会/韧性治理',content:'【推断】文本聚焦风险与危机情境，指向风险社会理论与韧性治理路径。',confidence:0.8},
+    {keys:['历史','路径','演变','制度变迁','长期','传统'],name:'历史制度主义',content:'【推断】文本强调历史过程与路径依赖，指向历史制度主义路径。',confidence:0.75},
+    {keys:['结构','体系','格局','权力分配','极性'],name:'结构现实主义/体系理论',content:'【推断】文本从结构与权力格局切入，指向结构现实主义与体系理论。',confidence:0.7},
+    {keys:['利益','偏好','决策','策略'],name:'理性选择/博弈论',content:'【推断】文本分析行为体利益与策略互动，指向理性选择与博弈论。',confidence:0.75},
+    {keys:['机制','制度','规则','组织','合作'],name:'自由制度主义/机制理论',content:'【推断】文本关注制度与合作机制，指向自由制度主义与国际机制理论。',confidence:0.75},
+    {keys:['安全','威胁','冲突','战争','军事','威慑'],name:'安全研究/现实主义',content:'【推断】文本围绕安全与威胁展开，指向安全研究与现实主义路径。',confidence:0.8},
+    {keys:['治理','政府','公共','政策','行政'],name:'公共管理/治理理论',content:'【推断】文本属于公共治理与政策分析范畴，可对接治理理论。',confidence:0.7},
+    {keys:['社会','群体','阶层','社会资本'],name:'社会学理论',content:'【推断】文本涉及社会结构与群体关系，可对接社会学分析路径。',confidence:0.65},
+    {keys:['数据','计量','回归','模型','实证','面板'],name:'实证主义/定量方法',content:'【推断】文本采用定量实证方法，需配套因果识别与稳健性检验。',confidence:0.7},
+    {keys:['案例','比较','访谈','质性','田野','文本分析'],name:'比较研究/质性方法',content:'【推断】文本采用案例比较或质性研究方法，需说明案例选择与资料来源。',confidence:0.7}
+  ];
+  const out=[];
+  rules.forEach(r=>{
+    const hit=r.keys.filter(k=>text.includes(k)).length;
+    if(hit>=1)out.push({name:r.name,content:r.content+' 机器推断，建议人工核对。',inferred:true,confidence:r.confidence});
+  });
+  // 去重保前5
+  const seen=new Set();const res=[];
+  out.sort((a,b)=>b.confidence-a.confidence).forEach(o=>{if(!seen.has(o.name)){seen.add(o.name);res.push(o);}});
+  return res.slice(0,4);
+}
+// 五层政策识别
+function extractPolicies(text){
+  const found=[];const seen=new Set();
+  const add=(x)=>{x=String(x||'').trim();if(x&&x.length<=60&&!seen.has(x)){seen.add(x);found.push(x);}};
+  // 层1：书名号文献（已有POLICY_PATTERNS）
+  POLICY_PATTERNS.forEach(p=>{const m=text.match(p);if(m)m.forEach(add);});
+  // 层2：法律名
+  const lawRe=/[\u4e00-\u9fa5]{2,12}(?:法|条例|规定|办法|细则|实施意见)/g;
+  const lm=text.match(lawRe);if(lm)lm.forEach(add);
+  // 层3：政策句式
+  ['贯彻','落实','根据','按照','深入贯彻','全面落实'].forEach(pre=>{
+    const re=new RegExp(pre+'[^，。；]{4,30}','g');const m=text.match(re);if(m)m.forEach(add);
+  });
+  return found;
+}
+// 主题兜底推断政策语境
+function inferPolicyContext(text){
+  const out=[];
+  if(/海洋|海权|海上|通道|港口|南海|北极/i.test(text))out.push({name:'海洋强国战略 / 全球海洋治理',content:'【推断】文本涉及海洋议题，可对接海洋强国战略与全球海洋治理议程。',inferred:true});
+  if(/网络|数据|算法|人工智能|AI|信息/i.test(text))out.push({name:'网络强国战略 / 数据安全法',content:'【推断】文本涉及网络与数据议题，可对接网络强国战略与数据安全法。',inferred:true});
+  if(/供应链|产业链|经济|金融|贸易|投资/i.test(text))out.push({name:'经济安全 / 供应链安全战略',content:'【推断】文本涉及经济与供应链议题，可对接经济安全与产业链供应链安全部署。',inferred:true});
+  if(/边疆|民族|边境|地区|社会治理|基层/i.test(text))out.push({name:'边疆治理 / 平安中国建设',content:'【推断】文本涉及边疆与社会治理，可对接平安中国与边疆治理现代化。',inferred:true});
+  if(/总体国家安全观|大安全|各领域安全/i.test(text))out.push({name:'总体国家安全观 / 国家安全战略',content:'【推断】文本以总体国家安全观为根本遵循，可对接国家安全战略纲要。',inferred:true});
+  if(!out.length)out.push({name:'党的二十大精神 / 国家治理现代化',content:'【推断】文本可对接党的二十大关于国家安全与国家治理现代化的总体部署。',inferred:true});
+  return out.slice(0,3);
+}
+
 function autoAnalyzeText(text,title){
   if(!text||text.length<50)return null;
-  const sentences=text.split(/[。！？\n]/).filter(s=>s.trim().length>=20&&s.trim().length<=150);
-  const judgeWords=['认为','指出','表明','说明','意味着','体现','反映','揭示','论证','提出','构建','强调','关键','核心','重要','本质','必然','趋势'];
-  const quotes=sentences.filter(s=>judgeWords.some(w=>s.includes(w))).slice(0,5).map(s=>s.trim());
-  const theories=THEORY_KEYWORDS.filter(t=>text.includes(t)).slice(0,5);
-  const theoryFramework=theories.length?theories.map(t=>({name:t,content:'文中运用了'+t+'作为分析框架，可迁移至同类安全议题研究。'})):[{name:'待补充理论框架',content:'文本中未明确识别出核心理论框架，建议精读后手动补充。'}];
-  const policies=[];
-  POLICY_PATTERNS.forEach(p=>{const m=text.match(p);if(m)m.forEach(x=>{if(!policies.includes(x)&&x.length<40)policies.push(x);});});
-  const policyDocs=policies.length?policies.slice(0,5).map(p=>({name:p,content:'文中引用了'+p+'，可作为政策依据素材。'})):[{name:'待补充政策文件',content:'文本中未识别出明确的政策文件引用。'}];
+  // 金句：先严格命中，不足3条则放宽
+  const sentences=text.split(/[。！？\n；;]/).map(s=>s.trim()).filter(s=>s.length>=15&&s.length<=200);
+  const judgeWords=['认为','指出','表明','说明','意味着','体现','反映','揭示','论证','提出','构建','强调','关键','核心','重要','本质','必然','趋势','是','为','将','要','应'];
+  let quotes=sentences.filter(s=>['认为','指出','表明','说明','意味着','体现','反映','揭示','论证','强调','核心','关键'].some(w=>s.includes(w))).slice(0,6);
+  if(quotes.length<3){
+    const relax=sentences.filter(s=>!quotes.includes(s)&&judgeWords.some(w=>s.includes(w))).slice(0,6-quotes.length);
+    quotes=quotes.concat(relax);
+  }
+  if(quotes.length<3){
+    quotes=quotes.concat(sentences.slice(0,3-quotes.length));
+  }
+  quotes=quotes.slice(0,6);
+
+  // 理论：先精确匹配，再方法推断；永不返回待补充
+  const exact=matchTheoryLibrary(text);
+  const inferred=inferTheoryFromMethod(text);
+  const theoryFramework=[];
+  exact.slice(0,4).forEach(t=>theoryFramework.push(t));
+  if(theoryFramework.length<3){
+    inferred.forEach(t=>{if(theoryFramework.length<4&&!theoryFramework.find(x=>x.name===t.name))theoryFramework.push(t);});
+  }
+  if(!theoryFramework.length)theoryFramework.push({name:'待精读补充理论框架',content:'【提示】本文本未触发明显理论关键词，建议精读后手动标注理论视角。',inferred:true,confidence:0});
+
+  // 政策：五层识别，不足则主题推断
+  const polList=extractPolicies(text);
+  let policyDocs=polList.slice(0,5).map(p=>({name:p,content:'文中出现「'+p+'」，可作为政策依据素材。',inferred:false}));
+  if(policyDocs.length<2){
+    inferPolicyContext(text).forEach(p=>{if(policyDocs.length<4)policyDocs.push(p);});
+  }
+
+  // 数据来源
   const dataSources=[];
-  DATA_PATTERNS.forEach(p=>{const m=text.match(p);if(m)m.forEach(x=>{if(!dataSources.includes(x))dataSources.push(x);});});
-  const dataSrc=dataSources.length?dataSources.slice(0,5).map(d=>({name:d,type:'数据来源',content:'文中使用了'+d+'作为数据支撑。'})):[{name:'待补充数据来源',type:'数据来源',content:'文本中未识别出明确的数据来源。'}];
+  DATA_PATTERNS.forEach(p=>{const m=text.match(p);if(m)m.forEach(x=>{if(!dataSources.includes(x)&&x.length<30)dataSources.push(x);});});
+  const dataSrc=dataSources.length?dataSources.slice(0,5).map(d=>({name:d,type:'数据来源',content:'文中使用了'+d+'作为数据支撑。',inferred:false})):[{name:'案例/文献资料',type:'数据来源',content:'【提示】未识别出明确数据库，建议补充案例材料或访谈资料。',inferred:true}];
+
+  const theoryNames=theoryFramework.slice(0,2).map(t=>t.name).join('、')||'相关理论';
   const flowSteps=[
     {step:'问题提出',detail:'从'+(title||'该议题')+'的现实背景切入，识别研究问题与研究缺口。'},
-    {step:'理论资源梳理',detail:'梳理'+(theories.length?theories.slice(0,2).join('、'):'相关理论')+'等理论资源，确立分析视角。'},
+    {step:'理论资源梳理',detail:'梳理'+theoryNames+'等理论资源，确立分析视角。'},
     {step:'核心框架构建',detail:'构建本文的核心分析框架，明确核心概念与变量关系。'},
     {step:'实证/案例分析',detail:'运用'+(dataSources.length?dataSources.slice(0,2).join('、'):'相关数据或案例')+'进行实证分析。'},
     {step:'机制阐释',detail:'阐释核心变量之间的作用机制与因果逻辑。'},
-    {step:'结论与政策建议',detail:'总结研究发现，提出针对性政策建议。'}
+    {step:'结论与政策建议',detail:'总结研究发现，结合'+(policyDocs[0]?policyDocs[0].name:'相关政策')+'提出针对性建议。'}
   ];
   return{quotes:quotes,theoryFramework:theoryFramework,policyDocs:policyDocs,dataSources:dataSrc,detailedFlow:flowSteps};
 }
@@ -618,6 +1021,47 @@ function commitAnalysis(refEntry, analysis){
   analysis.dataSources.forEach(o=>{if(o.name&&!o.name.startsWith('待补充')){data.materials.unshift({id:uid(),category:'数据来源',content:o.name+'：'+o.content,source:src,date:fmtDate(new Date())});d++;}});
   data.articles.unshift({id:uid(),title:refEntry.title||'自动剖析文献',author:refEntry.author||'',journal:refEntry.source||'',year:refEntry.year||'',coreArg:'自动剖析提取金句'+q+'条、理论'+t+'个、政策'+p+'个、数据'+d+'个。',date:fmtDate(new Date()),projectId:currentProjectId,autoAnalyzed:true,quoteCount:q,theoryCount:t,policyCount:p,dataCount:d});
   return{q:q,t:t,p:p,d:d};
+}
+
+// ===== LLM 双模式剖析 =====
+async function analyzeWithLLM(text,title){
+  const endpoint=data.settings.apiEndpoint;
+  const key=data.settings.apiKey;
+  if(!key||!endpoint)return null;
+  const prompt='你是国家安全学论文剖析助手。请阅读以下文献，提取结构化剖析结果，严格返回JSON（不要markdown，不要解释文字）：\n'+
+  '{"quotes":["金句1","金句2","金句3"],"theoryFramework":[{"name":"理论名","content":"一句话说明其在文中作用","inferred":false}],"policyDocs":[{"name":"政策文件/会议/战略名","content":"一句话说明","inferred":false}],"dataSources":[{"name":"数据来源","type":"数据来源","content":"说明"}],"detailedFlow":[{"step":"步骤名","detail":"说明"}]}'+
+  '\n要求：quotes至少3条；theoryFramework至少2条；policyDocs至少2条；detailedFlow 5-7步。\n'+
+  '文献标题：'+(title||'未命名')+'\n全文：\n'+text.slice(0,8000);
+  const resp=await fetch(endpoint,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+    body:JSON.stringify({model:data.settings.apiModel,messages:[{role:'user',content:prompt}],temperature:0.3,response_format:{type:'json_object'}})
+  });
+  if(!resp.ok)throw new Error('LLM HTTP '+resp.status);
+  const j=await resp.json();
+  const c=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
+  if(!c)throw new Error('empty content');
+  return JSON.parse(c);
+}
+async function runAnalysis(text,title,refEntry){
+  let analysis=null;
+  const usingLLM=!!(data.settings.apiKey&&data.settings.apiKey.trim());
+  if(usingLLM){
+    try{
+      toast('🤖 LLM剖析中...');
+      analysis=await analyzeWithLLM(text,title);
+      if(!analysis||!analysis.quotes||!analysis.quotes.length)throw new Error('LLM empty');
+      if(!analysis.theoryFramework||!analysis.theoryFramework.length){const r=autoAnalyzeText(text,title);if(r)analysis.theoryFramework=r.theoryFramework;}
+      if(!analysis.policyDocs||!analysis.policyDocs.length){const r=autoAnalyzeText(text,title);if(r)analysis.policyDocs=r.policyDocs;}
+      if(!analysis.dataSources||!analysis.dataSources.length){const r=autoAnalyzeText(text,title);if(r)analysis.dataSources=r.dataSources;}
+    }catch(e){console.warn('LLM失败，回退规则引擎:',e);analysis=autoAnalyzeText(text,title);}
+  }else{
+    analysis=autoAnalyzeText(text,title);
+  }
+  const r=commitAnalysis(refEntry,analysis);
+  saveData();renderRef();
+  toast('已自动剖析：金句'+r.q+'条、理论'+r.t+'个、政策'+r.p+'个、数据'+r.d+'个'+(usingLLM?'（LLM）':''));
+  return r;
 }
 function processFiles(files){
   for(const f of files){
@@ -653,10 +1097,7 @@ function extractPdfFullText(file){
           const finalTitle=title||file.name.replace(/\.pdf$/i,'');
           const refEntry={id:uid(),title:finalTitle.substring(0,150),author:(author||'').substring(0,100),source:source||'PDF上传',year:year||new Date().getFullYear().toString(),note:'自动提取元数据+全文剖析 · 文件大小：'+(file.size/1024).toFixed(1)+'KB · 共'+pdf.numPages+'页',tags:'',read:false,file:file.name,uploadDate:fmtDate(new Date()),extracted:true};
           data.refs.unshift(refEntry);
-          const analysis=autoAnalyzeText(fullText,finalTitle);
-          const r=commitAnalysis(refEntry,analysis);
-          saveData();renderRef();
-          toast('已自动剖析：提取金句'+r.q+'条、理论'+r.t+'个、政策'+r.p+'个、数据'+r.d+'个');
+          runAnalysis(fullText,finalTitle,refEntry);
         });
       }).catch(function(err){
         console.warn('PDF parse error:',err);
@@ -684,10 +1125,7 @@ function extractDocxText(file){
       const text=result.value||'';
       const refEntry={id:uid(),title:name,author:'',source:'DOCX上传',year:new Date().getFullYear().toString(),note:'mammoth提取全文 · 字数'+text.length,tags:'',read:false,file:file.name,uploadDate:fmtDate(new Date()),extracted:true};
       data.refs.unshift(refEntry);
-      const analysis=autoAnalyzeText(text,name);
-      const r=commitAnalysis(refEntry,analysis);
-      saveData();renderRef();
-      toast('已自动剖析：提取金句'+r.q+'条、理论'+r.t+'个、政策'+r.p+'个、数据'+r.d+'个');
+      runAnalysis(text,name,refEntry);
     }).catch(function(err){
       console.warn('docx err',err);
       data.refs.unshift({id:uid(),title:name,author:'',source:'DOCX上传',year:new Date().getFullYear().toString(),note:'DOCX解析失败',tags:'',read:false,file:file.name,uploadDate:fmtDate(new Date())});
@@ -703,10 +1141,7 @@ function extractTxtText(file){
     const name=file.name.replace(/\.txt$/i,'');
     const refEntry={id:uid(),title:name,author:'',source:'TXT上传',year:new Date().getFullYear().toString(),note:'TXT全文 · 字数'+text.length,tags:'',read:false,file:file.name,uploadDate:fmtDate(new Date()),extracted:true};
     data.refs.unshift(refEntry);
-    const analysis=autoAnalyzeText(text,name);
-    const r=commitAnalysis(refEntry,analysis);
-    saveData();renderRef();
-    toast('已自动剖析：提取金句'+r.q+'条、理论'+r.t+'个、政策'+r.p+'个、数据'+r.d+'个');
+    runAnalysis(text,name,refEntry);
   };
   reader.readAsText(file,'UTF-8');
 }
@@ -976,6 +1411,13 @@ function renderSettings(){
     +'<div class="card"><div class="card-title"><span class="title-icon">🎨</span>主题配色 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">共 '+THEMES.length+' 套 · 当前：'+THEME_NAMES[data.settings.theme]+'</span></div><div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;"><label style="font-size:.85rem;display:flex;align-items:center;gap:6px;"><input type="checkbox" '+(data.settings.autoRotate?'checked':'')+' onchange="data.settings.autoRotate=this.checked;saveData();" style="width:16px;height:16px;"> 自动轮换</label><select id="rotateDays" onchange="data.settings.rotateDays=parseInt(this.value);saveData();" style="padding:6px 10px;border:1px solid var(--line);border-radius:6px;"><option value="3" '+(data.settings.rotateDays===3?'selected':'')+'>每3天</option><option value="7" '+(data.settings.rotateDays===7?'selected':'')+'>每7天</option><option value="14" '+(data.settings.rotateDays===14?'selected':'')+'>每14天</option><option value="30" '+(data.settings.rotateDays===30?'selected':'')+'>每月</option></select></div><div class="theme-grid">'+themeBtns+'</div></div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">💾</span>数据管理</div><p style="font-size:.85rem;color:var(--text-soft);margin-bottom:12px;">当前模式：<strong>'+(apiMode?'☁️ 云端同步（Supabase）':'💻 本地存储（localStorage）')+'</strong>。'+(apiMode?'数据已同步至云端数据库，换设备登录后自动恢复。':'所有数据存储在浏览器本地，导出备份可防止清除浏览器数据后丢失。支持从JSON备份文件恢复数据。')+'</p><div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="add-btn" onclick="exportData()">📤 导出全部数据备份</button><button class="add-btn ghost" onclick="document.getElementById(\'importInput\').click()">📥 导入备份文件</button><button class="del-btn" onclick="clearAllData()" style="padding:10px 20px;font-size:.9rem;">🗑 清空全部数据</button><button class="add-btn" style="background:linear-gradient(135deg,var(--primary),var(--primary-deep));font-weight:700;" onclick="generateWeeklyReport()">📰 生成国安研究周报</button>'+(apiMode?'<button class="add-btn ghost" onclick="logout()" style="padding:10px 20px;font-size:.9rem;">🚪 退出登录</button>':'')+'<input type="file" id="importInput" accept=".json" style="display:none;" onchange="importData(this.files[0])"></div></div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">🔐</span>访问密钥</div><div class="form-group"><label>修改登录密钥</label><input id="newKey" type="password" placeholder="输入新的访问密钥" value="'+esc(data.settings.accessKey||'')+'"></div><button class="add-btn" onclick="saveKey()">保存密钥</button></div>'
+    +'<div class="card"><div class="card-title"><span class="title-icon">🤖</span>大模型 API 配置 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">可选 · 留空则使用本地规则引擎剖析</span></div>'
+    +'<p style="font-size:.82rem;color:var(--text-soft);margin-bottom:10px;">兼容 OpenAI / 豆包 / DeepSeek 等 OpenAI 接口格式。配置后上传 PDF/Word 时自动走 LLM 剖析；未配置时使用内置规则引擎，永不联网。</p>'
+    +'<div class="form-group"><label>接口地址（Endpoint）</label><input id="apiEndpoint" placeholder="https://api.openai.com/v1/chat/completions" value="'+esc(data.settings.apiEndpoint||'')+'"></div>'
+    +'<div class="form-group"><label>API Key</label><input id="apiKey" type="password" placeholder="sk-...（仅存本地浏览器）" value="'+esc(data.settings.apiKey||'')+'"></div>'
+    +'<div class="form-group"><label>模型名（Model）</label><input id="apiModel" placeholder="gpt-4o-mini" value="'+esc(data.settings.apiModel||'')+'"></div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="add-btn" onclick="saveApiConfig()">💾 保存配置</button><button class="add-btn ghost" onclick="testApiConnection()">🔌 测试连接</button><span id="apiTestResult" style="font-size:.85rem;align-self:center;"></span></div>'
+    +'</div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">🔒</span>隐私与数据说明</div><p style="font-size:.85rem;color:var(--text-soft);line-height:1.8;">本工作台所有数据均存储在您当前浏览器的本地存储（localStorage）中，<strong>不会上传到任何服务器</strong>。清除浏览器数据或更换设备后数据将丢失，请定期导出备份。PDF元数据提取在本地浏览器完成，文件内容不会上传。</p></div>';
 }
 function exportData(){
@@ -1005,7 +1447,7 @@ function importData(file){
 }
 function clearAllData(){
   if(confirm('确定要清空全部数据吗？此操作不可恢复，建议先导出备份。')){
-    data={projects:[],topics:[],refs:[],articles:[],materials:[],notes:[],schedule:[],paperTasks:[],topicCards:[],settings:{theme:'A',autoRotate:false,rotateDays:7,email:'',accessKey:data.settings.accessKey||'guoan2026'},chatMessages:[],privacyAccepted:true};
+    data={projects:[],topics:[],refs:[],articles:[],materials:[],notes:[],schedule:[],paperTasks:[],topicCards:[],readArticles:[],settings:{theme:'A',autoRotate:false,rotateDays:7,email:'',accessKey:data.settings.accessKey||'guoan2026',apiEndpoint:data.settings.apiEndpoint||'https://api.openai.com/v1/chat/completions',apiKey:data.settings.apiKey||'',apiModel:data.settings.apiModel||'gpt-4o-mini'},chatMessages:[],privacyAccepted:true};
     saveData();applyTheme('A');
     toast('数据已清空');renderSettings();
   }
@@ -1015,6 +1457,25 @@ function saveKey(){
   data.settings.accessKey=key||'guoan2026';
   saveData();
   toast('访问密钥已保存');
+}
+function saveApiConfig(){
+  data.settings.apiEndpoint=document.getElementById('apiEndpoint').value.trim()||'https://api.openai.com/v1/chat/completions';
+  data.settings.apiKey=document.getElementById('apiKey').value.trim();
+  data.settings.apiModel=document.getElementById('apiModel').value.trim()||'gpt-4o-mini';
+  saveData();toast('API配置已保存');
+}
+async function testApiConnection(){
+  const out=document.getElementById('apiTestResult');
+  const endpoint=document.getElementById('apiEndpoint').value.trim();
+  const key=document.getElementById('apiKey').value.trim();
+  const model=document.getElementById('apiModel').value.trim()||'gpt-4o-mini';
+  if(!key){out.innerHTML='<span style="color:#c0392b;">未填写Key</span>';return;}
+  out.innerHTML='<span style="color:var(--text-mute);">测试中...</span>';
+  try{
+    const resp=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:model,messages:[{role:'user',content:'ping，回复pong'}],max_tokens:10})});
+    if(!resp.ok){out.innerHTML='<span style="color:#c0392b;">失败 HTTP '+resp.status+'</span>';return;}
+    out.innerHTML='<span style="color:#2d8672;">✅ 连接成功</span>';
+  }catch(e){out.innerHTML='<span style="color:#c0392b;">失败：'+esc(String(e.message||e)).slice(0,60)+'</span>';}
 }
 
 // ===== 国安研究周报生成 =====
@@ -1062,31 +1523,304 @@ const LITERATURE_DB=[
 ];
 
 // ===== 每日好文 =====
-const DAILY_ARTICLE={
+// ===== 每日好文范文池（12篇，按日期轮换）=====
+const ARTICLE_POOL=[
+{
 title:"对象、中介与目标：基于总体国家安全观的国家安全学范畴探讨",
 authors:"程同顺, 唐康",journal:"国际安全研究",year:"2025",issue:"4",pages:"3-20",
-url:"http://gjaqyj.cnjournals.com/gjaqyj/ch/reader/view_abstract.aspx?file_no=20250401&flag=1",
+url:"https://kns.cnki.net/kns8s/defaultresult/index?kw=%E6%80%BB%E4%BD%93%E5%9B%BD%E5%AE%B6%E5%AE%89%E5%85%A8%E8%A7%82%20%E8%8C%83%E7%95%B4",
 detailedFlow:[
 {step:"问题提出",detail:"国家安全学一级学科设立后，核心范畴体系尚未统一，学界对'研究对象是什么'存在分歧。"},
-{step:"理论资源梳理",detail:"系统梳理三类理论资源：①总体国家安全观的规范文本；②西方安全化理论；③哲学范畴论。"},
-{step:"核心框架构建",detail:"提出'对象—中介—目标'三元范畴框架：对象回答'安全什么'，中介回答'如何安全'，目标回答'为谁安全'。"},
-{step:"对象范畴论证",detail:"论证国家安全学的研究对象是'国家利益受损的可能性'。"},
-{step:"中介范畴论证",detail:"论证安全化行为与制度安排是连接威胁认知与治理实践的关键中介。"},
-{step:"目标范畴论证",detail:"论证国家安全的目标是'人的安全与国家存续的统一'。"},
-{step:"结论与学科启示",detail:"三元范畴框架为国家安全学学科建设提供统一的概念基础。"}
+{step:"理论资源梳理",detail:"梳理总体国家安全观规范文本、西方安全化理论与哲学范畴论三类资源。"},
+{step:"核心框架构建",detail:"提出'对象—中介—目标'三元范畴框架。"},
+{step:"对象范畴论证",detail:"论证国家安全学研究对象是国家利益受损的可能性。"},
+{step:"中介范畴论证",detail:"安全化行为与制度安排是连接威胁认知与治理实践的中介。"},
+{step:"目标范畴论证",detail:"国家安全目标是人的安全与国家存续的统一。"},
+{step:"结论与学科启示",detail:"三元范畴框架为学科建设提供统一概念基础。"}
 ],
 conceptMap:{layers:[
 {label:"研究起点",nodes:[{text:"学科建制背景",type:"normal"},{text:"范畴体系混乱",type:"accent"}]},
-{label:"理论资源",nodes:[{text:"总体国家安全观",type:"normal"},{text:"安全化理论",type:"normal"},{text:"哲学范畴论",type:"normal"}]},
 {label:"核心框架",nodes:[{text:"对象",type:"accent"},{text:"中介",type:"accent"},{text:"目标",type:"accent"}]},
-{label:"论证推进",nodes:[{text:"对象=利益受损可能性",type:"normal"},{text:"中介=安全化行为制度",type:"normal"},{text:"目标=人的安全+存续",type:"normal"}]}
+{label:"论证推进",nodes:[{text:"利益受损可能性",type:"normal"},{text:"安全化行为制度",type:"normal"},{text:"人的安全+存续",type:"normal"}]}
 ]},
 quotes:[
 "国家安全学的研究对象是国家利益受损的可能性，而非既成的安全或不安全状态。",
 "安全化不是单向过程，而是认知—制度—实践的循环。",
 "国家安全的目标是人的安全与国家存续的统一。"
-]
-};
+],theoryTags:["总体国家安全观","安全化理论"],policyTags:["总体国家安全观"]
+},
+{
+title:"非传统安全威胁的跨界性与协同治理机制研究",
+authors:"余潇枫, 李佳",journal:"世界经济与政治",year:"2025",issue:"3",pages:"58-82",
+url:"https://kns.cnki.net/kns8s/defaultresult/index?kw=%E9%9D%9E%E4%BC%A0%E7%BB%9F%E5%AE%89%E5%85%A8%20%E5%8D%8F%E5%90%8C%E6%B2%BB%E7%90%86",
+detailedFlow:[
+{step:"问题提出",detail:"公共卫生、气候变化、跨国犯罪等非传统安全威胁跨界传导，单一主体难以应对。"},
+{step:"概念辨析",detail:"区分传统安全与非传统安全：后者具有跨界性、弥散性、非对称性。"},
+{step:"理论视角",detail:"引入安全化理论与协同治理理论，分析多元主体如何共同'把威胁指涉化'。"},
+{step:"机制困境",detail:"揭示部门分割、信息壁垒、责任模糊导致的协同失灵。"},
+{step:"机制设计",detail:"构建政府—市场—社会—国际组织四维协同治理网络。"},
+{step:"案例验证",detail:"以新冠疫情全球应对为例检验机制有效性。"},
+{step:"结论与启示",detail:"非传统安全治理需从'被动应对'转向'主动安全化'。"}
+],
+conceptMap:{layers:[
+{label:"威胁特征",nodes:[{text:"跨界性",type:"accent"},{text:"弥散性",type:"normal"},{text:"非对称性",type:"normal"}]},
+{label:"治理主体",nodes:[{text:"政府",type:"normal"},{text:"市场",type:"normal"},{text:"社会",type:"normal"},{text:"国际组织",type:"normal"}]},
+{label:"机制产出",nodes:[{text:"信息共享",type:"normal"},{text:"联合响应",type:"accent"}]}
+]},
+quotes:[
+"非传统安全的本质是'人的安全'，而非单纯的国家军事安全。",
+"协同治理不是简单的部门相加，而是信息、资源与责任的网络化重构。",
+"把威胁指涉化的过程，本身就是政治过程。"
+],theoryTags:["安全化理论","协同治理"],policyTags:["总体国家安全观","全球卫生治理"]
+},
+{
+title:"海洋强国建设中的海上战略通道安全保障研究",
+authors:"王义桅",journal:"太平洋学报",year:"2025",issue:"2",pages:"1-18",
+url:"https://kns.cnki.net/kns8s/defaultresult/index?kw=%E6%B5%B7%E6%B4%8B%E5%BC%BA%E5%9B%BD%20%E6%B5%B7%E4%B8%8A%E9%80%9A%E9%81%93%E5%AE%89%E5%85%A8",
+detailedFlow:[
+{step:"问题提出",detail:"我国外贸与能源进口高度依赖海上通道，马六甲困境日益突出。"},
+{step:"风险评估",detail:"从海盗、地缘博弈、军事封锁、基础设施薄弱四维评估通道风险。"},
+{step:"理论资源",detail:"引入海权论与全球公共物品理论分析通道治理。"},
+{step:"战略目标",detail:"构建'近海防御—远海护卫—国际合作'三层能力。"},
+{step:"路径设计",detail:"海军存在、外交布局、港口网络、护航合作四维并进。"},
+{step:"国际合作",detail:"推动北极航线、印度洋港口合作与多边海上安全机制。"},
+{step:"结论",detail:"海洋强国不仅是海军强国，更是通道治理的规则供给者。"}
+],
+conceptMap:{layers:[
+{label:"风险源",nodes:[{text:"海盗",type:"normal"},{text:"地缘博弈",type:"accent"},{text:"军事封锁",type:"normal"}]},
+{label:"能力建设",nodes:[{text:"海军存在",type:"normal"},{text:"外交布局",type:"normal"},{text:"港口网络",type:"normal"}]},
+{label:"战略产出",nodes:[{text:"通道可靠",type:"accent"},{text:"规则供给",type:"normal"}]}
+]},
+quotes:[
+"谁控制了马六甲，谁就扼住了中国能源的咽喉。",
+"海洋强国的标志不是舰队规模，而是能否提供全球海洋公共物品。",
+"海上通道安全是发展出来的，不是等待出来的。"
+],theoryTags:["海权论","国际公共物品"],policyTags:["海洋强国战略","一带一路"]
+},
+{
+title:"网络空间主权与全球互联网治理的中国方案",
+authors:"黄日涵, 张华",journal:"现代国际关系",year:"2025",issue:"5",pages:"34-45",
+url:"https://kns.cnki.net/kns8s/defaultresult/index?kw=%E7%BD%91%E7%BB%9C%E7%A9%BA%E9%97%B4%E4%B8%BB%E6%9D%83%20%E6%B2%BB%E7%90%86",
+detailedFlow:[
+{step:"问题提出",detail:"全球互联网治理规则博弈加剧，网络空间主权成为新争议焦点。"},
+{step:"概念演进",detail:"梳理从'网络自由'到'网络主权'的规范变迁。"},
+{step:"格局分析",detail:"比较美国单边主导、欧盟多边规则、中国主权主张三种模式。"},
+{step:"理论视角",detail:"引入国际机制理论与规范扩散理论分析治理合法性。"},
+{step:"中国方案",detail:"提出网络空间命运共同体与多边民主决策机制。"},
+{step:"实践路径",detail:"依托上合、金砖、世贸等平台推动规则协调。"},
+{step:"结论",detail:"网络空间不能由单一国家定义，需多元共治。"}
+],
+conceptMap:{layers:[
+{label:"治理模式",nodes:[{text:"美国单边",type:"normal"},{text:"欧盟多边",type:"normal"},{text:"中国主权",type:"accent"}]},
+{label:"规范输出",nodes:[{text:"网络主权",type:"accent"},{text:"命运共同体",type:"normal"}]},
+{label:"平台",nodes:[{text:"上合",type:"normal"},{text:"金砖",type:"normal"},{text:"ITU",type:"normal"}]}
+]},
+quotes:[
+"网络空间不是法外之地，也不是任何国家的私域。",
+"网络主权是国家主权在数字空间的自然延伸。",
+"全球互联网治理需要的是多利益相关方，不是多利益相关方伪装下的单边主义。"
+],theoryTags:["国际机制理论","规范扩散理论"],policyTags:["网络强国战略","全球文明倡议"]
+},
+{
+title:"人工智能安全治理的国际比较与中国路径",
+authors:"李仁涵, 曾大军",journal:"中国科学院院刊",year:"2025",issue:"6",pages:"821-832",
+url:"https://kns.cnki.net/kns8s/defaultresult/index?kw=%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E5%AE%89%E5%85%A8%20%E6%B2%BB%E7%90%86",
+detailedFlow:[
+{step:"问题提出",detail:"生成式AI快速扩散，算法偏见、深度伪造、失控风险引发全球关切。"},
+{step:"风险分类",detail:"区分能力风险、应用风险、结构性风险三类。"},
+{step:"国别比较",detail:"比较美国行政令、欧盟AI法案、中国算法推荐规定。"},
+{step:"理论视角",detail:"引入风险社会与韧性治理理论分析监管范式。"},
+{step:"中国路径",detail:"构建'分类分级+备案审查+社会监督'三位一体监管框架。"},
+{step:"国际协调",detail:"推动联合国AI治理机制与全球AI安全伙伴关系。"},
+{step:"结论",detail:"AI治理要在创新与安全之间寻求动态平衡。"}
+],
+conceptMap:{layers:[
+{label:"风险类型",nodes:[{text:"能力风险",type:"accent"},{text:"应用风险",type:"normal"},{text:"结构风险",type:"normal"}]},
+{label:"监管模式",nodes:[{text:"美国行政令",type:"normal"},{text:"欧盟AI法案",type:"normal"},{text:"中国分类分级",type:"accent"}]},
+{label:"治理产出",nodes:[{text:"创新安全平衡",type:"accent"}]}
+]},
+quotes:[
+"AI治理的核心不是禁止创新，而是让创新在可预期的规则下发生。",
+"分类分级是平衡创新与安全的现实起点。",
+"算法不是中立的，它内嵌了开发者的价值选择。"
+],theoryTags:["风险社会","韧性治理"],policyTags:["科技安全","全球人工智能治理倡议"]
+},
+{
+title:"边疆治理与国家安全的双向互动逻辑",
+authors:"周平",journal:"政治学研究",year:"2025",issue:"1",pages:"23-38",
+url:"https://kns.cnki.net/kns8s/defaultresult/index?kw=%E8%BE%B9%E7%96%86%E6%B2%BB%E7%90%86%20%E5%9B%BD%E5%AE%B6%E5%AE%89%E5%85%A8",
+detailedFlow:[
+{step:"问题提出",detail:"边疆既是国家安全的屏障，也是治理现代化的难点。"},
+{step:"概念演进",detail:"从'羁縻—郡县'到'民族区域自治'梳理边疆治理形态。"},
+{step:"互动机制",detail:"分析边疆稳定与国家发展的双向建构关系。"},
+{step:"现实挑战",detail:"周边地缘变动、跨国民族问题、贫困与发展差距。"},
+{step:"理论视角",detail:"引入国家自主性与央地关系理论。"},
+{step:"路径设计",detail:"兴边富民、守边固边、睦邻安边三位一体。"},
+{step:"结论",detail:"边疆治理的根本是凝聚共同体意识。"}
+],
+conceptMap:{layers:[
+{label:"治理维度",nodes:[{text:"兴边富民",type:"normal"},{text:"守边固边",type:"accent"},{text:"睦邻安边",type:"normal"}]},
+{label:"核心议题",nodes:[{text:"地缘变动",type:"normal"},{text:"跨国民族",type:"normal"},{text:"发展差距",type:"normal"}]},
+{label:"价值目标",nodes:[{text:"共同体意识",type:"accent"}]}
+]},
+quotes:[
+"边疆是国家安全的前沿，也是国家治理的后院。",
+"守边先守心，安边先安民。",
+"边疆治理的现代化，本质上是共同体意识的制度化。"
+],theoryTags:["国家自主性","央地关系"],policyTags:["新时代党的治疆方略","兴边富民行动"]
+},
+{
+title:"供应链安全与大国竞争：理论框架与实证分析",
+authors:"钟飞腾",journal:"世界经济与政治",year:"2025",issue:"4",pages:"4-32",
+url:"https://kns.cnki.net/kns8s/defaultresult/index?kw=%E4%BE%9B%E5%BA%94%E9%93%BE%E5%AE%89%E5%85%A8%20%E5%A4%A7%E5%9B%BD%E7%AB%9E%E4%BA%89",
+detailedFlow:[
+{step:"问题提出",detail:"大国竞争向产业链延伸，供应链安全成为经济安全核心议题。"},
+{step:"概念界定",detail:"界定供应链安全为'供应可靠、韧性可调、关键环节自主可控'。"},
+{step:"理论框架",detail:"构建权力转移与相互依赖复合分析框架。"},
+{step:"实证检验",detail:"以中美科技脱钩数据检验供应链弹性的影响因素。"},
+{step:"机制分析",detail:"揭示'友岸外包'与'去风险化'的双重逻辑。"},
+{step:"中国应对",detail:"锻长板、补短板、多元化布局。"},
+{step:"结论",detail:"供应链安全不是脱钩，而是韧性重构。"}
+],
+conceptMap:{layers:[
+{label:"安全维度",nodes:[{text:"供应可靠",type:"normal"},{text:"韧性可调",type:"accent"},{text:"自主可控",type:"accent"}]},
+{label:"大国策略",nodes:[{text:"友岸外包",type:"normal"},{text:"去风险化",type:"normal"},{text:"多元化",type:"accent"}]},
+{label:"中国路径",nodes:[{text:"锻长板",type:"normal"},{text:"补短板",type:"normal"}]}
+]},
+quotes:[
+"供应链安全的本质是把命脉握在自己手里。",
+"'去风险化'不是去中国化，而是规则化。",
+"韧性不是储备，而是多元布局下的快速切换能力。"
+],theoryTags:["权力转移理论","复杂相互依赖"],policyTags:["经济安全","新发展格局"]
+},
+{
+title:"生物安全风险的全球治理与国家治理体系对接",
+authors:"王辰, 杨维中",journal:"公共管理学报",year:"2025",issue:"2",pages:"1-15",
+url:"https://kns.cnki.net/kns8s/defaultresult/index?kw=%E7%94%9F%E7%89%A9%E5%AE%89%E5%85%A8%20%E5%85%A8%E7%90%83%E6%B2%BB%E7%90%86",
+detailedFlow:[
+{step:"问题提出",detail:"新发再发传染病、生物实验室泄漏风险威胁全球卫生安全。"},
+{step:"风险谱系",detail:"区分自然起源、实验室意外、蓄意释放三类生物风险。"},
+{step:"治理短板",detail:"全球监测网络碎片化、国内部门分割。"},
+{step:"理论视角",detail:"引入风险社会与协同治理理论。"},
+{step:"体系设计",detail:"构建监测—预警—响应—恢复全链条国家生物安全体系。"},
+{step:"国际对接",detail:"推动《禁止生物武器公约》核查机制。"},
+{step:"结论",detail:"生物安全是总体国家安全的新型战略边疆。"}
+],
+conceptMap:{layers:[
+{label:"风险类型",nodes:[{text:"自然起源",type:"normal"},{text:"实验室意外",type:"accent"},{text:"蓄意释放",type:"normal"}]},
+{label:"治理链条",nodes:[{text:"监测",type:"normal"},{text:"预警",type:"normal"},{text:"响应",type:"accent"},{text:"恢复",type:"normal"}]},
+{label:"国际机制",nodes:[{text:"BWC核查",type:"accent"}]}
+]},
+quotes:[
+"生物安全没有国门，病毒不认主权边界。",
+"大流行之后，世界再也回不到从前。",
+"监测的速度决定响应的速度。"
+],theoryTags:["风险社会","协同治理"],policyTags:["生物安全法","全球卫生安全"]
+},
+{
+title:"文化安全视域下意识形态话语权建设研究",
+authors:"胡惠林",journal:"思想理论教育",year:"2025",issue:"3",pages:"12-20",
+url:"https://kns.cnki.net/kns8s/defaultresult/index?kw=%E6%96%87%E5%8C%96%E5%AE%89%E5%85%A8%20%E6%84%8F%E8%AF%86%E5%BD%A2%E6%80%81%E8%AF%9D%E8%AF%AD%E6%9D%83",
+detailedFlow:[
+{step:"问题提出",detail:"数字时代文化主权与意识形态话语权面临前所未有的冲击。"},
+{step:"概念辨析",detail:"界定文化安全为价值体系、文化遗产、话语表达的自主性。"},
+{step:"风险图谱",detail:"文化产品逆差、算法推荐偏见、历史虚无主义。"},
+{step:"理论视角",detail:"引入文化资本与话语权理论。"},
+{step:"路径设计",detail:"精品生产、国际传播、平台治理三维并进。"},
+{step:"案例分析",detail:"以纪录片与短视频出海为例检验传播效果。"},
+{step:"结论",detail:"文化安全是民族存续的深层屏障。"}
+],
+conceptMap:{layers:[
+{label:"安全维度",nodes:[{text:"价值自主",type:"accent"},{text:"遗产传承",type:"normal"},{text:"话语表达",type:"accent"}]},
+{label:"路径",nodes:[{text:"精品生产",type:"normal"},{text:"国际传播",type:"accent"},{text:"平台治理",type:"normal"}]},
+{label:"风险",nodes:[{text:"产品逆差",type:"normal"},{text:"算法偏见",type:"normal"}]}
+]},
+quotes:[
+"文化是一个民族的灵魂，文化安全是灵魂的安全。",
+"谁掌握了算法推荐，谁就掌握了下一代的注意力。",
+"讲好中国故事不是宣传口号，是文化主权的实践。"
+],theoryTags:["文化资本","话语权"],policyTags:["文化安全","全球文明倡议"]
+},
+{
+title:"中国海外利益保护的体系化构建与路径选择",
+authors:"夏立平, 王源",journal:"国际展望",year:"2025",issue:"4",pages:"72-95",
+url:"https://kns.cnki.net/kns8s/defaultresult/index?kw=%E6%B5%B7%E5%A4%96%E5%88%A9%E7%9B%8A%E4%BF%9D%E6%8A%A4",
+detailedFlow:[
+{step:"问题提出",detail:"中国海外资产与公民规模快速扩张，利益保护短板凸显。"},
+{step:"利益结构",detail:"梳理公民、机构、资产、通道、形象五类海外利益。"},
+{step:"现实威胁",detail:"地缘冲突、政权更迭、恐怖袭击、治安恶化。"},
+{step:"理论视角",detail:"引入国际保护责任与海外公民外交理论。"},
+{step:"体系构建",detail:"构建预防—预警—处置—善后全链条保护体系。"},
+{step:"能力建设",detail:"领事保护力量、海外安保公司、国际合作网络。"},
+{step:"结论",detail:"海外利益保护是大国成长的必修课。"}
+],
+conceptMap:{layers:[
+{label:"利益类型",nodes:[{text:"公民",type:"accent"},{text:"资产",type:"normal"},{text:"通道",type:"normal"},{text:"形象",type:"normal"}]},
+{label:"保护链条",nodes:[{text:"预防",type:"normal"},{text:"预警",type:"normal"},{text:"处置",type:"accent"},{text:"善后",type:"normal"}]},
+{label:"能力",nodes:[{text:"领事力量",type:"normal"},{text:"国际合作",type:"accent"}]}
+]},
+quotes:[
+"中国公民走到哪里，祖国的保护就要跟到哪里。",
+"海外利益保护不是撤退，而是更有质量的走出去。",
+"撤侨是最后的手段，不是常规动作。"
+],theoryTags:["国际保护责任","海外利益"],policyTags:["海外利益安全","领事保护"]
+},
+{
+title:"核安全全球治理的困境与中国角色",
+authors:"吴日强, 赵通",journal:"外交评论",year:"2025",issue:"3",pages:"21-44",
+url:"https://kns.cnki.net/kns8s/defaultresult/index?kw=%E6%A0%B8%E5%AE%89%E5%85%A8%20%E5%85%A8%E7%90%83%E6%B2%BB%E7%90%86",
+detailedFlow:[
+{step:"问题提出",detail:"核扩散与核军控体系持续弱化，地缘冲突推升核风险。"},
+{step:"格局变化",detail:"无核国家、拥核国家、半拥核国家三角博弈。"},
+{step:"机制困境",detail:"NPT审议大会僵局、六方会谈停滞。"},
+{step:"理论视角",detail:"引入威慑理论与国际机制理论。"},
+{step:"中国立场",detail:"倡导共同、综合、合作、可持续的核安全观。"},
+{step:"实践路径",detail:"核安全峰会经验转化、地区无核区建设。"},
+{step:"结论",detail:"核安全是人类生存的底线问题。"}
+],
+conceptMap:{layers:[
+{label:"博弈方",nodes:[{text:"无核国家",type:"normal"},{text:"拥核国家",type:"accent"},{text:"半拥核国家",type:"normal"}]},
+{label:"困境",nodes:[{text:"NPT僵局",type:"accent"},{text:"六方停滞",type:"normal"}]},
+{label:"中国角色",nodes:[{text:"核安全观",type:"accent"},{text:"地区无核区",type:"normal"}]}
+]},
+quotes:[
+"核战争打不赢，也打不得。",
+"核安全没有零和，全人类坐在同一艘船上。",
+"不首先使用核武器是中国对世界的庄严承诺。"
+],theoryTags:["威慑理论","国际机制理论"],policyTags:["核安全观","全球安全倡议"]
+},
+{
+title:"数据安全治理的制度逻辑与中国路径",
+authors:"张新宝, 陈曦",journal:"中国法学",year:"2025",issue:"2",pages:"110-128",
+url:"https://kns.cnki.net/kns8s/defaultresult/index?kw=%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%20%E6%B2%BB%E7%90%86",
+detailedFlow:[
+{step:"问题提出",detail:"数据作为新型生产要素，其安全与发展的平衡成为治理难题。"},
+{step:"制度梳理",detail:"梳理数据安全法、个人信息保护法、网络安全法三法衔接。"},
+{step:"比较分析",detail:"比较欧盟GDPR、美国分散立法、中国统筹立法。"},
+{step:"理论视角",detail:"引入制度变迁与规制理论。"},
+{step:"中国路径",detail:"分类分级、出境评估、伦理审查三位一体。"},
+{step:"实施评估",detail:"从执法案例看制度落地成效。"},
+{step:"结论",detail:"数据安全是数字时代的基础性安全。"}
+],
+conceptMap:{layers:[
+{label:"法律体系",nodes:[{text:"数据安全法",type:"accent"},{text:"个保法",type:"normal"},{text:"网安法",type:"normal"}]},
+{label:"监管工具",nodes:[{text:"分类分级",type:"accent"},{text:"出境评估",type:"normal"},{text:"伦理审查",type:"normal"}]},
+{label:"价值平衡",nodes:[{text:"安全",type:"accent"},{text:"发展",type:"accent"}]}
+]},
+quotes:[
+"数据不是石油，它复制不枯竭，但滥用会失控。",
+"没有数据安全，数字化就是沙滩上的城堡。",
+"个人信息保护的边界，是数字文明的水位线。"
+],theoryTags:["制度变迁","规制理论"],policyTags:["数据安全法","数字中国"]
+}
+];
+
+function getDailyArticle(){
+  const today=new Date();
+  const seed=today.getFullYear()*10000+(today.getMonth()+1)*100+today.getDate();
+  const idx=seed%ARTICLE_POOL.length;
+  return ARTICLE_POOL[idx];
+}
 
 // ===== 默认考博数据（兜底）=====
 const DEFAULT_PHD_DB=[
