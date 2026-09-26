@@ -261,3 +261,17 @@ input,textarea,select{font-family:inherit;font-size:1rem;}
 .sub-tab .badge-new{display:inline-block;background:#c0392b;color:#fff;font-size:.65rem;border-radius:8px;padding:0 5px;margin-left:4px;}
 .job-link{display:inline-block;margin-top:8px;font-size:.82rem;color:var(--primary);text-decoration:none;font-weight:600;}
 .job-link:hover{text-decoration:underline;}
+
+/* ===== v3.3 新增样式 ===== */
+.global-search-box{position:relative;margin:8px 12px 4px;}
+.global-search-box input{width:100%;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.85rem;box-sizing:border-box;}
+.global-search-results{position:absolute;top:100%;left:0;right:0;max-height:400px;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:9999;margin-top:4px;}
+.gs-empty{padding:14px;color:var(--text-mute);font-size:.85rem;text-align:center;}
+.gs-group{border-bottom:1px solid var(--border);}
+.gs-group:last-child{border-bottom:none;}
+.gs-group-title{padding:6px 12px;font-size:.75rem;color:var(--text-mute);background:var(--bg);font-weight:600;}
+.gs-item{padding:8px 12px;cursor:pointer;border-left:3px solid transparent;}
+.gs-item:hover{background:var(--bg);border-left-color:var(--primary);}
+.gs-item-title{font-size:.85rem;color:var(--text);margin-bottom:2px;}
+.gs-item-snippet{font-size:.75rem;color:var(--text-mute);line-height:1.5;}
+.gs-item mark{background:#fff3a0;padding:0 2px;border-radius:2px;}
