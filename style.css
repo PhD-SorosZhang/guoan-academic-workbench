@@ -253,3 +253,11 @@ input,textarea,select{font-family:inherit;font-size:1rem;}
 .topic-cards-wrap{grid-template-columns:1fr;}
 .job-categories-wrap{grid-template-columns:1fr;}
 }
+
+/* ===== v3.2 新增样式 ===== */
+.article-detail{border-left:3px solid var(--primary);}
+.topic-extract-preview{background:var(--primary-bg,#eef4ff);}
+.daily-badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;background:var(--primary);color:#fff;margin-bottom:8px;}
+.sub-tab .badge-new{display:inline-block;background:#c0392b;color:#fff;font-size:.65rem;border-radius:8px;padding:0 5px;margin-left:4px;}
+.job-link{display:inline-block;margin-top:8px;font-size:.82rem;color:var(--primary);text-decoration:none;font-weight:600;}
+.job-link:hover{text-decoration:underline;}
