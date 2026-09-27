@@ -1001,7 +1001,7 @@ function renderArticle(){
       (a.policyDocs&&a.policyDocs.length?'<div style="margin:6px 0;"><b>📜 政策依据：</b>'+a.policyDocs.map(p=>'<div>· '+esc(p.name)+(p.inferred?' <span style="color:#c0392b;">[推断]</span>':'')+'</div>').join('')+'</div>':'')+
       (a.dataSources&&a.dataSources.length?'<div style="margin:6px 0;"><b>📊 数据来源：</b>'+a.dataSources.map(d=>'<div>· '+esc(d.name||d)+(d&&d.inferred?' <span style="color:#c0392b;">[推断]</span>':'')+'</div>').join('')+'</div>':'')+
       '</div>':'';
-    return '<div class="list-item"><div class="item-text" style="flex:1;cursor:pointer;" onclick="var d=this.parentElement.querySelector(\'.article-detail\');if(d)d.style.display=d.style.display==='none'?'block':'none';">'+
+    return '<div class="list-item"><div class="item-text" style="flex:1;cursor:pointer;" onclick="var d=this.parentElement.querySelector(\'.article-detail\');if(d)d.style.display=d.style.display===\'none\'?\'block\':\'none\';">'+
       '<strong>'+esc(a.title)+'</strong>'+(a.autoAnalyzed?' <span style="font-size:.72rem;background:#e8f4f0;color:#2d8672;padding:1px 6px;border-radius:4px;">自动剖析</span>':'')+
       '<div class="item-meta">'+esc(a.author||'')+' · '+esc(a.journal||'')+' '+(a.year||'')+'</div>'+
       (a.coreArg?'<div style="margin-top:4px;font-size:.82rem;color:var(--text-soft);">核心论点：'+esc(a.coreArg.substring(0,80))+'</div>':'')+
@@ -1011,7 +1011,7 @@ function renderArticle(){
   document.getElementById('mainContent').innerHTML=
     '<div class="page-header"><h1>📖 好文剖析</h1><p>每日三篇核心期刊论文深度拆解 · 不同CSSCI刊物 · 每日6:30自动更新</p></div>'
     +dailyCardsHtml
-    +'<div class="card"><div class="card-title"><span class="title-icon">📥</span>投递 PDF / Word    +'<div class="card"><div class="card-title"><span class="title-icon">📥</span>投递 PDF / Word 生成好文剖析</div>'
+    +'<div class="card"><div class="card-title"><span class="title-icon">📥</span>投递 PDF / Word 生成好文剖析</div>'
     +'<p style="font-size:.82rem;color:var(--text-soft);margin-bottom:10px;">上传文献全文，自动提取金句、理论框架、政策依据，生成完整剖析记录。</p>'
     +'<input type="file" id="articleFileInput" accept=".pdf,.docx,.txt" style="display:none;" onchange="handleArticleUpload(this.files)">'
     +'<button class="add-btn" onclick="document.getElementById(\'articleFileInput\').click()">📂 选择文件投递</button>'
