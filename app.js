@@ -2359,7 +2359,12 @@ function renderSettings(){
   }).join('');
   document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>⚙️ 设置</h1><p>主题配色 · 数据管理 · 周报生成 · 访问密钥</p></div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">🎨</span>主题配色 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">共 '+THEMES.length+' 套 · 当前：'+THEME_NAMES[data.settings.theme]+'</span></div><div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;"><label style="font-size:.85rem;display:flex;align-items:center;gap:6px;"><input type="checkbox" '+(data.settings.autoRotate?'checked':'')+' onchange="data.settings.autoRotate=this.checked;saveData();" style="width:16px;height:16px;"> 自动轮换</label><select id="rotateDays" onchange="data.settings.rotateDays=parseInt(this.value);saveData();" style="padding:6px 10px;border:1px solid var(--line);border-radius:6px;"><option value="3" '+(data.settings.rotateDays===3?'selected':'')+'>每3天</option><option value="7" '+(data.settings.rotateDays===7?'selected':'')+'>每7天</option><option value="14" '+(data.settings.rotateDays===14?'selected':'')+'>每14天</option><option value="30" '+(data.settings.rotateDays===30?'selected':'')+'>每月</option></select></div><div class="theme-grid">'+themeBtns+'</div></div>'
-    +'<div class="card"><div class="card-title"><span class="title-icon">💾</span>数据管理</div><p style="font-size:.85rem;color:var(--text-soft);margin-bottom:12px;">当前模式：<strong>'+(apiMode?'☁️ 云端同步（Supabase）':'💻 本地存储（localStorage）')+'</strong>。'+(apiMode?'数据已同步至云端数据库，换设备登录后自动恢复。':'所有数据存储在浏览器本地，导出备份可防止清除浏览器数据后丢失。支持从JSON备份文件恢复数据。')+'</p><div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="add-btn" onclick="exportData()">📤 导出全部数据备份</button><button class="add-btn ghost" onclick="document.getElementById(\'importInput\').click()">📥 导入备份文件</button><button class="del-btn" onclick="clearAllData()" style="padding:10px 20px;font-size:.9rem;">🗑 清空全部数据</button><button class="add-btn" style="background:linear-gradient(135deg,var(--primary),var(--primary-deep));font-weight:700;" onclick="generateWeeklyReport()">📰 生成国安研究周报</button><button class="add-btn ghost" onclick="exportEml()">📧 导出.eml</button>'+(apiMode?'<button class="add-btn ghost" onclick="logout()" style="padding:10px 20px;font-size:.9rem;">🚪 退出登录</button>':'')+'<input type="file" id="importInput" accept=".json" style="display:none;" onchange="importData(this.files[0])"></div></div>'
+    +'<div class="card"><div class="card-title"><span class="title-icon">💾</span>数据管理</div><p style="font-size:.85rem;color:var(--text-soft);margin-bottom:12px;">当前模式：<strong>'+(apiMode?'☁️ 云端同步（Supabase）':'💻 本地存储（localStorage）')+'</strong>。'+(apiMode?'数据已同步至云端数据库，换设备登录后自动恢复。':'所有数据存储在浏览器本地，导出备份可防止清除浏览器数据后丢失。支持从JSON备份文件恢复数据。')+'</p><div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="add-btn" onclick="exportData()">📤 导出全部数据备份</button><button class="add-btn" style="background:linear-gradient(135deg,#1B5853,#2d8672);color:#fff;font-weight:600;" onclick="exportSharedData()">🌐 导出共享数据(data.json)</button><button class="add-btn ghost" onclick="document.getElementById(\'importInput\').click()">📥 导入备份文件</button><button class="del-btn" onclick="clearAllData()" style="padding:10px 20px;font-size:.9rem;">🗑 清空全部数据</button><button class="add-btn" style="background:linear-gradient(135deg,var(--primary),var(--primary-deep));font-weight:700;" onclick="generateWeeklyReport()">📰 生成国安研究周报</button><button class="add-btn ghost" onclick="exportEml()">📧 导出.eml</button>'+(apiMode?'<button class="add-btn ghost" onclick="logout()" style="padding:10px 20px;font-size:.9rem;">🚪 退出登录</button>':'')+'<input type="file" id="importInput" accept=".json" style="display:none;" onchange="importData(this.files[0])"></div></div>'
+    +'<div class="card"><div class="card-title"><span class="title-icon">🌐</span>V6 共享数据模式 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">GitHub JSON 同步</span></div>'
+    +'<p style="font-size:.82rem;color:var(--text-soft);margin-bottom:10px;">所有人访问同一网址时自动读取仓库中的 <code>data.json</code>，每60秒自动检测更新。你修改数据后点「导出共享数据」，将得到的 data.json 上传到 GitHub 仓库覆盖旧文件，其他人刷新即可看到最新内容。</p>'
+    +'<div style="background:var(--bg-soft);border-radius:8px;padding:10px 14px;font-size:.8rem;color:var(--text-soft);line-height:1.8;">'
+    +'<strong>更新流程：</strong><br>① 在工作台编辑数据 → ② 点「导出共享数据(data.json)」→ ③ 登录 GitHub 上传 data.json 到仓库根目录 → ④ 等待 Pages 部署（约1分钟）→ ⑤ 其他人自动看到更新'
+    +'</div></div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">🔐</span>访问密钥</div><div class="form-group"><label>修改登录密钥</label><input id="newKey" type="password" placeholder="输入新的访问密钥" value="'+esc(data.settings.accessKey||'')+'"></div><button class="add-btn" onclick="saveKey()">保存密钥</button></div>'
     +'<div class="card"><div class="card-title"><span class="title-icon">🤖</span>大模型 API 配置 <span style="font-size:.78rem;color:var(--text-mute);font-weight:400;margin-left:8px;">可选 · 留空则使用本地规则引擎剖析</span></div>'
     +'<p style="font-size:.82rem;color:var(--text-soft);margin-bottom:10px;">兼容 OpenAI / 豆包 / DeepSeek 等 OpenAI 接口格式。配置后上传 PDF/Word 时自动走 LLM 剖析；未配置时使用内置规则引擎，永不联网。</p>'
@@ -2813,9 +2818,81 @@ const DEFAULT_PHD_DB=[
 ]}
 ];
 
+
+// ===== V6 远端共享数据（GitHub JSON 方案）=====
+const REMOTE_DATA_URL = './data.json';
+let _remotePollingTimer = null;
+let _lastRemoteHash = '';
+
+function _dataHash(obj){
+  try{ return JSON.stringify(obj); }catch(e){ return ''; }
+}
+
+async function loadRemoteData(){
+  try{
+    const res = await fetch(REMOTE_DATA_URL + '?t=' + Date.now(), {cache:'no-store'});
+    if(!res.ok) return false;
+    const remote = await res.json();
+    if(remote && typeof remote === 'object'){
+      const localKey = (data.settings && data.settings.accessKey) || 'guoan2026';
+      data = {...data, ...remote, settings:{...(remote.settings||{}), accessKey: localKey}};
+      saveData();
+      _lastRemoteHash = _dataHash(remote);
+      console.log('V6 remote data loaded');
+      return true;
+    }
+  }catch(e){
+    console.warn('remote data load failed, using local:', e.message);
+  }
+  return false;
+}
+
+async function checkRemoteUpdate(){
+  try{
+    const res = await fetch(REMOTE_DATA_URL + '?t=' + Date.now(), {cache:'no-store'});
+    if(!res.ok) return;
+    const remote = await res.json();
+    const h = _dataHash(remote);
+    if(h && h !== _lastRemoteHash){
+      const localKey = (data.settings && data.settings.accessKey) || 'guoan2026';
+      data = {...data, ...remote, settings:{...(remote.settings||{}), accessKey: localKey}};
+      saveData();
+      _lastRemoteHash = h;
+      applyTheme(data.settings.theme);
+      render();
+      toast('数据已更新');
+    }
+  }catch(e){}
+}
+
+function startRemotePolling(){
+  if(_remotePollingTimer) clearInterval(_remotePollingTimer);
+  _remotePollingTimer = setInterval(checkRemoteUpdate, 60000);
+}
+
+function exportSharedData(){
+  const exportObj = {...data};
+  if(exportObj.settings){
+    exportObj.settings = {...exportObj.settings};
+    delete exportObj.settings.apiKey;
+    delete exportObj.settings.githubToken;
+  }
+  const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'data.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('共享数据已导出为 data.json');
+}
+
 // ===== 初始化 =====
 async function init(){
   loadData();
+  await loadRemoteData();
   applyTheme(data.settings.theme);
   checkAutoRotate();
   renderNav();
@@ -2842,6 +2919,7 @@ async function init(){
     currentProjectId=data.projects[0].id;
   }
   render();
+  startRemotePolling();
 }
 
 // 启动

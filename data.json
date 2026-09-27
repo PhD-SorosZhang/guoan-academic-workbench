@@ -1,0 +1,35 @@
+{
+  "projects": [
+    {
+      "id": "default_1790469585",
+      "name": "默认项目",
+      "createdAt": "2026-09-27"
+    }
+  ],
+  "topics": [],
+  "refs": [],
+  "articles": [],
+  "materials": [],
+  "notes": [],
+  "schedule": [],
+  "paperTasks": [],
+  "topicCards": [],
+  "readArticles": [],
+  "settings": {
+    "theme": "A",
+    "autoRotate": false,
+    "rotateDays": 7,
+    "email": "",
+    "accessKey": "guoan2026",
+    "apiEndpoint": "https://api.openai.com/v1/chat/completions",
+    "apiKey": "",
+    "apiModel": "gpt-4o-mini"
+  },
+  "chatMessages": [],
+  "privacyAccepted": true,
+  "_v6_meta": {
+    "version": "V6",
+    "createdAt": "2026-09-27",
+    "description": "国安学术工作台 V6 共享数据文件，上传到GitHub仓库根目录即可被所有访问者读取"
+  }
+}
