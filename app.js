@@ -2891,8 +2891,8 @@ function exportSharedData(){
 
 // ===== 初始化 =====
 async function init(){
+  try{
   loadData();
-  await loadRemoteData();
   applyTheme(data.settings.theme);
   checkAutoRotate();
   renderNav();
@@ -2919,7 +2919,9 @@ async function init(){
     currentProjectId=data.projects[0].id;
   }
   render();
+  loadRemoteData().then(function(ok){ if(ok){ render(); } }).catch(function(e){ console.warn('remote data error:', e); });
   startRemotePolling();
+  }catch(e){ console.error('init error:', e); try{ render(); }catch(e2){} }
 }
 
 // 启动
