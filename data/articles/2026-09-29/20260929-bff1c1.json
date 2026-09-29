@@ -1,0 +1,142 @@
+{
+  "article": {
+    "id": "20260929-bff1c1",
+    "title": "生物安全治理的国际合作与中国路径",
+    "title_norm": "生物安全治理的国际合作与中国路径",
+    "authors": "童蕴芝",
+    "journal": "国际论坛",
+    "year": 2025,
+    "issue": "3",
+    "pages": "55-72",
+    "doi": "",
+    "source_type": "manual",
+    "source_url": "",
+    "pdf_url": null,
+    "abstract": "分析生物安全的全球治理困境，提出国际合作框架和中国参与路径。",
+    "keywords": "生物安全;全球治理;国际合作",
+    "category": "生态安全",
+    "published_date": null,
+    "crawl_date": "2026-09-29",
+    "full_text": 0,
+    "raw_path": null,
+    "created_at": "2026-09-29T06:30:00+08:00",
+    "total_score": 67.3,
+    "grade": "C",
+    "recommend_level": 3
+  },
+  "analysis": {
+    "id": "ed8760b2ac95",
+    "article_id": "20260929-bff1c1",
+    "core_arg": "生物安全需要全球协同治理，中国应积极参与规则制定。",
+    "detailed_flow": [
+      {
+        "step": "治理困境",
+        "detail": "生物安全全球治理的困境"
+      },
+      {
+        "step": "合作框架",
+        "detail": "国际合作的框架设计"
+      },
+      {
+        "step": "中国路径",
+        "detail": "中国参与的路径选择"
+      }
+    ],
+    "quotes": [
+      "生物安全关乎人民生命健康，关乎国家长治久安。"
+    ],
+    "theory_framework": [
+      {
+        "name": "全球治理理论",
+        "content": "分析生物安全的全球治理"
+      }
+    ],
+    "policy_docs": [
+      {
+        "name": "生物安全法",
+        "content": "呼应生物安全政策"
+      }
+    ],
+    "data_sources": [],
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-29T06:30:00+08:00"
+  },
+  "evaluation": {
+    "id": "3dae0a195c65",
+    "article_id": "20260929-bff1c1",
+    "total_score": 67.3,
+    "grade": "C",
+    "recommend_level": 3,
+    "dimension_scores": {
+      "D1": 7,
+      "D2": 6,
+      "D3": 7,
+      "D4": 6,
+      "D5": 7,
+      "D6": 6,
+      "D7": 7,
+      "D8": 7,
+      "D9": 8,
+      "D10": 7
+    },
+    "dimension_reasons": {
+      "D1": "D1维度基于文章内容评估",
+      "D2": "D2维度基于文章内容评估",
+      "D3": "D3维度基于文章内容评估",
+      "D4": "D4维度基于文章内容评估",
+      "D5": "D5维度基于文章内容评估",
+      "D6": "D6维度基于文章内容评估",
+      "D7": "D7维度基于文章内容评估",
+      "D8": "D8维度基于文章内容评估",
+      "D9": "D9维度基于文章内容评估",
+      "D10": "D10维度基于文章内容评估"
+    },
+    "strengths": [
+      "选题有现实意义",
+      "国际合作框架设计合理"
+    ],
+    "weaknesses": [
+      "创新性一般",
+      "对生物实验室安全等具体议题分析不够深入"
+    ],
+    "reviewer_comments": "本文探讨生物安全的国际合作，选题有意义。建议深化具体议题分析和中国方案的学理论证。",
+    "improvement": [
+      "深化生物实验室安全和病原体研究监管分析",
+      "加强中国方案的学理论证"
+    ],
+    "followup_topics": [
+      "全球疫情预警机制研究",
+      "生物实验室安全国际标准研究"
+    ],
+    "frontier_context": {
+      "literature": [
+        {
+          "title": "总体国家安全观研究综述",
+          "year": 2024,
+          "venue": "国际安全研究",
+          "source": "OpenAlex"
+        },
+        {
+          "title": "非传统安全治理前沿",
+          "year": 2025,
+          "venue": "世界经济与政治",
+          "source": "OpenAlex"
+        }
+      ],
+      "policy_docs": [
+        {
+          "title": "总体国家安全观学习纲要",
+          "year": 2022,
+          "category": "生态安全"
+        }
+      ],
+      "retrieved_at": "2026-09-29T06:30:00+08:00"
+    },
+    "relevance_to_user": "与国家安全学研究方向高度相关，涉及生态安全领域。",
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-29T06:30:00+08:00"
+  },
+  "exported_at": "2026-09-29T22:58:39.465171"
+}

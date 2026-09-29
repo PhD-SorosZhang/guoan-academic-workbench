@@ -1,0 +1,36 @@
+name: 每周知识库更新
+
+on:
+  schedule:
+    # 每周一北京时间 07:00 = UTC 周日 23:00
+    - cron: '0 23 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-kb:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 更新领域知识库
+        run: |
+          python scripts/update_kb.py
+
+      - name: 提交并推送
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add knowledge_base/
+          if git diff --cached --quiet; then
+            echo "无变更"
+          else
+            git commit -m "docs: 每周知识库更新 $(date +%Y-%m-%d)"
+            git push
+          fi

@@ -1,0 +1,147 @@
+{
+  "article": {
+    "id": "20260926-fb6e04",
+    "title": "总体国家安全观视域下的金融安全治理体系构建",
+    "title_norm": "总体国家安全观视域下的金融安全治理体系构建",
+    "authors": "张红力",
+    "journal": "金融研究",
+    "year": 2025,
+    "issue": "1",
+    "pages": "1-18",
+    "doi": "",
+    "source_type": "manual",
+    "source_url": "",
+    "pdf_url": null,
+    "abstract": "在总体国家安全观视域下分析金融安全的内涵与挑战，构建金融安全治理体系。",
+    "keywords": "金融安全;总体国家安全观;治理体系",
+    "category": "经济安全",
+    "published_date": null,
+    "crawl_date": "2026-09-26",
+    "full_text": 0,
+    "raw_path": null,
+    "created_at": "2026-09-26T06:30:00+08:00",
+    "total_score": 77.5,
+    "grade": "B",
+    "recommend_level": 3
+  },
+  "analysis": {
+    "id": "0439c445b251",
+    "article_id": "20260926-fb6e04",
+    "core_arg": "金融安全是总体国家安全的重要组成部分，需构建系统治理体系。",
+    "detailed_flow": [
+      {
+        "step": "内涵界定",
+        "detail": "金融安全的内涵"
+      },
+      {
+        "step": "挑战分析",
+        "detail": "当前金融安全面临的挑战"
+      },
+      {
+        "step": "体系构建",
+        "detail": "治理体系框架"
+      },
+      {
+        "step": "实施路径",
+        "detail": "具体实施建议"
+      }
+    ],
+    "quotes": [
+      "金融安全是国家安全的重要组成部分，是经济平稳健康发展的重要基础。"
+    ],
+    "theory_framework": [
+      {
+        "name": "金融监管理论",
+        "content": "分析金融安全的监管框架"
+      }
+    ],
+    "policy_docs": [
+      {
+        "name": "防范化解重大风险攻坚战",
+        "content": "呼应金融安全政策"
+      }
+    ],
+    "data_sources": [],
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-26T06:30:00+08:00"
+  },
+  "evaluation": {
+    "id": "96533374475b",
+    "article_id": "20260926-fb6e04",
+    "total_score": 77.5,
+    "grade": "B",
+    "recommend_level": 3,
+    "dimension_scores": {
+      "D1": 8,
+      "D2": 7,
+      "D3": 8,
+      "D4": 7,
+      "D5": 8,
+      "D6": 8,
+      "D7": 7,
+      "D8": 8,
+      "D9": 9,
+      "D10": 8
+    },
+    "dimension_reasons": {
+      "D1": "D1维度基于文章内容评估",
+      "D2": "D2维度基于文章内容评估",
+      "D3": "D3维度基于文章内容评估",
+      "D4": "D4维度基于文章内容评估",
+      "D5": "D5维度基于文章内容评估",
+      "D6": "D6维度基于文章内容评估",
+      "D7": "D7维度基于文章内容评估",
+      "D8": "D8维度基于文章内容评估",
+      "D9": "D9维度基于文章内容评估",
+      "D10": "D10维度基于文章内容评估"
+    },
+    "strengths": [
+      "将金融安全置于总体国家安全观框架下分析，视角新颖",
+      "治理体系构建系统",
+      "政策建议有针对性"
+    ],
+    "weaknesses": [
+      "量化分析不足",
+      "对国际金融制裁等新型风险关注可加强"
+    ],
+    "reviewer_comments": "本文在总体国家安全观视域下构建金融安全治理体系，视角新颖，框架系统。建议增加量化分析和国际金融制裁等新型风险的研究。",
+    "improvement": [
+      "增加金融安全的量化评估",
+      "增加国际金融制裁和金融脱钩风险分析"
+    ],
+    "followup_topics": [
+      "金融安全预警指标体系研究",
+      "数字货币对金融安全的影响"
+    ],
+    "frontier_context": {
+      "literature": [
+        {
+          "title": "总体国家安全观研究综述",
+          "year": 2024,
+          "venue": "国际安全研究",
+          "source": "OpenAlex"
+        },
+        {
+          "title": "非传统安全治理前沿",
+          "year": 2025,
+          "venue": "世界经济与政治",
+          "source": "OpenAlex"
+        }
+      ],
+      "policy_docs": [
+        {
+          "title": "总体国家安全观学习纲要",
+          "year": 2022,
+          "category": "经济安全"
+        }
+      ],
+      "retrieved_at": "2026-09-26T06:30:00+08:00"
+    },
+    "relevance_to_user": "与国家安全学研究方向高度相关，涉及经济安全领域。",
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-26T06:30:00+08:00"
+  },
+  "exported_at": "2026-09-29T22:58:39.473931"
+}

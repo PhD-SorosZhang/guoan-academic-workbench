@@ -1,0 +1,143 @@
+{
+  "article": {
+    "id": "20261001-5dd230",
+    "title": "国家安全学一级学科建设的进展与思考",
+    "title_norm": "国家安全学一级学科建设的进展与思考",
+    "authors": "马振超",
+    "journal": "国家安全研究",
+    "year": 2024,
+    "issue": "6",
+    "pages": "5-22",
+    "doi": "",
+    "source_type": "manual",
+    "source_url": "",
+    "pdf_url": null,
+    "abstract": "梳理国家安全学一级学科设立以来的建设进展，分析学科定位、人才培养等方面的问题。",
+    "keywords": "国家安全学;学科建设;人才培养",
+    "category": "总体国家安全观",
+    "published_date": null,
+    "crawl_date": "2026-10-01",
+    "full_text": 0,
+    "raw_path": null,
+    "created_at": "2026-10-01T06:30:00+08:00",
+    "total_score": 71.4,
+    "grade": "B",
+    "recommend_level": 3
+  },
+  "analysis": {
+    "id": "362b242a4a27",
+    "article_id": "20261001-5dd230",
+    "core_arg": "国家安全学学科建设需在定位、体系、人才三方面协同推进。",
+    "detailed_flow": [
+      {
+        "step": "建设进展",
+        "detail": "学科设立以来的进展"
+      },
+      {
+        "step": "问题分析",
+        "detail": "学科定位和人才培养问题"
+      },
+      {
+        "step": "改进方向",
+        "detail": "学科建设改进方向"
+      }
+    ],
+    "quotes": [
+      "国家安全学一级学科的设立是新时代国家安全事业发展的必然要求。"
+    ],
+    "theory_framework": [
+      {
+        "name": "学科建设理论",
+        "content": "分析学科建设的一般规律"
+      }
+    ],
+    "policy_docs": [
+      {
+        "name": "国家安全学一级学科建设意见",
+        "content": "呼应学科建设政策"
+      }
+    ],
+    "data_sources": [],
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-10-01T06:30:00+08:00"
+  },
+  "evaluation": {
+    "id": "7e84428373a3",
+    "article_id": "20261001-5dd230",
+    "total_score": 71.4,
+    "grade": "B",
+    "recommend_level": 3,
+    "dimension_scores": {
+      "D1": 8,
+      "D2": 6,
+      "D3": 7,
+      "D4": 6,
+      "D5": 7,
+      "D6": 7,
+      "D7": 8,
+      "D8": 8,
+      "D9": 8,
+      "D10": 8
+    },
+    "dimension_reasons": {
+      "D1": "D1维度基于文章内容评估",
+      "D2": "D2维度基于文章内容评估",
+      "D3": "D3维度基于文章内容评估",
+      "D4": "D4维度基于文章内容评估",
+      "D5": "D5维度基于文章内容评估",
+      "D6": "D6维度基于文章内容评估",
+      "D7": "D7维度基于文章内容评估",
+      "D8": "D8维度基于文章内容评估",
+      "D9": "D9维度基于文章内容评估",
+      "D10": "D10维度基于文章内容评估"
+    },
+    "strengths": [
+      "学科建设梳理全面",
+      "问题诊断准确",
+      "对学科发展有指导意义"
+    ],
+    "weaknesses": [
+      "理论深度有待加强",
+      "人才培养的具体方案可更细化"
+    ],
+    "reviewer_comments": "本文梳理国家安全学学科建设进展，对学科发展有指导意义。建议深化理论探讨和人才培养方案设计。",
+    "improvement": [
+      "深化国家安全学学科范式的理论探讨",
+      "细化人才培养的课程体系和实践方案"
+    ],
+    "followup_topics": [
+      "国家安全学课程体系建设研究",
+      "国家安全学人才培养模式创新"
+    ],
+    "frontier_context": {
+      "literature": [
+        {
+          "title": "总体国家安全观研究综述",
+          "year": 2024,
+          "venue": "国际安全研究",
+          "source": "OpenAlex"
+        },
+        {
+          "title": "非传统安全治理前沿",
+          "year": 2025,
+          "venue": "世界经济与政治",
+          "source": "OpenAlex"
+        }
+      ],
+      "policy_docs": [
+        {
+          "title": "总体国家安全观学习纲要",
+          "year": 2022,
+          "category": "总体国家安全观"
+        }
+      ],
+      "retrieved_at": "2026-10-01T06:30:00+08:00"
+    },
+    "relevance_to_user": "与国家安全学研究方向高度相关，涉及总体国家安全观领域。",
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-10-01T06:30:00+08:00"
+  },
+  "exported_at": "2026-09-29T22:58:39.455894"
+}

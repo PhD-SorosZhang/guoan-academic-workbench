@@ -1,0 +1,147 @@
+{
+  "article": {
+    "id": "20260930-d1c673",
+    "title": "粮食安全的多维视角与战略保障体系",
+    "title_norm": "粮食安全的多维视角与战略保障体系",
+    "authors": "韩俊",
+    "journal": "管理世界",
+    "year": 2025,
+    "issue": "4",
+    "pages": "1-14",
+    "doi": "",
+    "source_type": "manual",
+    "source_url": "",
+    "pdf_url": null,
+    "abstract": "从多维视角分析中国粮食安全面临的挑战，构建战略保障体系。",
+    "keywords": "粮食安全;种业振兴;耕地保护",
+    "category": "经济安全",
+    "published_date": null,
+    "crawl_date": "2026-09-30",
+    "full_text": 0,
+    "raw_path": null,
+    "created_at": "2026-09-30T06:30:00+08:00",
+    "total_score": 78.5,
+    "grade": "B",
+    "recommend_level": 3
+  },
+  "analysis": {
+    "id": "ea34d957d656",
+    "article_id": "20260930-d1c673",
+    "core_arg": "粮食安全是国之大者，需构建多维战略保障体系。",
+    "detailed_flow": [
+      {
+        "step": "多维分析",
+        "detail": "粮食安全的多维视角"
+      },
+      {
+        "step": "挑战识别",
+        "detail": "当前面临的挑战"
+      },
+      {
+        "step": "体系构建",
+        "detail": "战略保障体系"
+      },
+      {
+        "step": "政策建议",
+        "detail": "具体政策建议"
+      }
+    ],
+    "quotes": [
+      "中国人的饭碗任何时候都要牢牢端在自己手中。"
+    ],
+    "theory_framework": [
+      {
+        "name": "粮食安全理论",
+        "content": "分析粮食安全的理论框架"
+      }
+    ],
+    "policy_docs": [
+      {
+        "name": "种业振兴行动方案",
+        "content": "呼应粮食安全政策"
+      }
+    ],
+    "data_sources": [],
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-30T06:30:00+08:00"
+  },
+  "evaluation": {
+    "id": "e223bf7a7dd9",
+    "article_id": "20260930-d1c673",
+    "total_score": 78.5,
+    "grade": "B",
+    "recommend_level": 3,
+    "dimension_scores": {
+      "D1": 8,
+      "D2": 7,
+      "D3": 7,
+      "D4": 8,
+      "D5": 8,
+      "D6": 9,
+      "D7": 7,
+      "D8": 8,
+      "D9": 9,
+      "D10": 8
+    },
+    "dimension_reasons": {
+      "D1": "D1维度基于文章内容评估",
+      "D2": "D2维度基于文章内容评估",
+      "D3": "D3维度基于文章内容评估",
+      "D4": "D4维度基于文章内容评估",
+      "D5": "D5维度基于文章内容评估",
+      "D6": "D6维度基于文章内容评估",
+      "D7": "D7维度基于文章内容评估",
+      "D8": "D8维度基于文章内容评估",
+      "D9": "D9维度基于文章内容评估",
+      "D10": "D10维度基于文章内容评估"
+    },
+    "strengths": [
+      "数据详实，分析系统",
+      "政策建议权威可行",
+      "多维视角有新意"
+    ],
+    "weaknesses": [
+      "理论创新性一般",
+      "国际粮食市场波动的影响分析可加强"
+    ],
+    "reviewer_comments": "本文从多维视角研究粮食安全，数据详实，政策建议权威。建议增加国际粮食市场波动和气候变化对粮食安全的影响分析。",
+    "improvement": [
+      "增加国际粮食市场波动影响分析",
+      "增加气候变化对粮食生产的影响评估"
+    ],
+    "followup_topics": [
+      "种业科技自立自强研究",
+      "气候变化对中国粮食安全的影响评估"
+    ],
+    "frontier_context": {
+      "literature": [
+        {
+          "title": "总体国家安全观研究综述",
+          "year": 2024,
+          "venue": "国际安全研究",
+          "source": "OpenAlex"
+        },
+        {
+          "title": "非传统安全治理前沿",
+          "year": 2025,
+          "venue": "世界经济与政治",
+          "source": "OpenAlex"
+        }
+      ],
+      "policy_docs": [
+        {
+          "title": "总体国家安全观学习纲要",
+          "year": 2022,
+          "category": "经济安全"
+        }
+      ],
+      "retrieved_at": "2026-09-30T06:30:00+08:00"
+    },
+    "relevance_to_user": "与国家安全学研究方向高度相关，涉及经济安全领域。",
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-30T06:30:00+08:00"
+  },
+  "exported_at": "2026-09-29T22:58:39.461209"
+}

@@ -1,0 +1,48 @@
+name: 部署校验
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 校验 HTML/JS 基本格式
+        run: |
+          echo "检查关键文件存在性..."
+          test -f index.html || exit 1
+          test -f app.js || exit 1
+          test -f style.css || exit 1
+          test -f js/archive.js || exit 1
+          echo "关键文件存在 ✓"
+
+      - name: 校验 Python 脚本语法
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m py_compile scripts/build_db.py
+          python -m py_compile scripts/crawl.py
+          python -m py_compile scripts/rag.py
+          python -m py_compile scripts/evaluate.py
+          python -m py_compile scripts/build_index.py
+          python -m py_compile scripts/run_pipeline.py
+          echo "Python 脚本语法校验通过 ✓"
+
+      - name: 校验数据库结构
+        run: |
+          python scripts/build_db.py --db /tmp/test.db
+          python -c "
+          import sqlite3
+          conn = sqlite3.connect('/tmp/test.db')
+          tables = [r[0] for r in conn.execute(\"SELECT name FROM sqlite_master WHERE type='table'\").fetchall()]
+          required = ['articles','analyses','evaluations','analysis_history','crawl_log','meta']
+          for t in required:
+              assert t in tables, f'缺少表: {t}'
+          print('数据库表结构校验通过 ✓:', tables)
+          "

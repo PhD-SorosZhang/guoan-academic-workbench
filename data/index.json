@@ -1,0 +1,262 @@
+{
+  "updated_at": "2026-09-29T22:58:39.495212",
+  "schema_version": "1.0",
+  "total": 12,
+  "journals": [
+    "世界经济与政治",
+    "中国软科学",
+    "国家安全研究",
+    "国际安全研究",
+    "国际展望",
+    "国际论坛",
+    "太平洋学报",
+    "政治学研究",
+    "现代国际关系",
+    "管理世界",
+    "金融研究"
+  ],
+  "categories": [
+    "国土安全",
+    "总体国家安全观",
+    "海外利益",
+    "海洋安全",
+    "生态安全",
+    "科技安全",
+    "经济安全",
+    "网络安全",
+    "非传统安全"
+  ],
+  "items": [
+    {
+      "id": "20261001-5dd230",
+      "title": "国家安全学一级学科建设的进展与思考",
+      "authors": "马振超",
+      "journal": "国家安全研究",
+      "year": 2024,
+      "issue": "6",
+      "crawl_date": "2026-10-01",
+      "category": "总体国家安全观",
+      "total_score": 71.4,
+      "grade": "B",
+      "recommend_level": 3,
+      "keywords": [
+        "国家安全学",
+        "学科建设",
+        "人才培养"
+      ],
+      "source_type": "manual"
+    },
+    {
+      "id": "20260930-d1c673",
+      "title": "粮食安全的多维视角与战略保障体系",
+      "authors": "韩俊",
+      "journal": "管理世界",
+      "year": 2025,
+      "issue": "4",
+      "crawl_date": "2026-09-30",
+      "category": "经济安全",
+      "total_score": 78.5,
+      "grade": "B",
+      "recommend_level": 3,
+      "keywords": [
+        "粮食安全",
+        "种业振兴",
+        "耕地保护"
+      ],
+      "source_type": "manual"
+    },
+    {
+      "id": "20260929-bff1c1",
+      "title": "生物安全治理的国际合作与中国路径",
+      "authors": "童蕴芝",
+      "journal": "国际论坛",
+      "year": 2025,
+      "issue": "3",
+      "crawl_date": "2026-09-29",
+      "category": "生态安全",
+      "total_score": 67.3,
+      "grade": "C",
+      "recommend_level": 3,
+      "keywords": [
+        "生物安全",
+        "全球治理",
+        "国际合作"
+      ],
+      "source_type": "manual"
+    },
+    {
+      "id": "20260928-9c14ef",
+      "title": "中国海外利益保护的机制创新与路径选择",
+      "authors": "陈东晓",
+      "journal": "国际展望",
+      "year": 2025,
+      "issue": "2",
+      "crawl_date": "2026-09-28",
+      "category": "海外利益",
+      "total_score": 76.3,
+      "grade": "B",
+      "recommend_level": 3,
+      "keywords": [
+        "海外利益",
+        "领事保护",
+        "一带一路安全"
+      ],
+      "source_type": "manual"
+    },
+    {
+      "id": "20260927-17df7a",
+      "title": "人工智能发展对国家安全的影响与治理",
+      "authors": "李开孟, 王刚",
+      "journal": "国际安全研究",
+      "year": 2025,
+      "issue": "5",
+      "crawl_date": "2026-09-27",
+      "category": "科技安全",
+      "total_score": 79.6,
+      "grade": "B",
+      "recommend_level": 3,
+      "keywords": [
+        "人工智能",
+        "科技安全",
+        "治理"
+      ],
+      "source_type": "manual"
+    },
+    {
+      "id": "20260926-fb6e04",
+      "title": "总体国家安全观视域下的金融安全治理体系构建",
+      "authors": "张红力",
+      "journal": "金融研究",
+      "year": 2025,
+      "issue": "1",
+      "crawl_date": "2026-09-26",
+      "category": "经济安全",
+      "total_score": 77.5,
+      "grade": "B",
+      "recommend_level": 3,
+      "keywords": [
+        "金融安全",
+        "总体国家安全观",
+        "治理体系"
+      ],
+      "source_type": "manual"
+    },
+    {
+      "id": "20260925-90a186",
+      "title": "科技安全视角下关键核心技术攻关的举国体制研究",
+      "authors": "陈劲, 阳镇",
+      "journal": "中国软科学",
+      "year": 2025,
+      "issue": "3",
+      "crawl_date": "2026-09-25",
+      "category": "科技安全",
+      "total_score": 81.0,
+      "grade": "A",
+      "recommend_level": 4,
+      "keywords": [
+        "科技安全",
+        "关键核心技术",
+        "举国体制"
+      ],
+      "source_type": "manual"
+    },
+    {
+      "id": "20260924-06f16c",
+      "title": "边疆治理与国家安全的互动逻辑",
+      "authors": "周平",
+      "journal": "政治学研究",
+      "year": 2025,
+      "issue": "2",
+      "crawl_date": "2026-09-24",
+      "category": "国土安全",
+      "total_score": 75.5,
+      "grade": "B",
+      "recommend_level": 3,
+      "keywords": [
+        "边疆安全",
+        "边疆治理",
+        "民族地区"
+      ],
+      "source_type": "manual"
+    },
+    {
+      "id": "20260923-a7c329",
+      "title": "网络空间主权与全球互联网治理",
+      "authors": "黄日涵, 张华",
+      "journal": "现代国际关系",
+      "year": 2025,
+      "issue": "5",
+      "crawl_date": "2026-09-23",
+      "category": "网络安全",
+      "total_score": 67.3,
+      "grade": "C",
+      "recommend_level": 3,
+      "keywords": [
+        "网络安全",
+        "网络主权",
+        "全球治理"
+      ],
+      "source_type": "manual"
+    },
+    {
+      "id": "20260922-daff59",
+      "title": "海洋强国建设中的海上战略通道安全保障研究",
+      "authors": "王义桅",
+      "journal": "太平洋学报",
+      "year": 2025,
+      "issue": "2",
+      "crawl_date": "2026-09-22",
+      "category": "海洋安全",
+      "total_score": 71.8,
+      "grade": "B",
+      "recommend_level": 3,
+      "keywords": [
+        "海洋强国",
+        "海上通道",
+        "马六甲困境",
+        "海权论"
+      ],
+      "source_type": "manual"
+    },
+    {
+      "id": "20260921-2a92ef",
+      "title": "非传统安全威胁的跨界性与协同治理机制研究",
+      "authors": "余潇枫, 李佳",
+      "journal": "世界经济与政治",
+      "year": 2025,
+      "issue": "3",
+      "crawl_date": "2026-09-21",
+      "category": "非传统安全",
+      "total_score": 76.5,
+      "grade": "B",
+      "recommend_level": 3,
+      "keywords": [
+        "非传统安全",
+        "协同治理",
+        "安全化",
+        "跨界威胁"
+      ],
+      "source_type": "manual"
+    },
+    {
+      "id": "20260920-5613e8",
+      "title": "对象、中介与目标：基于总体国家安全观的国家安全学范畴探讨",
+      "authors": "程同顺, 唐康",
+      "journal": "国际安全研究",
+      "year": 2025,
+      "issue": "4",
+      "crawl_date": "2026-09-20",
+      "category": "总体国家安全观",
+      "total_score": 79.2,
+      "grade": "B",
+      "recommend_level": 3,
+      "keywords": [
+        "总体国家安全观",
+        "国家安全学",
+        "范畴体系",
+        "安全化"
+      ],
+      "source_type": "manual"
+    }
+  ]
+}

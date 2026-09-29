@@ -1,0 +1,147 @@
+{
+  "article": {
+    "id": "20260925-90a186",
+    "title": "科技安全视角下关键核心技术攻关的举国体制研究",
+    "title_norm": "科技安全视角下关键核心技术攻关的举国体制研究",
+    "authors": "陈劲, 阳镇",
+    "journal": "中国软科学",
+    "year": 2025,
+    "issue": "3",
+    "pages": "1-15",
+    "doi": "",
+    "source_type": "manual",
+    "source_url": "",
+    "pdf_url": null,
+    "abstract": "从科技安全视角分析关键核心技术攻关的新型举国体制，提出优化路径。",
+    "keywords": "科技安全;关键核心技术;举国体制",
+    "category": "科技安全",
+    "published_date": null,
+    "crawl_date": "2026-09-25",
+    "full_text": 0,
+    "raw_path": null,
+    "created_at": "2026-09-25T06:30:00+08:00",
+    "total_score": 81.0,
+    "grade": "A",
+    "recommend_level": 4
+  },
+  "analysis": {
+    "id": "d25784eee9dd",
+    "article_id": "20260925-90a186",
+    "core_arg": "新型举国体制是关键核心技术攻关的制度保障。",
+    "detailed_flow": [
+      {
+        "step": "安全视角",
+        "detail": "科技安全的内涵与挑战"
+      },
+      {
+        "step": "体制分析",
+        "detail": "新型举国体制的特征"
+      },
+      {
+        "step": "问题诊断",
+        "detail": "当前体制存在的问题"
+      },
+      {
+        "step": "优化路径",
+        "detail": "体制优化建议"
+      }
+    ],
+    "quotes": [
+      "关键核心技术是要不来、买不来、讨不来的。"
+    ],
+    "theory_framework": [
+      {
+        "name": "创新系统理论",
+        "content": "分析技术创新的系统特征"
+      }
+    ],
+    "policy_docs": [
+      {
+        "name": "科技自立自强战略",
+        "content": "呼应科技安全战略"
+      }
+    ],
+    "data_sources": [],
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-25T06:30:00+08:00"
+  },
+  "evaluation": {
+    "id": "16a7d53c1f4b",
+    "article_id": "20260925-90a186",
+    "total_score": 81.0,
+    "grade": "A",
+    "recommend_level": 4,
+    "dimension_scores": {
+      "D1": 9,
+      "D2": 8,
+      "D3": 7,
+      "D4": 8,
+      "D5": 8,
+      "D6": 8,
+      "D7": 8,
+      "D8": 8,
+      "D9": 9,
+      "D10": 8
+    },
+    "dimension_reasons": {
+      "D1": "D1维度基于文章内容评估",
+      "D2": "D2维度基于文章内容评估",
+      "D3": "D3维度基于文章内容评估",
+      "D4": "D4维度基于文章内容评估",
+      "D5": "D5维度基于文章内容评估",
+      "D6": "D6维度基于文章内容评估",
+      "D7": "D7维度基于文章内容评估",
+      "D8": "D8维度基于文章内容评估",
+      "D9": "D9维度基于文章内容评估",
+      "D10": "D10维度基于文章内容评估"
+    },
+    "strengths": [
+      "选题重大，紧扣科技自立自强国家战略",
+      "举国体制分析有深度",
+      "政策建议具体可行"
+    ],
+    "weaknesses": [
+      "对市场机制与举国体制的平衡分析可更深入",
+      "国际比较可加强"
+    ],
+    "reviewer_comments": "本文从科技安全视角研究关键核心技术攻关的举国体制，选题重大，具有重要的政策价值。作者对新型举国体制的分析有深度，建议可行。建议进一步深化市场机制与政府作用的平衡分析。",
+    "improvement": [
+      "深化市场与政府在关键技术攻关中的协同机制",
+      "增加美德日等国技术攻关体制比较"
+    ],
+    "followup_topics": [
+      "人工智能关键核心技术攻关体制研究",
+      "科技安全评估指标体系构建"
+    ],
+    "frontier_context": {
+      "literature": [
+        {
+          "title": "总体国家安全观研究综述",
+          "year": 2024,
+          "venue": "国际安全研究",
+          "source": "OpenAlex"
+        },
+        {
+          "title": "非传统安全治理前沿",
+          "year": 2025,
+          "venue": "世界经济与政治",
+          "source": "OpenAlex"
+        }
+      ],
+      "policy_docs": [
+        {
+          "title": "总体国家安全观学习纲要",
+          "year": 2022,
+          "category": "科技安全"
+        }
+      ],
+      "retrieved_at": "2026-09-25T06:30:00+08:00"
+    },
+    "relevance_to_user": "与国家安全学研究方向高度相关，涉及科技安全领域。",
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-25T06:30:00+08:00"
+  },
+  "exported_at": "2026-09-29T22:58:39.477971"
+}

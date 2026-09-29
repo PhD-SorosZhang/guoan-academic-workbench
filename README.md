@@ -1,140 +1,218 @@
-# 国安学术工作台 v3.0
+# 国安学术工作台 v4.0
 
 > 担国是，护安澜 —— 私有化学术研究辅助平台
 
-基于 **Vercel + Supabase** 构建的个人学术工作台，支持密码密钥访问、数据云端持久化、模块联动、真实 AI 对话。v3.0 在 v2.0 基础上移植了本地版全部独有功能，并大幅完善考博导师数据库。
+基于 **GitHub Pages + SQLite + GitHub Actions** 构建的个人学术工作台。纯静态前端 + 云端自动化后端，无需服务器，每日自动收录核心期刊文章并生成 AI 深度剖析与学术评价。
 
 ---
 
-## v3.0 更新内容
+## v4.0 核心升级
 
-### 新增功能（从本地版移植）
-- 🔗 **论点匹配引文**：输入论点关键词，匹配内置文献库并直达知网/万方/维普三库检索
-- 📰 **国安研究周报**：一键汇总本周选题/文献/好文/素材，生成结构化 Word 文档
-- 📄 **PDF 拖拽上传**：基于 PDF.js，拖拽 PDF 自动提取标题、作者、期刊、年份等元数据
-- 📝 **导出 Word**：研究笔记、周报等支持一键导出为 `.doc` 文件
-- 📥 **数据导入备份**：支持从 JSON 备份文件恢复全部数据
-- 🟠🟢 **万方/维普检索入口**：文献检索三库齐全（知网+万方+维普）
+### 新增
+- 📚 **存档库**：所有收录文章永久存档，支持关键词/期刊/分类/评级/评分/作者组合检索与排序分页
+- ⭐ **10维学术评价智能体**：按 CSSCI 审稿人标准打分（S/A/B/C 四级），含灰度雷达图、优缺点、审稿总评、修改建议、可延伸选题
+- 🔄 **每日自动收录**：GitHub Actions 每日北京时间 06:30 自动抓取国家哲学社会科学文献中心及国安/国关类核心期刊新文章，经 AI 剖析评价后存档
+- 📊 **更新中心**：收录统计、日历热力图、各期刊/分类收录数、运行状态一览
+- 🔍 **RAG 前沿检索**：评价前自动检索 OpenAlex/CrossRef 近 2 年文献及相关政策文件，保证与时俱进
+- 📝 **提示词版本化**：`prompts/` 目录管理角色/剖析/评价/前沿检索四类提示词
+- 🤖 **全局搜索集成**：存档文章纳入顶部全局搜索
 
-### 考博导师数据库全面完善
-- **15 所院校 · 86 位博士生导师**，全部从各高校学院官网真实采集
-- 每条记录包含：学校 → 学院 → 导师姓名 → 职称 → 研究方向 → 代表文献（标题+期刊+年份）→ 导师主页 → 邮箱
-- 覆盖：北大、清华、复旦、人大、南大、吉大、武大、厦大、中山、外交学院、中国政法、国际关系学院、大连海事、浙大、上海交大
-
-### 架构改进
-- **双模式数据层**：配置 Supabase 时用云端存储，未配置时自动降级 localStorage，双击 index.html 即可使用
-- **修复 loadProjects 报错**：项目为空时自动创建默认项目
-- **AI 对话双模式**：API 模式调用后端真实大模型，本地模式使用内置学术助手回复
+### 修复
+- ✅ **API 404**：移除所有不存在的 `/api` 后端请求，纯静态环境下数据层走 localStorage + 静态文件
+- ✅ **网络请求**：统一 `httpGetJson` 封装，内置超时(10s)、重试(2次)、降级和用户可见错误提示
+- ✅ **定位接口**：ipapi.co 添加 5 秒超时和降级方案
+- ✅ **今日新文**：从伪随机示例池改为优先读取真实存档数据
 
 ---
 
-## 功能特性
+## 功能模块（17个）
 
-- 🔐 **私有访问**：密码密钥登录，只有你能进入
-- 📋 **论文工作台**：多项目管理 + 数据总览 + 任务追踪
-- 🔍 **选题筛选**：12 维度 AI 评测 + 雷达图 + 论点匹配引文
-- 📚 **好文剖析**：每日一篇核心期刊深度拆解 + 论证流程 + 概念图谱
-- 🎓 **考博信息**：15 校 86 位导师数据库，支持搜索筛选
-- 💼 **就业导航**：公务员/智库/高校/央企就业方向
-- 📝 **文献管理**：PDF 拖拽自动提取 + 手动录入 + 已读标记
-- ✍️ **写作素材**：金句/理论/政策/数据分类管理
-- 🧠 **研究笔记**：灵感记录 + 导出 Word
-- 📅 **学术日程**：会议/讲座/截止日期/答辩管理
-- 🤖 **AI Agent 技能库**：10 项内置 AI 能力一览
-- 💬 **论文 AI 对话**：接入你自己的大模型 API（OpenAI 兼容格式）
-- 🎨 **17 套主题配色**：故宫朱红、燕园深蓝、暗夜紫金等，支持自动轮换
-
----
-
-## 部署步骤（约 15 分钟）
-
-### 第一步：创建 Supabase 数据库
-
-1. 注册 [Supabase](https://supabase.com/)（免费版足够）
-2. 新建一个 Project，记录下：
-   - `Project URL`（形如 `https://xxxx.supabase.co`）
-   - `service_role key`（在 Settings → API 中，注意不是 anon key）
-3. 进入 **SQL Editor**，打开 `supabase/schema.sql`，复制全部内容执行
-4. 执行成功后，10 张表会自动创建
-
-### 第二步：部署到 Vercel
-
-1. 本项目已推送到 GitHub，登录 [Vercel](https://vercel.com/) 导入该仓库
-2. 在 **Environment Variables** 中添加以下变量：
-
-| 变量名 | 值 | 说明 |
-|--------|-----|------|
-| `SUPABASE_URL` | 你的 Supabase Project URL | 形如 `https://xxxx.supabase.co` |
-| `SUPABASE_SERVICE_KEY` | 你的 Supabase service_role key | 注意是 service_role，不是 anon |
-| `ACCESS_KEY` | 你自己设定的访问密钥 | 登录时用这个 |
-| `TOKEN_SECRET` | 任意随机字符串 | 用于签名登录 token |
-
-3. 点击 **Deploy**，等待部署完成（约 1-2 分钟）
-
-> **不配置 Supabase 也能用**：未配置环境变量时，系统自动降级为浏览器本地存储模式，所有功能正常可用，只是数据不跨设备同步。
-
-### 第三步：配置大模型 API（可选但推荐）
-
-1. 打开部署好的网站，输入 `ACCESS_KEY` 登录
-2. 进入「设置」页面，填入大模型 API 配置
-3. 支持 OpenAI 兼容格式：豆包、DeepSeek、通义千问等
+| 模块 | 说明 |
+|------|------|
+| 📊 论文工作台 | 多项目管理 + 数据总览 + 任务追踪 |
+| 🔍 选题筛选 | 12 维度 AI 评测 + 雷达图 + 论点匹配引文 |
+| 📖 好文剖析 | 每日核心期刊论文深度拆解 + 论证流程 + 概念图谱 |
+| 📚 **存档库** | **文章永久存档 + 组合检索 + 详情评价** |
+| 🎓 考博信息 | 15 校 86 位导师数据库，支持搜索筛选 |
+| 💼 就业导航 | 公务员/智库/高校/央企就业方向 |
+| 📝 文献管理 | PDF 拖拽自动提取 + 手动录入 + 已读标记 |
+| ✍️ 写作素材 | 金句/理论/政策/数据分类管理 |
+| 🖋️ 论文写作 | 写作辅助工具 |
+| 📅 学术日程 | 会议/讲座/截止日期/答辩管理 |
+| 🧠 研究笔记 | 灵感记录 + 导出 Word |
+| 🤖 AI技能库 | 10 项内置 AI 能力 |
+| 💬 论文AI对话 | 接入自定义大模型 API（OpenAI 兼容） |
+| 🗑 回收站 | 软删除数据恢复 |
+| 📊 数据看板 | 数据统计可视化 |
+| 🔄 **更新中心** | **收录状态 + 日历热力图 + 手动刷新** |
+| ⚙️ 设置 | 主题/API/密钥/数据管理 |
 
 ---
 
-## 本地开发
+## 架构
 
-```bash
-npm install
-npm i -g vercel
-vercel login
-vercel dev
+```
+┌─────────────────────────────────────────────────────┐
+│  GitHub 仓库（唯一事实源）                            │
+│  ├── 前端站点（GitHub Pages 部署）                    │
+│  ├── data/archive.db      ← SQLite 数据库            │
+│  ├── data/articles/YYYY-MM-DD/*.json|md  ← 单篇存档  │
+│  ├── data/index.json      ← 存档索引（前端首屏加载）   │
+│  ├── knowledge_base/*.md  ← 领域知识库（每周更新）     │
+│  └── prompts/*.md         ← 评价智能体提示词（版本化） │
+└─────────────────────────────────────────────────────┘
+        ▲ 每日 commit/push              │ 前端 fetch
+        │                               ▼
+┌──────────────────┐         ┌──────────────────────┐
+│ GitHub Actions   │         │  浏览器前端           │
+│ ① 抓取新文章      │         │  · 存档库检索         │
+│ ② RAG前沿检索    │         │  · 文章详情+评价      │
+│ ③ LLM剖析+评价   │         │  · 更新中心           │
+│ ④ 写入SQLite     │         │  · 17个模块全部保留   │
+│ ⑤ commit→部署    │         │  · localStorage数据   │
+└──────────────────┘         └──────────────────────┘
+        │ LLM API（Key 存 GitHub Secrets）
+        ▼
+  DeepSeek / 豆包 / 智谱 / Kimi / 通义 / GPT
 ```
 
-环境变量放在项目根目录 `.env` 文件中。
+**核心设计**：Git 仓库 + SQLite 文件即"数据库"，由 Actions 每日写入，前端通过 `index.json`（元数据）+ 单篇 JSON（详情）查询，无需自建数据库服务器。
 
 ---
 
-## 持续更新
+## 部署与配置
 
-```bash
-git add .
-git commit -m "更新说明"
-git push
-```
+### 第一步：启用 GitHub Pages
 
-Vercel 会自动检测 push 并重新部署，通常 1 分钟内生效。
+1. 仓库 Settings → Pages → Source 选择 `main` 分支根目录
+2. 等待部署完成（约1分钟）
+
+### 第二步：配置 GitHub Secrets（必需，用于每日自动收录的 AI 评价）
+
+进入仓库 Settings → Secrets and variables → Actions，添加：
+
+| Secret 名 | 说明 | 示例 |
+|-----------|------|------|
+| `LLM_API_KEY` | 大模型 API Key（必需） | `sk-xxxxxx` |
+| `LLM_BASE_URL` | API 端点（可选，默认 DeepSeek） | `https://api.deepseek.com/v1` |
+| `LLM_MODEL` | 模型名称（可选） | `deepseek-chat` |
+
+> 支持所有 OpenAI 兼容格式：DeepSeek、豆包、智谱 GLM、Kimi、通义千问、GPT 等。
+> **不配置也能用**：未配置时工作流仅存档题录，不生成 AI 评价。
+
+### 第三步：启用 Actions 写权限
+
+仓库 Settings → Actions → General → Workflow permissions → 选择 **Read and write permissions**。
+
+### 第四步：手动触发首次收录
+
+Actions → 「每日文章收录与评价」→ Run workflow → 选择日期 → 运行。
+
+> 种子数据已包含 12 篇示例文章，部署后存档库立即可用。
+
+---
+
+## 进阶：Cloudflare Worker（网页端"立即更新"）
+
+如需在网页上点击"立即更新"触发工作流，需部署一个 Cloudflare Worker（PAT 只存在 Worker，不进前端）：
+
+1. 将 `cloudflare-worker.js` 部署到 Cloudflare Workers
+2. 设置环境变量：`GITHUB_TOKEN`（PAT）、`GITHUB_REPO`（用户名/仓库名）、`ACCESS_KEY`（网站登录密钥）
+3. 将 Worker URL 填入网站设置页
 
 ---
 
 ## 项目结构
 
 ```
-guoan-workbench/
-├── index.html              # 前端入口
-├── css/style.css           # 全部样式（17套主题）
-├── js/
-│   ├── app.js              # 前端应用逻辑（12模块+6项移植功能）
-│   └── phd-data.js         # 考博导师数据库（15校86位）
-├── api/                    # Vercel Serverless Functions
-│   ├── _lib/auth.js        # 认证中间件
-│   ├── _lib/db.js          # Supabase 客户端
-│   ├── login.js            # 登录
-│   ├── data.js             # 通用 CRUD
-│   ├── chat.js             # AI 对话
-│   ├── analyze.js          # 文献剖析
-│   └── stats.js            # 统计数据
-├── data/phd_supervisors.json  # 考博导师数据（JSON格式）
-├── supabase/schema.sql     # 数据库表结构
-├── package.json
-├── vercel.json
+guoan-academic-workbench/
+├── index.html                 # 前端入口
+├── style.css                  # 全部样式（17套主题 + 存档库样式）
+├── app.js                     # 主逻辑（15个原有模块）
+├── js/archive.js              # 存档库 + 更新中心模块
+├── job-data.js / phd-data.js  # 就业/考博数据
+├── phd_supervisors.json       # 博导库
+├── .github/
+│   ├── workflows/
+│   │   ├── daily-archive.yml  # 每日收录（06:30 BJT）
+│   │   ├── weekly-kb-update.yml # 每周知识库更新
+│   │   └── deploy.yml         # 部署校验
+│   └── dependabot.yml         # 依赖自动更新
+├── scripts/
+│   ├── build_db.py            # SQLite 建表与迁移
+│   ├── crawl.py               # 多源文章抓取（ncpssd/RSS/期刊官网）
+│   ├── rag.py                 # OpenAlex/CrossRef/政策 RAG 检索
+│   ├── evaluate.py            # LLM 剖析 + 10维评价
+│   ├── build_index.py         # 生成 index.json + 单篇存档
+│   ├── run_pipeline.py        # 流水线总控
+│   ├── update_kb.py           # 知识库更新
+│   └── seed_data.py           # 种子数据（12篇示例）
+├── data/
+│   ├── archive.db             # SQLite 数据库
+│   ├── index.json             # 存档索引
+│   ├── articles/YYYY-MM-DD/   # 单篇 JSON + MD 存档
+│   └── inbox/                 # 待处理投稿
+├── knowledge_base/            # 领域知识库
+├── prompts/                   # 提示词版本化管理
+│   ├── 00-role.md             # 角色设定
+│   ├── 01-analyst.md          # 剖析提示词
+│   ├── 02-evaluator.md        # 评价提示词（10维标准）
+│   ├── 03-frontier.md         # 前沿检索规则
+│   └── changelog.md           # 提示词变更日志
+├── cloudflare-worker.js       # 可选：网页触发更新的 Worker
+├── CHANGELOG.md
 └── README.md
 ```
 
 ---
 
+## 评价智能体（10维 CSSCI 审稿标准）
+
+| 维度 | 权重 | 说明 |
+|------|------|------|
+| D1 选题价值与问题意识 | 12% | 是否提出真问题 |
+| D2 学术创新性 | 15% | 新问题/新视角/新方法/新材料/新论点 |
+| D3 理论贡献与对话能力 | 12% | 与既有理论的对话、修正或推进 |
+| D4 研究方法适切性 | 12% | 方法与问题匹配、设计规范 |
+| D5 论证逻辑与结构 | 10% | 逻辑链条完整、结构合理 |
+| D6 证据/数据/史料质量 | 10% | 证据充分性、来源可靠性 |
+| D7 文献综述与前沿把握 | 8% | 文献覆盖权威、新近、切题 |
+| D8 学术规范 | 5% | 引用规范、概念准确 |
+| D9 现实意义与政策价值 | 10% | 对国家安全实践的参考价值 |
+| D10 写作与表达 | 6% | 表述清晰、可读性 |
+
+**评级**：S(≥90 标杆级) / A(80-89 优秀) / B(70-79 良好) / C(<70 有限)
+
+---
+
 ## 数据安全
 
-- 云端模式：数据存储在你自己的 Supabase 数据库中
-- 本地模式：数据存储在浏览器 localStorage，不上传任何服务器
-- API Key 存储在服务器端，不会暴露给前端
+- 所有数据存储在你自己的 GitHub 仓库中
+- LLM API Key 仅存于 GitHub Secrets，绝不硬编码、绝不暴露给前端
+- 个人业务数据存于浏览器 localStorage，不上传任何服务器
 - 支持一键导出全部数据为 JSON 备份
+- PAT（如使用 Worker）仅存于 Cloudflare Worker 环境变量
+
+---
+
+## 本地开发
+
+无需构建工具，直接用浏览器打开 `index.html` 即可。Python 脚本可本地调试：
+
+```bash
+# 初始化数据库
+python scripts/build_db.py
+
+# 本地运行抓取（需网络）
+python scripts/crawl.py --date 2026-09-29
+
+# 生成种子数据
+python scripts/seed_data.py
+
+# 完整流水线（需 LLM_API_KEY 环境变量）
+LLM_API_KEY=sk-xxx python scripts/run_pipeline.py --date 2026-09-29
+```
+
+---
+
+*国安学术工作台 v4.0 | 担国是，护安澜*

@@ -1,0 +1,147 @@
+{
+  "article": {
+    "id": "20260924-06f16c",
+    "title": "边疆治理与国家安全的互动逻辑",
+    "title_norm": "边疆治理与国家安全的互动逻辑",
+    "authors": "周平",
+    "journal": "政治学研究",
+    "year": 2025,
+    "issue": "2",
+    "pages": "23-40",
+    "doi": "",
+    "source_type": "manual",
+    "source_url": "",
+    "pdf_url": null,
+    "abstract": "分析边疆治理与国家安全的双向互动关系，提出边疆治理体系现代化的路径。",
+    "keywords": "边疆安全;边疆治理;民族地区",
+    "category": "国土安全",
+    "published_date": null,
+    "crawl_date": "2026-09-24",
+    "full_text": 0,
+    "raw_path": null,
+    "created_at": "2026-09-24T06:30:00+08:00",
+    "total_score": 75.5,
+    "grade": "B",
+    "recommend_level": 3
+  },
+  "analysis": {
+    "id": "d115b19f018a",
+    "article_id": "20260924-06f16c",
+    "core_arg": "边疆治理与国家安全是双向互动的关系。",
+    "detailed_flow": [
+      {
+        "step": "概念界定",
+        "detail": "边疆治理与国家安全的概念"
+      },
+      {
+        "step": "互动机制",
+        "detail": "双向互动机制分析"
+      },
+      {
+        "step": "案例分析",
+        "detail": "民族地区案例"
+      },
+      {
+        "step": "路径设计",
+        "detail": "治理体系现代化路径"
+      }
+    ],
+    "quotes": [
+      "边疆稳则国家安，边疆治则天下定。"
+    ],
+    "theory_framework": [
+      {
+        "name": "边疆治理理论",
+        "content": "分析边疆治理的理论框架"
+      }
+    ],
+    "policy_docs": [
+      {
+        "name": "兴边富民行动",
+        "content": "呼应边疆治理政策"
+      }
+    ],
+    "data_sources": [],
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-24T06:30:00+08:00"
+  },
+  "evaluation": {
+    "id": "1db376b3ac95",
+    "article_id": "20260924-06f16c",
+    "total_score": 75.5,
+    "grade": "B",
+    "recommend_level": 3,
+    "dimension_scores": {
+      "D1": 8,
+      "D2": 7,
+      "D3": 8,
+      "D4": 7,
+      "D5": 8,
+      "D6": 7,
+      "D7": 7,
+      "D8": 8,
+      "D9": 8,
+      "D10": 8
+    },
+    "dimension_reasons": {
+      "D1": "D1维度基于文章内容评估",
+      "D2": "D2维度基于文章内容评估",
+      "D3": "D3维度基于文章内容评估",
+      "D4": "D4维度基于文章内容评估",
+      "D5": "D5维度基于文章内容评估",
+      "D6": "D6维度基于文章内容评估",
+      "D7": "D7维度基于文章内容评估",
+      "D8": "D8维度基于文章内容评估",
+      "D9": "D9维度基于文章内容评估",
+      "D10": "D10维度基于文章内容评估"
+    },
+    "strengths": [
+      "理论框架成熟，互动逻辑分析透彻",
+      "案例丰富",
+      "政策路径清晰"
+    ],
+    "weaknesses": [
+      "对数字时代边疆治理的新挑战关注不够",
+      "国际比较视角可加强"
+    ],
+    "reviewer_comments": "本文对边疆治理与国家安全的互动逻辑进行了系统分析，理论框架成熟，论证充分。建议增加数字时代边疆治理新挑战的分析和国际比较视角。",
+    "improvement": [
+      "增加数字技术对边疆治理的影响分析",
+      "增加国际边疆治理比较"
+    ],
+    "followup_topics": [
+      "数字边疆治理研究",
+      "边疆安全的国际比较"
+    ],
+    "frontier_context": {
+      "literature": [
+        {
+          "title": "总体国家安全观研究综述",
+          "year": 2024,
+          "venue": "国际安全研究",
+          "source": "OpenAlex"
+        },
+        {
+          "title": "非传统安全治理前沿",
+          "year": 2025,
+          "venue": "世界经济与政治",
+          "source": "OpenAlex"
+        }
+      ],
+      "policy_docs": [
+        {
+          "title": "总体国家安全观学习纲要",
+          "year": 2022,
+          "category": "国土安全"
+        }
+      ],
+      "retrieved_at": "2026-09-24T06:30:00+08:00"
+    },
+    "relevance_to_user": "与国家安全学研究方向高度相关，涉及国土安全领域。",
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-24T06:30:00+08:00"
+  },
+  "exported_at": "2026-09-29T22:58:39.480915"
+}

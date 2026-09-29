@@ -19,7 +19,7 @@ const NAV_ITEMS=[
 {id:'note',icon:'🧠',label:'研究笔记'},
 {id:'aitools',icon:'🤖',label:'AI技能库'},
 {id:'aichat',icon:'💬',label:'论文AI对话'},
-{id:'recycle',icon:'🗑',label:'回收站'},{id:'dash2',icon:'📊',label:'数据看板'},{id:'settings',icon:'⚙️',label:'设置'}
+{id:'archive',icon:'📚',label:'存档库'},{id:'recycle',icon:'🗑',label:'回收站'},{id:'dash2',icon:'📊',label:'数据看板'},{id:'update',icon:'🔄',label:'更新中心'},{id:'settings',icon:'⚙️',label:'设置'}
 ];
 
 const DIMENSIONS=['选题创新性','理论深度','现实意义','方法可行性','数据可获得性','文献支撑度','学科契合度','政策相关性','研究缺口','写作可操作性','时间可控性','发表潜力'];
@@ -343,7 +343,7 @@ function scoreGrade(s){if(s>=90)return'<span class="score-grade pass">A 优秀</
 
 // ===== 数据层（API + localStorage 双模式）=====
 const STORAGE_KEY='guoan_workbench_data_v3';
-const API_BASE='/api';
+const API_BASE=null; // GitHub Pages纯静态，无后端；数据层走localStorage+静态文件
 let token=localStorage.getItem('guoan_token')||'';
 let apiMode=false;
 
@@ -359,14 +359,8 @@ function resolveEndpoint(endpoint){
   return endpoint;
 }
 async function api(endpoint,options={}){
-  try{
-    const headers={'Content-Type':'application/json'};
-    if(token)headers['Authorization']=`Bearer ${token}`;
-    const res=await fetch(`${API_BASE}/${resolveEndpoint(endpoint)}`,{...options,headers});
-    if(res.status===401){logout();throw new Error('未授权');}
-    if(!res.ok)throw new Error('API '+res.status);
-    return await res.json();
-  }catch(e){return null;}
+  // GitHub Pages 纯静态无后端，直接返回 null，走 localStorage 降级
+  return null;
 }
 function apiGet(endpoint){return api(endpoint);}
 function apiPost(endpoint,body){return api(endpoint,{method:'POST',body:JSON.stringify(body)});}
@@ -544,19 +538,28 @@ function globalSearch(query){
   });
   return out;
 }
-function renderGlobalSearch(q){
+async function renderGlobalSearch(q){
   const box=document.getElementById('globalSearchResults');
   if(!box)return;
   if(!q.trim()){box.style.display='none';box.innerHTML='';return;}
   const res=globalSearch(q);
-  if(!res.length){box.style.display='block';box.innerHTML='<div class="gs-empty">无匹配结果</div>';return;}
+  // 异步搜索存档库
+  let archiveRes=[];
+  try{
+    if(window.archiveGlobalSearch){
+      archiveRes=await window.archiveGlobalSearch(q);
+    }
+  }catch(e){}
+  const allRes=res.concat(archiveRes.map(r=>({module:'存档文章',page:'archive',id:r.id,title:r.title,snippet:r.subtitle})));
+  if(!allRes.length){box.style.display='block';box.innerHTML='<div class="gs-empty">无匹配结果</div>';return;}
   const groups={};
-  res.forEach(r=>{if(!groups[r.module])groups[r.module]=[];groups[r.module].push(r);});
+  allRes.forEach(r=>{if(!groups[r.module])groups[r.module]=[];groups[r.module].push(r);});
   let html='';
   Object.keys(groups).forEach(mod=>{
     html+='<div class="gs-group"><div class="gs-group-title">'+mod+' · '+groups[mod].length+'</div>';
     groups[mod].slice(0,8).forEach(r=>{
-      html+='<div class="gs-item" onclick="jumpToResult(\''+r.page+'\',\''+r.id+'\')"><div class="gs-item-title">'+esc(r.title)+'</div><div class="gs-item-snippet">'+r.snippet+'</div></div>';
+      const clickHandler=r.module==='存档文章'?`showArticleDetail('${r.id}');clearGlobalSearch();`:`jumpToResult('${r.page}','${r.id}')`;
+      html+='<div class="gs-item" onclick="'+clickHandler+'"><div class="gs-item-title">'+esc(r.title)+'</div><div class="gs-item-snippet">'+(r.snippet||'')+'</div></div>';
     });
     html+='</div>';
   });
@@ -570,6 +573,7 @@ function clearGlobalSearch(){
 }
 function jumpToResult(page,id){
   try{localStorage.setItem('_searchHighlightId',id);}catch(e){}
+  if(page==='archive'&&typeof showArticleDetail==='function'){showArticleDetail(id);clearGlobalSearch();return;}
   navigate(page);
   clearGlobalSearch();
 }
@@ -605,6 +609,8 @@ function render(){
     case 'dash2':renderDashboard2();break;
     case 'recycle':renderRecycleBin();break;
     case 'writing':renderWriting();break;
+    case 'archive':if(typeof renderArchivePage==='function')renderArchivePage();break;
+    case 'update':if(typeof renderUpdateCenter==='function')renderUpdateCenter();break;
   }
 }
 
@@ -628,12 +634,16 @@ async function fetchWeather(){
   if(!el)return;
   let lat=38.91, lon=121.61, city='大连';
   try{
-    const ipRes=await fetch('https://ipapi.co/json/');
-    if(ipRes.ok){
-      const ipData=await ipRes.json();
-      lat=ipData.latitude||lat; lon=ipData.longitude||lon; city=ipData.city||city;
-    }
-  }catch(e){/* ipapi不可用则用大连坐标 */}
+    let ipData=null;
+    try{
+      const ipCtrl=new AbortController();
+      const ipTimer=setTimeout(()=>ipCtrl.abort(),5000);
+      const ipRes=await fetch('https://ipapi.co/json/',{signal:ipCtrl.signal});
+      clearTimeout(ipTimer);
+      if(ipRes.ok)ipData=await ipRes.json();
+    }catch(e){/* ipapi不可用，使用默认坐标 */}
+    if(ipData){lat=ipData.latitude||lat;lon=ipData.longitude||lon;city=ipData.city||city;}
+  }catch(e){/* 定位失败，使用默认坐标 */}
   try{
     el.textContent='🌡️ '+city+' ...';
     const wRes=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m');
@@ -1009,9 +1019,13 @@ function renderArticle(){
   }).join(''):emptyState('📖','暂无剖析记录');
 
   document.getElementById('mainContent').innerHTML=
-    '<div class="page-header"><h1>📖 好文剖析</h1><p>每日三篇核心期刊论文深度拆解 · 不同CSSCI刊物 · 每日6:30自动更新</p></div>'
+    '<div class="page-header"><h1>📖 好文剖析</h1><p>每日三篇核心期刊论文深度拆解 · 不同CSSCI刊物 · 每日6:30自动更新</p>'
+    +'<div style="margin-bottom:16px;padding:12px 16px;background:var(--bg-soft,#f5f5f5);border-radius:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">'
+    +'<span style="font-size:.85rem;">📚 全部历史文章与AI评价已存入 <strong>存档库</strong>，支持关键词/期刊/评分组合检索</span>'
+    +'<button class="btn btn-primary" onclick="navigate(\'archive\')" style="font-size:.8rem;padding:6px 14px;">进入存档库 →</button>'
+    +'</div>'
     +dailyCardsHtml
-    +'<div class="card"><div class="card-title"><span class="title-icon">📥</span>投递 PDF / Word 生成好文剖析</div>'
+    +'<div class="card"><div class="card-title"><span class="title-icon">📥</span>投递 PDF / Word 生成好文剖析 <span style="font-size:.75rem;color:var(--text-mute);margin-left:8px;">或 <a href="javascript:void(0)" onclick="navigate(\'archive\')" style="color:var(--primary);">手动提交文章到存档库</a></span></div>'
     +'<p style="font-size:.82rem;color:var(--text-soft);margin-bottom:10px;">上传文献全文，自动提取金句、理论框架、政策依据，生成完整剖析记录。</p>'
     +'<input type="file" id="articleFileInput" accept=".pdf,.docx,.txt" style="display:none;" onchange="handleArticleUpload(this.files)">'
     +'<button class="add-btn" onclick="document.getElementById(\'articleFileInput\').click()">📂 选择文件投递</button>'
@@ -2920,40 +2934,34 @@ function getDailyArticle(){
 }
 // V7: 每日三篇好文，来自不同CSSCI刊物，每天6:30后更新
 function getDailyArticles(){
-  const now=new Date();
-  // 6:30前算前一天
-  const d=new Date(now);
-  if(d.getHours()<6||(d.getHours()===6&&d.getMinutes()<30)){
-    d.setDate(d.getDate()-1);
-  }
-  const seed=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
-  // 按期刊分组
-  const byJournal={};
-  ARTICLE_POOL.forEach((a,i)=>{
-    if(!byJournal[a.journal])byJournal[a.journal]=[];
-    byJournal[a.journal].push({article:a,index:i});
-  });
-  const journals=Object.keys(byJournal);
-  // 选3个不同期刊
+  // 优先从存档库读取今日文章，无则降级到内置示例池
+  try{
+    if(window.ArchiveStore&&window.ArchiveStore._index){
+      const idx=window.ArchiveStore._index;
+      const today=new Date().toISOString().slice(0,10);
+      const todays=idx.items.filter(i=>i.crawl_date===today);
+      if(todays.length){
+        return todays.slice(0,3).map(a=>({
+          title:a.title,authors:a.authors||'未知',journal:a.journal||'存档',
+          year:a.year||new Date().getFullYear(),issue:a.issue||'',pages:'',
+          url:a.source_url||'#',
+          detailedFlow:[{step:'存档文章',detail:'该文章来自每日自动收录，点击查看完整剖析与评价。'}],
+          conceptMap:{layers:[{label:'分类',nodes:[{text:a.category||'综合安全',type:'accent'}]}]},
+          quotes:['该文章已存档，详细金句请在存档库中查看。'],
+          _isArchive:true,_id:a.id
+        }));
+      }
+    }
+  }catch(e){}
+  // 降级：内置示例池（标注为离线示例）
+  const seed=Date.now()/86400000|0;
   const selected=[];
-  const usedJournals=new Set();
-  let offset=seed%journals.length;
-  for(let round=0;round<journals.length&&selected.length<3;round++){
-    const jIdx=(offset+round)%journals.length;
-    const journal=journals[jIdx];
-    if(usedJournals.has(journal))continue;
-    usedJournals.add(journal);
-    const pool=byJournal[journal];
-    const artIdx=(seed+round)%pool.length;
-    selected.push(pool[artIdx].article);
+  const pool=ARTICLE_POOL;
+  for(let i=0;i<3&&selected.length<3;i++){
+    const idx=(seed+i*7)%pool.length;
+    if(!selected.includes(pool[idx]))selected.push(pool[idx]);
   }
-  // 不足3篇则从全部中补
-  while(selected.length<3){
-    const idx=(seed+selected.length)%ARTICLE_POOL.length;
-    if(!selected.includes(ARTICLE_POOL[idx]))selected.push(ARTICLE_POOL[idx]);
-    else break;
-  }
-  return selected;
+  return selected.map(a=>({...a,_isOffline:true}));
 }
 
 // ===== 默认考博数据（兜底）=====

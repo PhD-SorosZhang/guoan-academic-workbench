@@ -1,0 +1,147 @@
+{
+  "article": {
+    "id": "20260927-17df7a",
+    "title": "人工智能发展对国家安全的影响与治理",
+    "title_norm": "人工智能发展对国家安全的影响与治理",
+    "authors": "李开孟, 王刚",
+    "journal": "国际安全研究",
+    "year": 2025,
+    "issue": "5",
+    "pages": "35-52",
+    "doi": "",
+    "source_type": "manual",
+    "source_url": "",
+    "pdf_url": null,
+    "abstract": "分析人工智能发展对军事、经济、社会、网络等安全领域的影响，提出治理框架。",
+    "keywords": "人工智能;科技安全;治理",
+    "category": "科技安全",
+    "published_date": null,
+    "crawl_date": "2026-09-27",
+    "full_text": 0,
+    "raw_path": null,
+    "created_at": "2026-09-27T06:30:00+08:00",
+    "total_score": 79.6,
+    "grade": "B",
+    "recommend_level": 3
+  },
+  "analysis": {
+    "id": "33e3571ad4d2",
+    "article_id": "20260927-17df7a",
+    "core_arg": "人工智能是双刃剑，需构建安全治理框架。",
+    "detailed_flow": [
+      {
+        "step": "影响分析",
+        "detail": "AI对各安全领域的影响"
+      },
+      {
+        "step": "风险识别",
+        "detail": "AI带来的安全风险"
+      },
+      {
+        "step": "治理框架",
+        "detail": "AI安全治理框架"
+      },
+      {
+        "step": "政策建议",
+        "detail": "具体治理建议"
+      }
+    ],
+    "quotes": [
+      "人工智能是引领新一轮科技革命和产业变革的战略性技术。"
+    ],
+    "theory_framework": [
+      {
+        "name": "技术治理理论",
+        "content": "分析AI治理的理论基础"
+      }
+    ],
+    "policy_docs": [
+      {
+        "name": "生成式AI服务管理暂行办法",
+        "content": "呼应AI治理政策"
+      }
+    ],
+    "data_sources": [],
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-27T06:30:00+08:00"
+  },
+  "evaluation": {
+    "id": "9da7cc6926f7",
+    "article_id": "20260927-17df7a",
+    "total_score": 79.6,
+    "grade": "B",
+    "recommend_level": 3,
+    "dimension_scores": {
+      "D1": 9,
+      "D2": 8,
+      "D3": 7,
+      "D4": 7,
+      "D5": 8,
+      "D6": 7,
+      "D7": 9,
+      "D8": 8,
+      "D9": 9,
+      "D10": 8
+    },
+    "dimension_reasons": {
+      "D1": "D1维度基于文章内容评估",
+      "D2": "D2维度基于文章内容评估",
+      "D3": "D3维度基于文章内容评估",
+      "D4": "D4维度基于文章内容评估",
+      "D5": "D5维度基于文章内容评估",
+      "D6": "D6维度基于文章内容评估",
+      "D7": "D7维度基于文章内容评估",
+      "D8": "D8维度基于文章内容评估",
+      "D9": "D9维度基于文章内容评估",
+      "D10": "D10维度基于文章内容评估"
+    },
+    "strengths": [
+      "紧扣AI安全这一前沿议题",
+      "影响分析覆盖多领域",
+      "治理框架有前瞻性"
+    ],
+    "weaknesses": [
+      "对AI军事应用的深度分析不足",
+      "国际AI治理博弈分析可加强"
+    ],
+    "reviewer_comments": "本文分析人工智能对国家安全的多维度影响，选题前沿，具有重要的现实意义。作者构建的治理框架有前瞻性。建议深化AI军事应用和国际治理博弈的分析。",
+    "improvement": [
+      "深化AI在军事安全领域的应用与风险分析",
+      "增加中美欧AI治理博弈的比较分析"
+    ],
+    "followup_topics": [
+      "自主武器系统的国际法规制研究",
+      "AI大模型的安全评估标准研究"
+    ],
+    "frontier_context": {
+      "literature": [
+        {
+          "title": "总体国家安全观研究综述",
+          "year": 2024,
+          "venue": "国际安全研究",
+          "source": "OpenAlex"
+        },
+        {
+          "title": "非传统安全治理前沿",
+          "year": 2025,
+          "venue": "世界经济与政治",
+          "source": "OpenAlex"
+        }
+      ],
+      "policy_docs": [
+        {
+          "title": "总体国家安全观学习纲要",
+          "year": 2022,
+          "category": "科技安全"
+        }
+      ],
+      "retrieved_at": "2026-09-27T06:30:00+08:00"
+    },
+    "relevance_to_user": "与国家安全学研究方向高度相关，涉及科技安全领域。",
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-27T06:30:00+08:00"
+  },
+  "exported_at": "2026-09-29T22:58:39.470800"
+}

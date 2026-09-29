@@ -1,0 +1,147 @@
+{
+  "article": {
+    "id": "20260928-9c14ef",
+    "title": "中国海外利益保护的机制创新与路径选择",
+    "title_norm": "中国海外利益保护的机制创新与路径选择",
+    "authors": "陈东晓",
+    "journal": "国际展望",
+    "year": 2025,
+    "issue": "2",
+    "pages": "1-16",
+    "doi": "",
+    "source_type": "manual",
+    "source_url": "",
+    "pdf_url": null,
+    "abstract": "分析中国海外利益面临的安全风险，提出保护机制创新和路径选择。",
+    "keywords": "海外利益;领事保护;一带一路安全",
+    "category": "海外利益",
+    "published_date": null,
+    "crawl_date": "2026-09-28",
+    "full_text": 0,
+    "raw_path": null,
+    "created_at": "2026-09-28T06:30:00+08:00",
+    "total_score": 76.3,
+    "grade": "B",
+    "recommend_level": 3
+  },
+  "analysis": {
+    "id": "a4f7dca3d85e",
+    "article_id": "20260928-9c14ef",
+    "core_arg": "海外利益保护需机制创新，构建多元保护体系。",
+    "detailed_flow": [
+      {
+        "step": "利益盘点",
+        "detail": "中国海外利益的规模与分布"
+      },
+      {
+        "step": "风险分析",
+        "detail": "海外利益面临的安全风险"
+      },
+      {
+        "step": "机制创新",
+        "detail": "保护机制创新方向"
+      },
+      {
+        "step": "路径选择",
+        "detail": "具体实施路径"
+      }
+    ],
+    "quotes": [
+      "海外利益是国家利益的重要延伸，保护海外利益就是保护国家发展利益。"
+    ],
+    "theory_framework": [
+      {
+        "name": "海外利益保护理论",
+        "content": "分析海外利益保护的理论框架"
+      }
+    ],
+    "policy_docs": [
+      {
+        "name": "一带一路安全保障",
+        "content": "呼应海外利益保护政策"
+      }
+    ],
+    "data_sources": [],
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-28T06:30:00+08:00"
+  },
+  "evaluation": {
+    "id": "dad8048b0925",
+    "article_id": "20260928-9c14ef",
+    "total_score": 76.3,
+    "grade": "B",
+    "recommend_level": 3,
+    "dimension_scores": {
+      "D1": 8,
+      "D2": 7,
+      "D3": 7,
+      "D4": 7,
+      "D5": 8,
+      "D6": 8,
+      "D7": 7,
+      "D8": 8,
+      "D9": 9,
+      "D10": 8
+    },
+    "dimension_reasons": {
+      "D1": "D1维度基于文章内容评估",
+      "D2": "D2维度基于文章内容评估",
+      "D3": "D3维度基于文章内容评估",
+      "D4": "D4维度基于文章内容评估",
+      "D5": "D5维度基于文章内容评估",
+      "D6": "D6维度基于文章内容评估",
+      "D7": "D7维度基于文章内容评估",
+      "D8": "D8维度基于文章内容评估",
+      "D9": "D9维度基于文章内容评估",
+      "D10": "D10维度基于文章内容评估"
+    },
+    "strengths": [
+      "海外利益分析系统全面",
+      "机制创新有针对性",
+      "政策路径清晰"
+    ],
+    "weaknesses": [
+      "对私营军事公司等新兴保护主体的分析不足",
+      "案例可更丰富"
+    ],
+    "reviewer_comments": "本文对中国海外利益保护进行了系统研究，机制创新建议有价值。建议增加私营安保公司等新兴主体的分析和更多案例。",
+    "improvement": [
+      "增加私营安保公司在海外利益保护中的作用分析",
+      "补充更多国别案例"
+    ],
+    "followup_topics": [
+      "中国海外公民安全保护机制研究",
+      "海外关键基础设施安全保护研究"
+    ],
+    "frontier_context": {
+      "literature": [
+        {
+          "title": "总体国家安全观研究综述",
+          "year": 2024,
+          "venue": "国际安全研究",
+          "source": "OpenAlex"
+        },
+        {
+          "title": "非传统安全治理前沿",
+          "year": 2025,
+          "venue": "世界经济与政治",
+          "source": "OpenAlex"
+        }
+      ],
+      "policy_docs": [
+        {
+          "title": "总体国家安全观学习纲要",
+          "year": 2022,
+          "category": "海外利益"
+        }
+      ],
+      "retrieved_at": "2026-09-28T06:30:00+08:00"
+    },
+    "relevance_to_user": "与国家安全学研究方向高度相关，涉及海外利益领域。",
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-28T06:30:00+08:00"
+  },
+  "exported_at": "2026-09-29T22:58:39.468063"
+}

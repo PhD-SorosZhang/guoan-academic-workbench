@@ -1,0 +1,142 @@
+{
+  "article": {
+    "id": "20260923-a7c329",
+    "title": "网络空间主权与全球互联网治理",
+    "title_norm": "网络空间主权与全球互联网治理",
+    "authors": "黄日涵, 张华",
+    "journal": "现代国际关系",
+    "year": 2025,
+    "issue": "5",
+    "pages": "45-62",
+    "doi": "",
+    "source_type": "manual",
+    "source_url": "",
+    "pdf_url": null,
+    "abstract": "从网络空间主权原则出发，分析全球互联网治理的博弈格局，提出中国参与治理的策略。",
+    "keywords": "网络安全;网络主权;全球治理",
+    "category": "网络安全",
+    "published_date": null,
+    "crawl_date": "2026-09-23",
+    "full_text": 0,
+    "raw_path": null,
+    "created_at": "2026-09-23T06:30:00+08:00",
+    "total_score": 67.3,
+    "grade": "C",
+    "recommend_level": 3
+  },
+  "analysis": {
+    "id": "b58656751c91",
+    "article_id": "20260923-a7c329",
+    "core_arg": "网络空间主权是参与全球互联网治理的根本原则。",
+    "detailed_flow": [
+      {
+        "step": "原则阐释",
+        "detail": "网络空间主权原则的内涵"
+      },
+      {
+        "step": "格局分析",
+        "detail": "全球互联网治理博弈格局"
+      },
+      {
+        "step": "策略建议",
+        "detail": "中国参与治理的策略"
+      }
+    ],
+    "quotes": [
+      "网络空间不是法外之地，主权原则同样适用于网络空间。"
+    ],
+    "theory_framework": [
+      {
+        "name": "网络空间主权理论",
+        "content": "分析网络主权的理论基础"
+      }
+    ],
+    "policy_docs": [
+      {
+        "name": "网络安全法",
+        "content": "呼应网络空间主权"
+      }
+    ],
+    "data_sources": [],
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-23T06:30:00+08:00"
+  },
+  "evaluation": {
+    "id": "a8141bd50303",
+    "article_id": "20260923-a7c329",
+    "total_score": 67.3,
+    "grade": "C",
+    "recommend_level": 3,
+    "dimension_scores": {
+      "D1": 7,
+      "D2": 6,
+      "D3": 7,
+      "D4": 6,
+      "D5": 7,
+      "D6": 6,
+      "D7": 7,
+      "D8": 7,
+      "D9": 8,
+      "D10": 7
+    },
+    "dimension_reasons": {
+      "D1": "D1维度基于文章内容评估",
+      "D2": "D2维度基于文章内容评估",
+      "D3": "D3维度基于文章内容评估",
+      "D4": "D4维度基于文章内容评估",
+      "D5": "D5维度基于文章内容评估",
+      "D6": "D6维度基于文章内容评估",
+      "D7": "D7维度基于文章内容评估",
+      "D8": "D8维度基于文章内容评估",
+      "D9": "D9维度基于文章内容评估",
+      "D10": "D10维度基于文章内容评估"
+    },
+    "strengths": [
+      "紧扣网络空间主权这一核心议题",
+      "政策建议有针对性"
+    ],
+    "weaknesses": [
+      "理论创新性有限",
+      "对最新技术发展（如AI、Web3）的影响分析不足"
+    ],
+    "reviewer_comments": "本文围绕网络空间主权与全球互联网治理展开，选题具有现实意义。作者对治理格局的分析较为清晰，政策建议有针对性。但理论创新性有限，对人工智能、Web3等新技术对网络治理的影响分析不足。",
+    "improvement": [
+      "增加AI和Web3对网络治理影响的分析",
+      "深化网络主权理论的学理探讨"
+    ],
+    "followup_topics": [
+      "人工智能时代的网络空间主权研究",
+      "全球数据治理规则博弈"
+    ],
+    "frontier_context": {
+      "literature": [
+        {
+          "title": "总体国家安全观研究综述",
+          "year": 2024,
+          "venue": "国际安全研究",
+          "source": "OpenAlex"
+        },
+        {
+          "title": "非传统安全治理前沿",
+          "year": 2025,
+          "venue": "世界经济与政治",
+          "source": "OpenAlex"
+        }
+      ],
+      "policy_docs": [
+        {
+          "title": "总体国家安全观学习纲要",
+          "year": 2022,
+          "category": "网络安全"
+        }
+      ],
+      "retrieved_at": "2026-09-23T06:30:00+08:00"
+    },
+    "relevance_to_user": "与国家安全学研究方向高度相关，涉及网络安全领域。",
+    "llm_model": "seed-data",
+    "prompt_version": "evaluator-v1.0",
+    "created_at": "2026-09-23T06:30:00+08:00"
+  },
+  "exported_at": "2026-09-29T22:58:39.483237"
+}
