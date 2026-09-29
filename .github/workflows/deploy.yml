@@ -22,7 +22,7 @@ jobs:
           echo "关键文件存在 ✓"
 
       - name: 校验 Python 脚本语法
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
       - run: |
