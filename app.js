@@ -1585,6 +1585,8 @@ async function analyzeWithLLM(text,title){
   const endpoint=data.settings.apiEndpoint;
   const key=data.settings.apiKey;
   if(!key||!endpoint)return null;
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),45000);
   const prompt='你是国家安全学论文剖析助手。请阅读以下文献，提取结构化剖析结果，严格返回JSON（不要markdown，不要解释文字）：\n'+
   '{"quotes":["金句1","金句2","金句3"],"theoryFramework":[{"name":"理论名","content":"一句话说明其在文中作用","inferred":false}],"policyDocs":[{"name":"政策文件/会议/战略名","content":"一句话说明","inferred":false}],"dataSources":[{"name":"数据来源","type":"数据来源","content":"说明"}],"detailedFlow":[{"step":"步骤名","detail":"说明"}]}'+
   '\n要求：quotes至少3条；theoryFramework至少2条；policyDocs至少2条；detailedFlow 5-7步。\n'+
@@ -1592,8 +1594,9 @@ async function analyzeWithLLM(text,title){
   const resp=await fetch(endpoint,{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-    body:JSON.stringify({model:data.settings.apiModel,messages:[{role:'user',content:prompt}],temperature:0.3,response_format:{type:'json_object'}})
+    body:JSON.stringify({model:data.settings.apiModel,messages:[{role:'user',content:prompt}],temperature:0.3,response_format:{type:'json_object'}}),signal:ctrl.signal
   });
+  clearTimeout(timer);
   if(!resp.ok)throw new Error('LLM HTTP '+resp.status);
   const j=await resp.json();
   const c=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
@@ -2562,6 +2565,7 @@ function saveApiConfig(){
 // V7: 国产模型预设快速填充
 const MODEL_PRESETS={
   'deepseek-v4':{endpoint:'https://api.deepseek.com/v1/chat/completions',model:'deepseek-v4'},
+  'deepseek-v4-pro':{endpoint:'https://api.deepseek.com/v1/chat/completions',model:'deepseek-v4-pro'},
   'glm-5.3-flash':{endpoint:'https://open.bigmodel.cn/api/paas/v4/chat/completions',model:'glm-5.3-flash'},
   'minimax-m3':{endpoint:'https://api.minimax.chat/v1/text/chatcompletion_v2',model:'MiniMax-M3'},
   'kimi-k3':{endpoint:'https://api.moonshot.cn/v1/chat/completions',model:'kimi-k3'},
@@ -2586,7 +2590,10 @@ async function testApiConnection(){
   if(!key){out.innerHTML='<span style="color:#c0392b;">未填写Key</span>';return;}
   out.innerHTML='<span style="color:var(--text-mute);">测试中...</span>';
   try{
-    const resp=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:model,messages:[{role:'user',content:'ping，回复pong'}],max_tokens:10})});
+    const testCtrl=new AbortController();
+    const testTimer=setTimeout(()=>testCtrl.abort(),15000);
+    const resp=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:model,messages:[{role:'user',content:'ping，回复pong'}],max_tokens:10}),signal:testCtrl.signal});
+    clearTimeout(testTimer);
     if(!resp.ok){out.innerHTML='<span style="color:#c0392b;">失败 HTTP '+resp.status+'</span>';return;}
     out.innerHTML='<span style="color:#2d8672;">✅ 连接成功</span>';
   }catch(e){out.innerHTML='<span style="color:#c0392b;">失败：'+esc(String(e.message||e)).slice(0,60)+'</span>';}
