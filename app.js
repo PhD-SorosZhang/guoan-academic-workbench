@@ -17,7 +17,7 @@ const NAV_ITEMS=[
 {id:'writing',icon:'🖋️',label:'论文写作'},
 {id:'schedule',icon:'📅',label:'学术日程'},
 {id:'note',icon:'🧠',label:'研究笔记'},
-{id:'aitools',icon:'🤖',label:'AI技能库'},
+{id:'aitools',icon:'🤖',label:'Agent 能力台'},
 {id:'aichat',icon:'💬',label:'论文AI对话'},
 {id:'archive',icon:'📚',label:'存档库'},{id:'recycle',icon:'🗑',label:'回收站'},{id:'dash2',icon:'📊',label:'数据看板'},{id:'update',icon:'🔄',label:'更新中心'},{id:'settings',icon:'⚙️',label:'设置'}
 ];
@@ -1901,16 +1901,427 @@ const AI_SKILLS=[
 {name:'论点匹配引文',desc:'输入论点关键词，自动匹配内置文献库并跳转知网/万方/维普检索。',usage:'在「选题筛选」→「论点匹配引文」标签页使用'},
 {name:'PDF元数据自动提取',desc:'拖拽PDF文件自动提取标题、作者、期刊、年份等元数据。',usage:'在「文献管理」中拖拽PDF到上传区域'},
 {name:'好文深度剖析',desc:'每日一篇核心期刊论文，拆解论证流程、概念图谱、金句摘录。',usage:'在「好文剖析」模块查看每日好文'},
-{name:'国安研究周报',desc:'一键汇总本周选题、文献、好文、素材，生成结构化Word周报。',usage:'在「设置」中点击"生成国安研究周报"'},
+{name:'国安研究周报',desc:'一键汇总本周选题、文献、好文、素材，生成结构化Word周报。',usage:'在「设置」中点击生成国安研究周报'},
 {name:'论文AI对话',desc:'与AI助手对话，获取选题建议、文献推荐、写作指导。',usage:'在「论文AI对话」模块使用'},
-{name:'导出Word',desc:'将研究笔记、周报等导出为Word文档。',usage:'在笔记列表点击"导出Word"按钮'},
+{name:'导出Word',desc:'将研究笔记、周报等导出为Word文档。',usage:'在笔记列表点击导出Word按钮'},
 {name:'数据导入导出',desc:'支持JSON格式备份与恢复，防止数据丢失。',usage:'在「设置」→「数据管理」中操作'},
 {name:'17套主题配色',desc:'从故宫朱红到暗夜紫金，17套学术风格主题，支持自动轮换。',usage:'在「设置」→「主题配色」中选择'},
 {name:'多项目管理',desc:'支持创建多个论文项目，数据按项目隔离管理。',usage:'在「论文工作台」顶部切换/新建项目'}
 ];
+
+// ===== V9新增：AI指令库 =====
+const PROMPT_CATS=[
+  {id:'search',icon:'🔎',name:'文献检索'},
+  {id:'read',icon:'📖',name:'精读笔记'},
+  {id:'topic',icon:'💡',name:'选题评估'},
+  {id:'framework',icon:'🏗️',name:'框架设计'},
+  {id:'review',icon:'📚',name:'文献综述'},
+  {id:'theory',icon:'⚙️',name:'理论方法'},
+  {id:'write',icon:'✍️',name:'正文写作'},
+  {id:'polish',icon:'✨',name:'降AI味'},
+  {id:'peer',icon:'🔍',name:'审稿返修'},
+  {id:'submit',icon:'📮',name:'投稿准备'},
+];
+const PROMPT_LIB=[
+{cat:'search',title:'多数据库检索式构造',desc:'输入研究主题，输出知网/WoS/Scopus三库布尔逻辑检索式。',prompt:`你是国家安全学/国际关系领域资深文献检索专家。请根据我的研究主题构造系统的文献检索方案。
+
+【我的研究主题】：（在此粘贴）
+【请输出】：
+1. 核心概念拆解：3-5组核心概念，每组中英文同义词扩展
+2. 知网检索式：主题/关键词/摘要三个字段版本
+3. Web of Science检索式：TS=字段，精确版+扩展版
+4. Scopus检索式：TITLE-ABS-KEY=字段
+5. 筛选策略：时间/期刊层级/被引频次三层筛选
+6. 补充来源：智库报告、政府文件、国际组织报告等灰色文献`},
+{cat:'search',title:'引文雪球法扩展核心文献',desc:'给定一篇核心文献，前向追溯+后向追踪，画出文献关系网。',prompt:`你是国际关系文献分析专家。我给你一篇核心文献，用引文雪球法扩展关键文献集群。
+
+【核心文献】：（粘贴标题、作者、年份、期刊）
+【请完成】：
+1. 前向追溯：奠基性文献，按理论/方法/案例三类
+2. 后向追踪：高影响力被引论文，分支持/修正/批判/拓展四类
+3. 枢纽节点：本领域3-5篇关键文献
+4. 最新前沿：近3年5篇值得关注的新论文
+5. 补充检索：关键词组合建议`},
+{cat:'search',title:'前沿文献持续追踪方案',desc:'设计RSS/Alert/智库监控体系，每周30分钟掌握最新进展。',prompt:`你是学术研究效率专家。请为我的研究方向设计前沿文献自动追踪系统。
+
+【研究方向】：（填写）
+【输出】：
+1. 关键词监控矩阵：核心词/扩展词/机构人物三维度
+2. 数据库订阅：知网定制、WoS Alert、Google Scholar提醒
+3. 智库监测：8-10个本领域最重要智库报告更新页
+4. 每周简报模板：新论文3篇+政策动态2条+争论1个`},
+{cat:'search',title:'识别文献空白与研究机会',desc:'分析文献地形：已饱和区/成熟区/新兴热点/交叉空白/方法空白。',prompt:`你是国家安全学资深审稿人和选题策划专家。请分析这个领域的文献地形，找到最佳研究空白。
+
+【研究领域】：（填写）
+【请分析】：
+1. 已饱和区域：哪些话题做烂了？为什么难发CSSCI？
+2. 经典成熟领域：哪些还有边际推进空间？
+3. 新兴热点：近3年热起来但没做烂的方向
+4. 交叉空白：和哪些相邻学科交叉还很少？
+5. 方法空白：现有研究主要用什么方法？哪些很少用？
+6. 案例空白：哪些案例还没被充分研究？
+7. 给我3个具体可操作的选题方向`},
+{cat:'read',title:'单篇文献结构化精读笔记',desc:'粘贴论文，自动生成研究问题/论点/方法/证据/局限/对话点。',prompt:`你是国家安全学资深研究者。请像博导一样帮我精读下面这篇论文。
+
+【论文内容】：（粘贴摘要+核心章节）
+【输出结构】：
+一、核心信息卡：标题/研究问题/核心论点/理论视角/方法/案例
+二、论证链条拆解：前提→推导→证据→结论
+三、优点与贡献：推进了什么对话
+四、缺陷与可商榷：理论漏洞/方法偏差/证据不足
+五、对我的研究价值：引用在哪/和谁对话/切入点
+六、金句摘录：3-5句可化用的句子`},
+{cat:'read',title:'多篇文献对比分析矩阵',desc:'多篇同主题文献横向对比，一眼看清学术版图和争论焦点。',prompt:`你是学术综述专家。我给你一组同主题论文摘要，请做横向对比矩阵。
+
+【待对比文献】：（粘贴多篇摘要，用---分隔）
+【输出】：
+一、对比总表：文献/研究问题/理论视角/核心观点/方法/结论/局限
+二、学术立场光谱：按核心维度排各派位置
+三、共识与分歧：基本共识/主要争论/未解决问题
+四、文献地图：主流学派/批判者/边缘视角/上升线索
+五、综述组织建议：按学派/主题/时间/争论，哪种结构最好`},
+{cat:'read',title:'Zotero风格文献札记生成',desc:'零散摘抄整理成标准札记：标签/可引用段落/批注/关联文献。',prompt:`你是学术笔记管理专家。请把我零散的摘抄批注整理成Zotero风格标准文献札记。
+
+【我的原始笔记】：（粘贴）
+【输出格式】：
+---
+文献：作者 年份 标题 期刊
+标签：#标签1 #标签2
+文献类型：理论/实证/方法/评论/经典
+### 核心论点（1-2句提炼）
+### 可引用段落（原文+位置）
+### 我的批注与思考
+### 可能的引用场景
+### 关联文献
+---`},
+{cat:'topic',title:'CSSCI选题可行性打分',desc:'顶刊审稿人视角从6维度打分：重要性/新颖性/理论/可行/发表/写作难度。',prompt:`你是《现代国际关系》《太平洋学报》资深审稿人。请用挑剔眼光评估我的选题。
+
+【我的选题】：（填写）
+【6个维度逐项1-10分+理由】：
+1. 问题重要性：真问题还是伪问题？
+2. 新颖性：边际贡献够吗？
+3. 理论对话潜力：能和哪个理论对话？
+4. 实证可行性：数据能拿到吗？1年能完成吗？
+5. 发表适配度：适合什么层级？窗口期如何？
+6. 写作难度：好写吗？（分越低越好写）
+【综合判断】：总分/60，强烈推荐/可做/需大改/不建议
+【改进建议】：如何聚焦？给1-2个调整后的具体选题`},
+{cat:'topic',title:'模糊兴趣收敛成可研究问题',desc:'把模糊大方向一步步收敛成具体、可回答的学术问题。',prompt:`你是学术选题教练。请通过层层收敛帮我把模糊兴趣打磨成清晰的研究问题。
+
+【我的模糊兴趣】：（填写）
+【按步骤】：
+第一步：边界澄清——地理范围/时间阶段/理论vs政策
+第二步：问题分解——拆成5-8个子问题
+第三步：聚焦筛选——挑3个最有价值的
+第四步：问题表述——学术化/通俗化/正式问题三个版本
+第五步：延伸思考——2个分支问题`},
+{cat:'framework',title:'从问题到三级标题大纲',desc:'给定研究问题和核心论点，生成完整论文大纲到三级标题。',prompt:`你是CSSCI论文写作教练。请帮我设计完整论文大纲，精确到三级标题。
+
+【研究问题】：（填写）
+【核心论点】：（填写）
+【输出】：
+基本信息：建议字数/论文类型/核心理论对话对象
+详细大纲：
+一、导论：问题提出/意义/文献缺口/方法结构
+二、理论框架：概念界定/理论选择/分析维度
+三、实证分析：分节安排
+四、讨论/机制分析
+五、结论：结论/贡献/启示/局限
+每节说明：论证什么？用什么证据？多少字？
+最后检查：逻辑链条连贯吗？`},
+{cat:'framework',title:'论证链条逻辑自检',desc:'像抓漏洞一样检查：循环论证/跳步/论据不匹配/竞争性解释缺失。',prompt:`你是极其严格的论文逻辑审稿人。请检查我的论证链条是否严密。
+
+【我的大纲/初稿】：（粘贴）
+【重点检查】：
+一、整体一致性：导论提的问题后面真的回答了吗？
+二、论证断了吗：从前提到结论每步都成立吗？
+三、循环论证：结论有没有偷偷当前提？
+四、竞争性解释：有没有其他解释没排除？
+五、案例匹配：案例真能支撑论点吗？反例怎么解释？
+六、具体改进建议`},
+{cat:'review',title:'批判性文献综述写作框架',desc:'把手头文献组织成有立场的批判性综述，不是流水账。',prompt:`你是CSSCI资深编辑。请帮我把手头文献组织成有学术对话感的批判性综述。
+
+【研究主题】：（填写）
+【已读文献】：（列出每篇核心观点）
+【输出】：
+一、综述组织逻辑：推荐结构及理由
+二、章节安排：二级三级标题，每节梳理哪派/代表学者/贡献局限
+三、批判性要点：共识/分歧/局限/空白，如何引出我的研究
+四、收口段落怎么写
+五、常见错误提醒`},
+{cat:'review',title:'综述中的学术对话建构',desc:'把"谁谁说了什么"的流水账改成有交锋、有立场的学术对话。',prompt:`你是学术写作专家。我的综述总是流水账，请教我怎么写出有交锋的对话感。
+
+【主题】：（填写）
+【要对话的主要阵营】：（列出几派）
+【输出】：
+一、对话感写法公式
+二、三种对话结构+示范：正反辩论/演进叠加/中心-边缘
+三、怎么在结尾表明自己立场
+四、20个过渡句工具箱
+五、反面教材对比示范`},
+{cat:'theory',title:'理论框架与经验材料搭桥',desc:'解决理论和案例两张皮，让理论真正成为分析工具。',prompt:`你是国际关系理论方法论专家。我写论文经常理论是理论、案例是案例，两张皮。
+
+【研究问题】：（填写）
+【打算用的理论】：（填写）
+【经验材料/案例】：（填写）
+【输出】：
+一、核心概念操作化：理论概念→案例里怎么观察测量
+二、分析框架：从哪几个维度分析案例
+三、正文怎么用理论：不是开头摆一下就扔了
+四、理论对话位置：案例分析和讨论部分怎么呼应
+五、常见坑：概念泛化/理论装饰/削足适履`},
+{cat:'theory',title:'核心概念界定与操作化',desc:'关键概念定义清楚：内涵外延、相邻概念区别、经验测量指标。',prompt:`你是社会科学方法论专家。核心概念界定是审稿人最爱挑毛病的地方。
+
+【核心概念】：（列2-4个）
+【每个概念】：
+1. 概念溯源：谁提的？经典定义？有争议吗？
+2. 本文工作定义：内涵/外延/和相邻概念区别
+3. 操作化：怎么观察测量？有哪些指标？
+4. 避免泛化：容易犯什么错误？
+最后说清楚概念间逻辑关系（自变量/因变量/中介）`},
+{cat:'theory',title:'研究方法适配性诊断',desc:'检查方法和研究问题匹配度，提前预判审稿人的方法挑刺。',prompt:`你是社会科学方法论专家。请诊断我的方法选择是否合适。
+
+【研究问题】：（填写）
+【打算用的方法】：（填写）
+【输出】：
+一、方法匹配度：我的问题是哪种类型？最适合什么方法？
+二、现有方法弱点：审稿人会从方法角度提什么批评？
+三、改进建议：推荐什么方法组合？案例怎么选？
+四、方法部分怎么写：写清楚哪几件事才严谨？`},
+{cat:'write',title:'单章节初稿蓝图',desc:'按"论点→证据→分析→小结"学术段落结构，生成每节写作蓝图。',prompt:`你是CSSCI论文写作教练。我要写某一节，请按严格学术段落结构生成写作蓝图。
+
+【节标题】：（填写）
+【这一节的任务】：（说明承担什么功能）
+【手头材料】：（列出可用证据）
+【输出】：
+段落1开门见山：主题句
+段落2-N分论点：每段分论点/证据/分析
+段落收尾：小结+过渡
+写作要点：段首主题句/摆证据必须分析/段落间逻辑连接`},
+{cat:'write',title:'案例分析：过程追踪式叙述',desc:'把案例材料写成有分析的叙述，不是讲故事流水账。',prompt:`你是定性研究写作专家。我写案例总是写成讲故事，请教我写成过程追踪风格。
+
+【案例材料】：（列出事实时间线）
+【要论证的核心机制】：（填写）
+【输出】：
+一、过程追踪和讲故事的根本区别
+二、分析性叙述的段落公式
+三、时间线处理：哪些重点写、哪些一笔带过
+四、因果过程观察怎么写进正文
+五、用我的材料写150字示范段落`},
+{cat:'write',title:'导论与结论写作模板',desc:'导论怎么抓审稿人，结论怎么升华而不是重复摘要。',prompt:`你是CSSCI顶刊写作教练。导论和结论是审稿人最先看的部分。
+
+【论文主题与核心论点】：（填写）
+【导论蓝图】：
+1. 开头钩子：3个不同版本
+2. 过渡到研究问题
+3. 现实+理论意义
+4. 文献缺口简述
+5. 核心论点预告
+6. 文章结构
+【结论蓝图】：
+1. 回应开头问题
+2. 理论贡献升华
+3. 具体政策启示
+4. 局限与未来方向
+常见错误提醒`},
+{cat:'polish',title:'学术文本深度去AI味',desc:'去掉套话、打破排比、增加具体判断，AI率降到10%以下。',prompt:`你是学术写作编辑，专门把AI腔改成人写的学术文字。目标：通过知网AI检测。
+
+【待修改文本】：（粘贴）
+【按规则改写】：
+一、必须改掉：空洞套话/整齐排比/抽象大词/AI口头禅
+二、要增加：具体判断/句子长短变化/限定转折/删掉过度连接词
+先列问题，再给改写版，保留全部核心信息。`},
+{cat:'polish',title:'Anti-Defensive Writing防御性清洗',desc:'删掉过度自我防卫的"可能""或许"，让论点更自信直接。',prompt:`你是学术写作风格教练。我写论文总是特别不自信，加了太多限定词，论点显得弱。
+
+【待修改文本】：（粘贴）
+【请做】：
+1. 找出所有防御性表达
+2. 改成更自信直接的学术表达
+3. 把握度：有证据就直接说，推测用"本文认为"，局限放结论统一说`},
+{cat:'polish',title:'段落节奏与可读性打磨',desc:'检查段落太长、句子太绕，让审稿人读着不费劲。',prompt:`你是学术文字编辑。请帮我打磨下面这段文字，让它更清晰好读。
+
+【待打磨段落】：（粘贴）
+【优化方面】：
+一、句子长度：拆超长句，长短搭配
+二、语序：重要信息放前面
+三、段落拆分：一段一个意思
+四、删冗余：去掉重复和废话
+五、逻辑连接：哪里需要加，哪里不需要`},
+{cat:'peer',title:'CSSCI顶刊模拟审稿',desc:'用顶刊审稿人眼光从选题/理论/方法/论证/写作全维度挑硬伤。',prompt:`你是《现代国际关系》《太平洋学报》资深审稿人。请用直接拒稿的挑剔眼光审我的初稿。不要客气。
+
+【我的论文】：（粘贴摘要+各部分主要内容）
+【逐项审核】：
+选题与贡献(30%)：值得发吗？创新点在哪？
+理论与框架(25%)：概念清楚吗？两张皮吗？
+方法与证据(25%)：方法匹配吗？案例合理吗？竞争性解释排除了吗？
+论证与写作(20%)：链条连贯吗？有AI腔吗？
+【总体评价】：推荐评级/三个优点/三个致命问题/最优先改的三件事`},
+{cat:'peer',title:'审稿意见回应与返修信',desc:'逐条回应审稿意见：接受/部分接受/委婉商榷，恭敬又有理。',prompt:`你是学术返修专家。请帮我写返修信和逐条回应。
+
+【审稿意见】：（粘贴分条）
+【我的修改思路】：（简单说每条怎么改）
+【输出】：
+一、返修信开头：感谢+概括修改方向
+二、逐条回应模板：引用意见→感谢→怎么改→修改位置
+三、回应原则：态度好不争论/每条具体/大段修改摘出来
+四、结尾`},
+{cat:'submit',title:'目标期刊匹配与投稿策略',desc:'根据论文主题和质量，推荐三级投稿梯队：冲刺/稳妥/保底。',prompt:`你是学术投稿咨询专家。请为我的论文做分层投稿策略。
+
+【论文情况】：
+- 主题方向：（填写）
+- 研究方法：（定性/定量/理论）
+- 创新程度：（重大/有新意/常规）
+- 完成度：（初稿/修改几轮）
+【输出三级梯队】：
+第一梯队（冲刺）：2-3本顶刊
+第二梯队（稳妥）：3-4本中坚CSSCI
+第三梯队（保底）：2-3本学报/核心
+投稿顺序建议+审稿周期参考`},
+{cat:'submit',title:'参考文献格式校对（GB/T 7714）',desc:'逐条校对作者/年份/标题/期刊/卷期页码，全部规范成国标。',prompt:`你是学术期刊格式编辑。请按GB/T 7714-2015标准帮我校对参考文献。
+
+【我的参考文献】：（全部粘贴）
+【按标准逐条整理】：
+中文期刊：作者. 题名[J]. 刊名, 年, 卷(期): 页码.
+英文期刊：Author. Title[J]. Journal, Year, Vol(Issue): pages.
+专著：作者. 书名[M]. 出版地: 出版社, 年.
+检查：作者格式/卷期页码/标点/排序/正文引用对应。
+输出：整理好的完整列表，中文在前英文在后。`},
+{cat:'submit',title:'投稿信Cover Letter撰写',desc:'给编辑写投稿信：讲清论文做了什么、为什么适合这本期刊。',prompt:`你是学术投稿咨询专家。请帮我写一封给期刊编辑的投稿信。
+
+【论文信息】：
+- 题目：（填写）
+- 投稿期刊：（填写）
+- 核心内容：（2-3句概括）
+- 主要创新：（填写）
+- 作者信息：（姓名/单位/联系方式）
+【结构】：开头→文章简介→为什么适合贵刊→原创声明→结尾
+语气：不卑不亢，半页纸以内，直接给可投稿全文。`},
+];
+
+// ---- 内置能力入口（Agent 直连）----
+const CAPS=[
+ {k:'scholar-search',n:'跨库文献检索',d:'OpenAlex / Crossref / Semantic Scholar / Zotero 并行检索，跨库去重后按相关度排序，同时生成知网高级检索式',tag:'检索'},
+ {k:'zotero-fetch',n:'Zotero 取用',d:'读取本地 Zotero 库或解析导出 JSON，一键并入工作台文献库',tag:'检索'},
+ {k:'lit-read',n:'文献精读',d:'六节结构提炼：核心信息卡 / 论证链条 / 贡献判断 / 缺陷可商榷 / 对我的价值 / 可化用句',tag:'阅读'},
+ {k:'topic-score',n:'12 维选题评估',d:'理论增量、创新辨识度、资料可得性等 12 维打分，附三条强化路径与冲刺/稳妥/保底期刊分档',tag:'选题'},
+ {k:'build-outline',n:'生成期刊大纲',d:'按目标期刊体例生成到三级标题的论证型大纲，标注每节论证任务与证据需求',tag:'写作'},
+ {k:'adw-clean',n:'防御性写作清洗',d:'清除过度免责与自我贬低表达，保留论证链条与文献引用，压制 AI 腔',tag:'写作'},
+ {k:'ns-review',n:'120 维审稿扫描',d:'概念界定到文献对话共十组维度逐段排查，输出风险等级与建议替换措辞',tag:'审稿'},
+ {k:'abstract',n:'英文摘要润色',d:'研究缺口→研究设计→核心发现→理论贡献四段式，附术语对照与中文回译',tag:'写作'},
+ {k:'citation',n:'参考文献规范',d:'GB/T 7714-2015 七类模板，三人以上加“等”，缺失卷期页码一律标“待补”不编造',tag:'规范'},
+ {k:'deliverable',n:'投稿配套材料',d:'投稿信 / 汇报演讲稿 / 研究周报 / 返修回应，四套体例按需生成',tag:'投稿'}
+];
+
+function openAgentFromPage(k){
+  if(window.AgentCore&&window.AgentCore.openAgentModal){window.AgentCore.openAgentModal(k,currentProjectId);}
+  else{toast('Agent 模块未加载：请通过 HTTP 打开页面，并确认浏览器支持 ES Module');}
+}
+
+// ---- 备用模板库（原 27 条，可复制到外部模型使用）----
+function renderPromptLibrary(){
+  const activeCat = window._aitoolsCat || 'all';
+  const kw = (window._aitoolsKw||'').trim();
+  let list = PROMPT_LIB;
+  if(activeCat!=='all') list = list.filter(function(p){return p.cat===activeCat;});
+  if(kw) list = list.filter(function(p){return p.title.indexOf(kw)>=0||p.desc.indexOf(kw)>=0||p.prompt.indexOf(kw)>=0;});
+
+  const catBtns = ['<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">'];
+  catBtns.push('<button class="add-btn ghost" style="padding:6px 14px;font-size:.82rem;" onclick="setAitoolsCat(&quot;all&quot;)">全部 ('+PROMPT_LIB.length+')</button>');
+  PROMPT_CATS.forEach(function(c){
+    const n = PROMPT_LIB.filter(function(p){return p.cat===c.id;}).length;
+    const active = activeCat===c.id ? 'background:var(--accent);color:white;' : '';
+    catBtns.push('<button class="add-btn ghost" style="padding:6px 14px;font-size:.82rem;'+active+'" onclick="setAitoolsCat(&quot;'+c.id+'&quot;)">'+c.icon+' '+c.name+' ('+n+')</button>');
+  });
+  catBtns.push('</div>');
+
+  const searchBox = '<input type="text" placeholder="搜索指令标题、关键词..." value="'+esc(kw)+'" oninput="setAitoolsKw(this.value)" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;margin-bottom:14px;background:var(--bg-card);color:var(--text);">';
+
+  const cardsHtml = list.map(function(p){
+    const idx = PROMPT_LIB.indexOf(p);
+    const cat = PROMPT_CATS.find(function(c){return c.id===p.cat;}) || {icon:'',name:''};
+    const preview = p.prompt.substring(0,100).replace(/</g,'&lt;') + (p.prompt.length>100?'...':'');
+    return '<div class="card" style="margin-bottom:10px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">'
+      + '<div><h4 style="margin:0 0 4px 0;">'+cat.icon+' '+esc(p.title)+'</h4>'
+      + '<div style="font-size:.82rem;color:var(--text-mute);margin-bottom:8px;">'+esc(p.desc)+'</div></div>'
+      + '<span style="font-size:.72rem;padding:2px 8px;border-radius:4px;white-space:nowrap;background:var(--tag-bg,#f1f5f9);">'+cat.name+'</span>'
+      + '</div>'
+      + '<div style="display:flex;gap:8px;">'
+      + '<button class="add-btn ghost" style="flex:1;padding:6px 12px;font-size:.82rem;" onclick="copyPromptText('+idx+')">复制指令</button>'
+      + '<button class="add-btn ghost" style="padding:6px 12px;font-size:.82rem;" onclick="togglePromptView('+idx+')">预览</button>'
+      + '</div>'
+      + '<div id="promptView'+idx+'" style="display:none;margin-top:10px;padding:12px;background:var(--bg-primary,#f7f8fa);border-radius:6px;font-size:.8rem;white-space:pre-wrap;max-height:280px;overflow-y:auto;border:1px solid var(--border);">'+esc(p.prompt)+'</div>'
+      + '</div>';
+  }).join('');
+
+  return searchBox + catBtns.join('') + (list.length?cardsHtml:'<div class="empty-state">没有找到匹配的指令</div>');
+}
+
 function renderAITools(){
-  const list=AI_SKILLS.map(s=>'<div class="skill-card"><h4>🤖 '+esc(s.name)+'</h4><p>'+esc(s.desc)+'</p><div style="font-size:.78rem;color:var(--accent-deep);">💡 '+esc(s.usage)+'</div></div>').join('');
-  document.getElementById('mainContent').innerHTML='<div class="page-header"><h1>🤖 AI Agent技能库</h1><p>工作台内置AI能力一览 · 共 '+AI_SKILLS.length+' 项技能</p></div><div class="card">'+list+'</div>';
+  const agentReady = !!(window.AgentCore && window.AgentCore.openAgentModal);
+  const llmReady = !!(window.AgentCore && window.AgentCore.hasLLM && window.AgentCore.hasLLM());
+
+  const capCards = CAPS.map(function(c){
+    return '<div class="card" style="padding:14px;cursor:pointer;" onclick="openAgentFromPage(&quot;'+c.k+'&quot;)">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+      + '<h4 style="margin:0;font-size:.92rem;">'+c.n+'</h4>'
+      + '<span style="font-size:.7rem;padding:2px 7px;border-radius:3px;background:var(--tag-bg,#f1f5f9);color:var(--text-mute);">'+c.tag+'</span>'
+      + '</div>'
+      + '<div style="font-size:.78rem;color:var(--text-mute);line-height:1.65;">'+c.d+'</div>'
+      + '<div style="margin-top:8px;font-size:.74rem;color:var(--accent-deep);">打开参数面板 →</div>'
+      + '</div>';
+  }).join('');
+
+  const statusBar = '<div class="card" style="padding:12px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">'
+    + '<div style="font-size:.82rem;color:var(--text-mute);">'
+    + 'Agent 内核：' + (agentReady?'<span style="color:#2f6b3a;">已加载</span>':'<span style="color:#9b2f27;">未加载</span>')
+    + ' ｜ 模型：' + (llmReady?'<span style="color:#2f6b3a;">已配置</span>':'<span style="color:#9b2f27;">未配置（仅本地检索可用）</span>')
+    + '</div>'
+    + '<button class="add-btn ghost" style="padding:6px 12px;font-size:.8rem;" onclick="openAgentSettings()">Agent 设置</button>'
+    + '</div>';
+
+  const skillsHtml = '<div style="margin-top:26px;"><h3 style="font-size:.95rem;margin-bottom:10px;">工作台内置技能</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;">'
+    + AI_SKILLS.map(function(s){return '<div class="skill-card" style="padding:12px;"><h4 style="margin:0 0 4px 0;font-size:.88rem;">'+esc(s.name)+'</h4><p style="font-size:.78rem;margin:0 0 6px 0;">'+esc(s.desc)+'</p><div style="font-size:.72rem;color:var(--accent-deep);">'+esc(s.usage)+'</div></div>';}).join('')
+    + '</div></div>';
+
+  const libHtml = '<details style="margin-top:26px;border-top:1px solid var(--border);padding-top:16px;">'
+    + '<summary style="cursor:pointer;font-size:.92rem;font-weight:600;margin-bottom:12px;">备用：指令模板库（'+PROMPT_LIB.length+' 条，供外部模型使用）</summary>'
+    + '<div style="font-size:.78rem;color:var(--text-mute);margin-bottom:12px;">以下为需要粘贴到第三方模型时才用的模板，日常任务请直接用上方内置能力，不必离开工作台。</div>'
+    + renderPromptLibrary()
+    + '</details>';
+
+  document.getElementById('mainContent').innerHTML =
+    '<div class="page-header"><h1>学术 Agent 能力台</h1><p>文献检索 → 精读 → 选题评估 → 大纲 → 写作清洗 → 审稿 → 投稿材料，全部在本工作台内闭环</p></div>'
+    + statusBar
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;">'+capCards+'</div>'
+    + skillsHtml
+    + libHtml;
+}
+
+function openAgentSettings(){
+  if(!window.AgentCore){toast('Agent 模块未加载：请通过 HTTP 打开页面');return;}
+  if(window.AgentCore.renderSettingsPanel)window.AgentCore.renderSettingsPanel();
+  const host = document.getElementById('gw-settings');
+  if(host)host.style.display = 'block';
+  const side = document.querySelector('.gw-side');
+  if(side&&side.scrollIntoView)side.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function setAitoolsCat(c){window._aitoolsCat=c;renderAITools();}
+function setAitoolsKw(k){window._aitoolsKw=k;renderAITools();}
+
+function togglePromptView(i){
+  const el=document.getElementById('promptView'+i);
+  el.style.display = el.style.display==='none'?'block':'none';
+}
+function copyPromptText(i){
+  const p=PROMPT_LIB[i];
+  navigator.clipboard.writeText(p.prompt).then(()=>{
+    toast('指令已复制：'+p.title);
+  }).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=p.prompt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    toast('指令已复制');
+  });
 }
 
 // ===== 论文AI对话 =====
@@ -3111,3 +3522,48 @@ if(!checkLogin()){
 }else{
   init();
 }
+
+// ===== V9 Agent 桥接层（供 agent-core 模块调用，不改变原有逻辑）=====
+window.V8Bridge = {
+  get data() { return data; },
+  projectId() { return currentProjectId; },
+  toast(msg) { toast(msg); },
+  esc(s) { return esc(s); },
+  save() { saveData(); },
+
+  // 写入文献库（结构与 addRef 保持一致）
+  insertRef(ref) {
+    data.refs.unshift({
+      id: uid(),
+      title: ref.title || '未命名',
+      author: ref.author || '',
+      source: ref.source || '',
+      year: String(ref.year || ''),
+      tags: ref.tags || '',
+      note: ref.note || '',
+      doi: ref.doi || '',
+      url: ref.url || '',
+      citedBy: ref.citedBy || 0,
+      agentScore: ref.agentScore || 0,
+      read: false,
+      uploadDate: fmtDate(new Date()),
+      projectId: currentProjectId
+    });
+    saveData();
+    return true;
+  },
+
+  // 写入研究笔记
+  addNote(title, content) {
+    data.notes.unshift({
+      id: uid(),
+      title: title || 'Agent 产出',
+      content: content || '',
+      type: 'Agent',
+      date: fmtDate(new Date()),
+      projectId: currentProjectId
+    });
+    saveData();
+    return true;
+  }
+};

@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: https:;">
-<title>国安学术工作台 V8</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: https:; connect-src 'self' https: http://localhost:11434 http://localhost:23119;">
+<title>国安学术工作台 V9</title>
 <link rel="stylesheet" href="style.css?v=20260929v8">
+<link rel="stylesheet" href="css/agent-ui.css?v=20261105v9">
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";}</script>
@@ -27,22 +28,81 @@
 <div class="sidebar-logo" style="display:flex;align-items:center;gap:10px;">
 <img src="logo.png?v=20260929v8" style="width:42px;height:42px;border-radius:50%;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.2);">
 <div><h1 style="margin:0;font-size:1.05rem;">国安学术工作台</h1>
-<p style="margin:2px 0 0;font-size:.68rem;">National Security Academic Workbench V8</p></div>
+<p style="margin:2px 0 0;font-size:.68rem;">National Security Academic Workbench V9</p></div>
 </div>
 <div class="global-search-box">
 <input type="text" id="globalSearchInput" placeholder="🔍 全局搜索..." oninput="debouncedGlobalSearch(this.value)" onkeydown="if(event.key==='Escape')clearGlobalSearch()">
 <div id="globalSearchResults" class="global-search-results" style="display:none;"></div>
 </div>
 <div id="navMenu"></div>
+
+<!-- ===== Agent 内置功能入口 ===== -->
+<div class="gw-side">
+  <div class="gw-side-title">
+    <span>内置学术 Agent</span>
+    <button data-gw="settings" type="button">设置</button>
+  </div>
+  <div class="gw-agent-buttons" id="gw-agent-buttons">
+    <button class="gw-entry gw-entry-wide" data-gw="scholar-search" type="button">跨库文献检索</button>
+    <button class="gw-entry" data-gw="zotero-fetch" type="button">Zotero 取用</button>
+    <button class="gw-entry" data-gw="lit-read" type="button">文献精读</button>
+    <button class="gw-entry" data-gw="topic-score" type="button">12 维选题评估</button>
+    <button class="gw-entry" data-gw="build-outline" type="button">生成期刊大纲</button>
+    <button class="gw-entry" data-gw="adw-clean" type="button">防御性清洗</button>
+    <button class="gw-entry" data-gw="ns-review" type="button">120 维审稿</button>
+    <button class="gw-entry" data-gw="abstract" type="button">英文摘要</button>
+    <button class="gw-entry" data-gw="citation" type="button">参考文献规范</button>
+    <button class="gw-entry gw-entry-wide" data-gw="deliverable" type="button">投稿配套材料</button>
+  </div>
+  <div id="gw-settings"></div>
+</div>
+
+<!-- ===== 自主目标下达 ===== -->
+<div class="gw-goal-box">
+  <div class="gw-side-title"><span>自主目标下达</span></div>
+  <textarea id="gw-goal" placeholder="一句话描述研究任务，例如：围绕海上通道排他性治理的棘轮效应，检索近五年英文文献，做选题评估，然后生成适配《太平洋学报》的大纲，再跑一遍 120 维审稿"></textarea>
+  <div class="gw-goal-actions">
+    <button class="primary" id="gw-chain-start" type="button">启动流水线</button>
+    <button id="gw-chain-resume" type="button">断点续跑</button>
+  </div>
+  <div id="gw-chain-container"></div>
+</div>
 </nav>
 <main class="main">
-<div id="mainContent"><div style="padding:60px 20px;text-align:center;color:var(--text-mute);"><div style="font-size:2.5rem;margin-bottom:12px;">⏳</div><p>正在加载...</p></div></main>
+<div id="mainContent"><div style="padding:60px 20px;text-align:center;color:var(--text-mute);"><div style="font-size:2.5rem;margin-bottom:12px;">⏳</div><p>正在加载...</p></div></div>
+</main>
 </div>
 <div id="modalContainer"></div>
 <div id="toast" class="toast"></div>
+
+<!-- ===== Agent 弹窗 ===== -->
+<div id="gw-modal" class="gw-modal">
+  <div class="gw-modal-inner">
+    <div class="gw-modal-head">
+      <span id="gw-modal-title">Agent</span>
+      <button data-gw-close type="button">×</button>
+    </div>
+    <div id="gw-modal-body"></div>
+    <div id="gw-modal-result"></div>
+    <div class="gw-modal-foot">
+      <button class="gw-btn" data-gw-close type="button">关闭</button>
+      <button class="gw-btn gw-btn-primary" id="gw-modal-submit" type="button">提交任务</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 流水线确认框 ===== -->
+<div id="gw-confirm">
+  <div class="gw-confirm-inner">
+    <div class="gw-confirm-text" id="gw-confirm-text"></div>
+    <div id="gw-confirm-btns"></div>
+  </div>
+</div>
+
 <script src="job-data.js?v=20260929v8"></script>
 <script src="phd-data.js?v=20260929v8"></script>
 <script src="app.js?v=20260929v8"></script>
 <script src="js/archive.js?v=20260929v8"></script>
+<script type="module" src="js/agent-core/bootstrap.js?v=20261105v9"></script>
 </body>
 </html>
