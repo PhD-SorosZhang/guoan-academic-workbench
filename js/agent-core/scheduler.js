@@ -12,7 +12,11 @@ export const TaskType = Object.freeze({
   BUILD_OUTLINE: 'build-outline',
   ABSTRACT: 'abstract',
   DELIVERABLE: 'deliverable',
-  CITATION: 'citation'
+  CITATION: 'citation',
+  CHAPTER_WRITE: 'chapter-write',
+  ASSEMBLE: 'assemble',
+  REVISION: 'revision',
+  FORMAT_AUDIT: 'format-audit'
 });
 
 export const TASK_LABEL = {
@@ -25,7 +29,11 @@ export const TASK_LABEL = {
   'build-outline': '生成期刊大纲',
   'abstract': '英文摘要润色',
   'deliverable': '配套材料生成',
-  'citation': '参考文献格式化'
+  'citation': '参考文献格式化',
+  'chapter-write': '正文分章撰写',
+  'assemble': '全文合稿',
+  'revision': '返修改稿',
+  'format-audit': '格式体检'
 };
 
 const handlers = new Map();

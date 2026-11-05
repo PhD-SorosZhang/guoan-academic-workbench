@@ -633,17 +633,8 @@ async function fetchWeather(){
   const el=document.getElementById('weatherInfo');
   if(!el)return;
   let lat=38.91, lon=121.61, city='大连';
-  try{
-    let ipData=null;
-    try{
-      const ipCtrl=new AbortController();
-      const ipTimer=setTimeout(()=>ipCtrl.abort(),5000);
-      const ipRes=await fetch('https://ipapi.co/json/',{signal:ipCtrl.signal});
-      clearTimeout(ipTimer);
-      if(ipRes.ok)ipData=await ipRes.json();
-    }catch(e){/* ipapi不可用，使用默认坐标 */}
-    if(ipData){lat=ipData.latitude||lat;lon=ipData.longitude||lon;city=ipData.city||city;}
-  }catch(e){/* 定位失败，使用默认坐标 */}
+  /* 说明：原先用 ipapi.co 反查 IP 定位，跨域请求会被浏览器拦截并刷控制台错误，
+     且本站为个人学术站点，直接使用常驻地坐标即可，不再发起该跨域请求。 */
   try{
     el.textContent='🌡️ '+city+' ...';
     const wRes=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m');

@@ -12,7 +12,11 @@ const AVAILABLE = [
   'BUILD_OUTLINE — 生成匹配目标期刊的论文大纲',
   'ABSTRACT — 英文摘要润色 + 回译',
   'DELIVERABLE — 投稿信 / 汇报稿 / 周报 / 返修回应',
-  'CITATION — GB/T 7714 参考文献格式化'
+  'CITATION — GB/T 7714 参考文献格式化',
+  'CHAPTER_WRITE — 按大纲分章撰写正文（每次写一章，params.chapterSpec 指定章节，如“第二章 理论框架”；写“全部”则逐章全生成）',
+  'ASSEMBLE — 全文合稿：章节拼装、层级重编号、标点统一、引用占位收集（本地计算，不需模型）',
+  'REVISION — 返修改稿：按审稿意见或自查问题改写，产出修订稿、改动溯源表、点对点回应',
+  'FORMAT_AUDIT — 全文格式体检：摘要篇幅、关键词、章节编号、正文引用与参考文献对应、图表编号、标点、字数'
 ];
 
 const SYS = [
@@ -28,13 +32,15 @@ const SYS = [
   '4. 存在两条并行学术路线时用 branch-select，options 给出具体方向而非“继续/放弃”。',
   '5. 每条 run-task 的 params 只能是该任务需要的字段，无法确定的留空字符串，由前序产出通过 inheritedContext 注入。',
   '6. 若目标超出能力边界（例如要求自动下载 PDF 全文、要求访问知网接口），第一步放 pause-confirm 说明边界与替代方案。',
-  '7. 步骤总数控制在 3-8 步，不要堆砌。',
+  '7. 步骤总数控制在 3-10 步；写作类目标可多放几个 CHAPTER_WRITE（每步只写一章，chapterSpec 写明“第X章 …”），最后接 ASSEMBLE。',
+  '8. 写作链条的收尾顺序固定：ASSEMBLE → NS_REVIEW → REVISION → FORMAT_AUDIT，不要调换。',
+  '9. ASSEMBLE 与 FORMAT_AUDIT 是本地计算，不消耗模型额度，可作为链条的稳定收尾。',
   '',
   '严格输出 JSON，无 markdown、无解释：',
   '{"chainId":"...","title":"...","steps":[{"kind":"run-task","taskType":"SCHOLAR_SEARCH","params":{},"note":"..."},{"kind":"pause-confirm","prompt":"...","options":["...","..."]}]}'
 ].join('\n');
 
-const VALID_TYPES = ['SCHOLAR_SEARCH', 'ZOTERO_FETCH', 'LIT_READ', 'TOPIC_SCORE', 'ADW_CLEAN', 'NS_REVIEW', 'BUILD_OUTLINE', 'ABSTRACT', 'DELIVERABLE', 'CITATION'];
+const VALID_TYPES = ['SCHOLAR_SEARCH', 'ZOTERO_FETCH', 'LIT_READ', 'TOPIC_SCORE', 'ADW_CLEAN', 'NS_REVIEW', 'BUILD_OUTLINE', 'ABSTRACT', 'DELIVERABLE', 'CITATION', 'CHAPTER_WRITE', 'ASSEMBLE', 'REVISION', 'FORMAT_AUDIT'];
 
 export async function buildTaskChain(pid, goal, projectCtx) {
   const user = [

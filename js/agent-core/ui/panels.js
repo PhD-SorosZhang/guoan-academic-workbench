@@ -199,6 +199,49 @@ const FORMS = {
       { n: 'rawEntries', l: '原始题录', t: 'textarea', d: '', fromEditor: true },
       { n: 'style', l: '格式标准', t: 'text', d: 'GB/T 7714-2015 顺序编码制' }
     ]
+  },
+  'chapter-write': {
+    title: '正文分章撰写',
+    task: TaskType.CHAPTER_WRITE,
+    fields: [
+      { n: 'outlineText', l: '大纲（留空则用前序流水线产出的大纲）', t: 'textarea', d: '' },
+      { n: 'chapterSpec', l: '本次撰写章节', t: 'text', d: '', ph: '例如：第二章 理论框架；填“全部”则逐章生成（最多 6 章，耗时较长）' },
+      { n: 'title', l: '论文题目', t: 'text', d: '' },
+      { n: 'rq', l: '研究问题', t: 'textarea', d: '' },
+      { n: 'theory', l: '理论锚点', t: 'text', d: '' },
+      { n: 'material', l: '可用材料（案例、数据、文献要点；不填则只用前序产出）', t: 'textarea', d: '' },
+      { n: 'targetChars', l: '本章目标字数', t: 'number', d: 2500 },
+      { n: 'journal', l: '目标期刊', t: 'select', opts: JOURNAL_OPTS, d: '太平洋学报' }
+    ]
+  },
+  'assemble': {
+    title: '全文合稿',
+    task: TaskType.ASSEMBLE,
+    fields: [
+      { n: 'chapterTexts', l: '各章正文（按“第X章”开头依次粘贴；留空则用前序流水线产出）', t: 'textarea', d: '' },
+      { n: 'title', l: '论文题目', t: 'text', d: '' },
+      { n: 'journal', l: '目标期刊', t: 'select', opts: JOURNAL_OPTS, d: '太平洋学报' },
+      { n: 'abstract', l: '摘要（可选，用于完整性检查）', t: 'textarea', d: '' }
+    ]
+  },
+  'revision': {
+    title: '返修改稿与提升',
+    task: TaskType.REVISION,
+    fields: [
+      { n: 'manuscript', l: '待修订全文（留空则用前序产出）', t: 'textarea', d: '', fromEditor: true },
+      { n: 'reviewComments', l: '审稿意见 / 自查问题（留空则由 Agent 按 120 维标准自查）', t: 'textarea', d: '' },
+      { n: 'mode', l: '产出范围', t: 'select', opts: [['both', '修订稿 + 溯源表 + 点对点回应'], ['revise', '只要修订稿与溯源表']], d: 'both' },
+      { n: 'journal', l: '目标期刊', t: 'select', opts: JOURNAL_OPTS, d: '太平洋学报' }
+    ]
+  },
+  'format-audit': {
+    title: '全文格式体检',
+    task: TaskType.FORMAT_AUDIT,
+    fields: [
+      { n: 'text', l: '全文（含摘要、正文、参考文献；留空则用前序产出）', t: 'textarea', d: '', fromEditor: true },
+      { n: 'journal', l: '目标期刊', t: 'select', opts: JOURNAL_OPTS, d: '太平洋学报' },
+      { n: 'targetChars', l: '目标字数（可选，用于篇幅核对）', t: 'number', d: 13000 }
+    ]
   }
 };
 

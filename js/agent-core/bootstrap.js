@@ -9,6 +9,10 @@ import { runNSReview } from './modules/ns-review.js';
 import { runManuscriptBuild } from './modules/manuscript.js';
 import { runCitation } from './modules/citation.js';
 import { runDeliverable } from './modules/deliverable.js';
+import { runChapterWrite } from './modules/chapter-writer.js';
+import { runAssemble } from './modules/assembler.js';
+import { runRevision } from './modules/revision.js';
+import { runFormatAudit } from './modules/format-audit.js';
 import { buildTaskChain } from './planner.js';
 import { ChainRunner } from './chain-runner.js';
 import { getProjectContext, setProjectContext, getTaskHistory, clearProjectMemory } from './memory-store.js';
@@ -35,6 +39,10 @@ export function boot() {
   registerTask(TaskType.ABSTRACT, (p, c) => runManuscriptBuild(Object.assign({}, p, { mode: 'abstract' }), c));
   registerTask(TaskType.DELIVERABLE, runDeliverable);
   registerTask(TaskType.CITATION, runCitation);
+  registerTask(TaskType.CHAPTER_WRITE, runChapterWrite);
+  registerTask(TaskType.ASSEMBLE, runAssemble);
+  registerTask(TaskType.REVISION, runRevision);
+  registerTask(TaskType.FORMAT_AUDIT, runFormatAudit);
 
   // ---- 编辑器钩子（对接 V8 主编辑区，若不存在则退化）----
   if (!window.GWEditor) {
@@ -167,6 +175,18 @@ function bindChainEntry() {
       if (!goal) { notifyBridge('续跑需要重新填写同一目标，或从历史记录选择'); return; }
       // 简化处理：重新规划后从断点恢复
       btn.click();
+    });
+  }
+
+  const presetBtn = document.getElementById('gw-chain-preset');
+  if (presetBtn) {
+    presetBtn.addEventListener('click', () => {
+      const cur = input.value.trim();
+      const topic = cur || '（先在此填论文题目，再点启动）';
+      input.value = '按论文全流程推进：' + topic
+        + '。依次执行 12 维选题评估 → 生成期刊大纲 → 按大纲分章撰写正文 → 全文合稿 → 120 维审稿扫描 → 返修改稿 → 全文格式体检 → 参考文献格式化；在理论框架与案例范围处停下来让我确认。';
+      input.focus();
+      notifyBridge('已填入全流程指令，补全题目后点“启动流水线”');
     });
   }
 }

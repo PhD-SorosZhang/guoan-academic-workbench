@@ -53,6 +53,10 @@
     <button class="gw-entry" data-gw="abstract" type="button">英文摘要</button>
     <button class="gw-entry" data-gw="citation" type="button">参考文献规范</button>
     <button class="gw-entry gw-entry-wide" data-gw="deliverable" type="button">投稿配套材料</button>
+    <button class="gw-entry gw-entry-wide" data-gw="chapter-write" type="button">分章正文撰写</button>
+    <button class="gw-entry" data-gw="assemble" type="button">全文合稿</button>
+    <button class="gw-entry" data-gw="revision" type="button">返修改稿</button>
+    <button class="gw-entry" data-gw="format-audit" type="button">格式体检</button>
   </div>
   <div id="gw-settings"></div>
 </div>
@@ -63,6 +67,7 @@
   <textarea id="gw-goal" placeholder="一句话描述研究任务，例如：围绕海上通道排他性治理的棘轮效应，检索近五年英文文献，做选题评估，然后生成适配《太平洋学报》的大纲，再跑一遍 120 维审稿"></textarea>
   <div class="gw-goal-actions">
     <button class="primary" id="gw-chain-start" type="button">启动流水线</button>
+    <button id="gw-chain-preset" type="button">全流程模板</button>
     <button id="gw-chain-resume" type="button">断点续跑</button>
   </div>
   <div id="gw-chain-container"></div>
