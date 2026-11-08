@@ -13,6 +13,7 @@ import { runChapterWrite } from './modules/chapter-writer.js';
 import { runAssemble } from './modules/assembler.js';
 import { runRevision } from './modules/revision.js';
 import { runFormatAudit } from './modules/format-audit.js';
+import { mountBetaDock } from './beta/index.js';
 import { buildTaskChain } from './planner.js';
 import { ChainRunner } from './chain-runner.js';
 import { getProjectContext, setProjectContext, getTaskHistory, clearProjectMemory } from './memory-store.js';
@@ -269,6 +270,9 @@ function bindSettings() { /* 设置面板按需渲染，无全局绑定 */ }
 
 /* ---------- 对外接口 ---------- */
 boot();
+
+// V1-C Beta 内测台：右下角悬浮入口，不破坏原有 V9 界面
+try { mountBetaDock(); } catch (e) { console.warn('[Beta] dock 挂载失败', e); }
 
 window.AgentCore = {
   TaskType,
