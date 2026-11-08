@@ -15,3 +15,7 @@ export * as Anno from './core/annotation-tracker.js';
 export { buildProvenance, downloadProvenance } from './core/provenance.js';
 export { runBenchmark } from './eval/benchmark.js';
 export { PRESET_THEMES, themeContextBlock } from './themes/preset-themes.js';
+export { renderPaperPreview, auditFormat, JOURNAL_PRESETS } from './ui/paper-preview.js';
+export { flowChart, concentric, radarChart, downloadSVG } from './ui/svg-builder.js';
+export { runMigrations, exportWorkspace, downloadWorkspace, importWorkspace } from './core/migration.js';
+export { checkInvite, whitelist, addCode, orgDomains } from './auth/invite-gate.js';
